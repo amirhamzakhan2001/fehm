@@ -1,4 +1,22 @@
-# Fehm
+<p align="center">
+  <img src="assets/brand/readme-banner.svg" alt="Fehm — Know the code. Understand the change. Local codebase intelligence for you and your AI assistant." width="100%">
+</p>
+
+<h1 align="center">Fehm</h1>
+
+<p align="center">
+  <a href="https://github.com/amirhamzakhan2001/fehm/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/amirhamzakhan2001/fehm/ci.yml?branch=main&amp;style=flat-square&amp;label=CI%20%26%20tests" alt="CI and tests"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-22977a?style=flat-square" alt="License: MIT"></a>
+  <a href="https://github.com/amirhamzakhan2001/fehm/pulls"><img src="https://img.shields.io/github/issues-pr/amirhamzakhan2001/fehm?style=flat-square&amp;label=pull%20requests" alt="Open pull requests"></a>
+  <a href="https://github.com/amirhamzakhan2001/fehm/releases"><img src="https://img.shields.io/github/v/release/amirhamzakhan2001/fehm?style=flat-square" alt="Latest GitHub release"></a>
+  <a href="https://github.com/amirhamzakhan2001/fehm/releases"><img src="https://img.shields.io/github/downloads/amirhamzakhan2001/fehm/total?style=flat-square&amp;label=release%20downloads" alt="GitHub release asset downloads"></a>
+</p>
+<p align="center">
+  <a href="src/"><img src="https://img.shields.io/badge/engine-TypeScript-3178c6?style=flat-square&amp;logo=typescript&amp;logoColor=white" alt="TypeScript engine"></a>
+  <a href="python/"><img src="https://img.shields.io/badge/installer-Python%20%2B%20uv-7057c7?style=flat-square" alt="Python and uv installer"></a>
+  <a href="#security-and-badge-status"><img src="https://img.shields.io/badge/SLSA-not%20assessed-64748b?style=flat-square" alt="SLSA: not assessed"></a>
+  <a href="#security-and-badge-status"><img src="https://img.shields.io/badge/OpenSSF-not%20assessed-64748b?style=flat-square" alt="OpenSSF: not assessed"></a>
+</p>
 
 **Understand your codebase. Give your AI assistant better context. Review changes with evidence.**
 
@@ -6,7 +24,19 @@ Fehm builds a persistent local graph of your repository’s files, symbols and r
 
 Source scanning and ordinary graph queries run locally. Model-based features use a provider only when configured and invoked.
 
-[Get started](#get-started) · [Capabilities](#capabilities) · [Assistant setup](#connect-your-assistant) · [Documentation](#documentation)
+## Contents
+
+- [Capabilities](#capabilities)
+- [Get started](#get-started)
+- [Connect your assistant](#connect-your-assistant)
+- [Everyday workflows](#everyday-workflows)
+- [Open-source foundations](#open-source-foundations)
+- [Scope and limits](#scope-and-limits)
+- [Build and contribute](#build-and-contribute)
+- [Security and badge status](#security-and-badge-status)
+- [Brand assets](#brand-assets)
+- [Documentation](#documentation)
+- [License](#license)
 
 ## Capabilities
 
@@ -194,6 +224,18 @@ npm --prefix website run check
 ```
 
 Preview at **http://127.0.0.1:4321**. The site includes capability groups, assistant setup and thirteen documentation guides. Production indexing requires a configured public URL; Google Analytics is optional and consent-based. Hosting and live analytics require deployment configuration. See the [website plan](website/PLAN.md).
+
+## Security and badge status
+
+The CI badge reads the actual GitHub workflow, which includes engine tests, website checks, platform wheel smoke tests and a container build. Release and download badges use GitHub release data; downloads count release assets, not PyPI installations. Remote badges may show unavailable until this repository, its workflow runs and releases are public.
+
+SLSA and OpenSSF are marked **not assessed**. This repository does not currently establish a SLSA level, publish build-provenance attestations, or include an OpenSSF Best Practices registration or Scorecard result. These labels are status disclosures, not certification badges. See [SLSA](https://slsa.dev/), [OpenSSF Best Practices](https://www.bestpractices.dev/en) and the [security policy](SECURITY.md).
+
+## Brand assets
+
+<p align="center"><img src="assets/brand/fehm-icon.svg" width="80" alt="Fehm app icon">&nbsp;&nbsp;<img src="assets/brand/fehm-logo.svg" width="290" alt="Fehm wordmark"></p>
+
+The connected F mark represents source relationships. Use the [brand kit](assets/brand/README.md) for SVG logos, light/dark and monochrome variants, a PNG app icon, favicon setup and Vite usage. The SVG wordmark uses vector paths rather than an external font.
 
 ## Documentation
 
