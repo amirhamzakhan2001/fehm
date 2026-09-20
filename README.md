@@ -235,7 +235,7 @@ SLSA and OpenSSF are marked **not assessed**. This repository does not currently
 
 <p align="center"><img src="assets/brand/fehm-icon.svg" width="80" alt="Fehm app icon">&nbsp;&nbsp;<img src="assets/brand/fehm-logo.svg" width="290" alt="Fehm wordmark"></p>
 
-The connected F mark represents source relationships. Use the [brand kit](assets/brand/README.md) for SVG logos, light/dark and monochrome variants, a PNG app icon, favicon setup and Vite usage. The SVG wordmark uses vector paths rather than an external font.
+The aperture mark brings two folded ribbons together around a diagonal opening, representing connected understanding. Use the [brand kit](assets/brand/README.md) for SVG logos, light/dark and monochrome variants, a PNG app icon, favicon setup and Vite usage. The SVG wordmark uses vector paths rather than an external font.
 
 ## Documentation
 
