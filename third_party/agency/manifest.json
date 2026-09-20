@@ -1,0 +1,12 @@
+{
+  "repository": "https://github.com/msitarzewski/agency-agents",
+  "commit": "ad9264e309bd5e5422c04784372d7841b1e5d604",
+  "license": "MIT",
+  "files": [
+    {
+      "path": "engineering/engineering-code-reviewer.md",
+      "sha256": "7509fcc3ea1dda46511b2801996305bf3d4a125576f9655ff0b63df25602f446"
+    }
+  ],
+  "snapshotDirectory": "vendor"
+}

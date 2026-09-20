@@ -1,0 +1,12 @@
+{
+  "repository": "https://github.com/garrytan/gstack",
+  "commit": "a6b3a57512ca6d5c6aa5b68f74f736195021f96e",
+  "license": "MIT",
+  "files": [
+    {
+      "path": "lib/review-evidence.ts",
+      "sha256": "db2b46eb033dd160a172ef362fa26c07bb10d73f27430be06a55f16737682fc0"
+    }
+  ],
+  "snapshotDirectory": "vendor"
+}

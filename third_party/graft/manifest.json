@@ -1,0 +1,12 @@
+{
+  "repository": "https://github.com/trailhq/Graft",
+  "commit": "8c05769618d413041ea2c8891f82d566f0461b3c",
+  "license": "MIT",
+  "files": [
+    {
+      "path": "src/ask/file-selection.ts",
+      "sha256": "aeac9270effb1a44d20999a0a81ed6211a09bc3e2fe17ec50d0bf6e2cad75a09"
+    }
+  ],
+  "snapshotDirectory": "vendor"
+}

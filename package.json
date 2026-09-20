@@ -1,0 +1,70 @@
+{
+  "name": "fehm",
+  "version": "1.4.0",
+  "description": "A local-first, provenance-aware codebase intelligence graph for AI agents.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "fehm": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "docs",
+    "examples",
+    "public",
+    "README.md",
+    "LICENSE",
+    "SECURITY.md",
+    "integrations",
+    "third_party/open-code-review",
+    "third_party/ecc",
+    "third_party/gstack",
+    "third_party/agency",
+    "third_party/memory",
+    "third_party/graft"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "check": "tsc -p tsconfig.json --noEmit",
+    "test": "node --import tsx --test test/*.test.ts",
+    "test:coverage": "node --import tsx --test --experimental-test-coverage test/*.test.ts",
+    "smoke": "npm run build && node scripts/api-smoke.mjs && node scripts/localhost-smoke.mjs",
+    "release:check": "npm run check && npm test && npm run smoke && npm pack --dry-run",
+    "prepack": "npm run build",
+    "start": "node dist/cli.js",
+    "cockpit": "node dist/cli.js serve .fehm/graph.json",
+    "cockpit:watch": "node dist/cli.js serve .fehm/graph.json --watch",
+    "package:python": "npm run build && npm run vendor:review && node scripts/package-python.mjs",
+    "build:python": "npm run package:python && uv build --out-dir python-dist",
+    "vendor:review": "node scripts/vendor-review.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/amirhamzakhan2001/fehm.git"
+  },
+  "homepage": "https://github.com/amirhamzakhan2001/fehm#readme",
+  "bugs": {
+    "url": "https://github.com/amirhamzakhan2001/fehm/issues"
+  },
+  "dependencies": {
+    "typescript": "^5.9.2"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "tsx": "^4.20.5"
+  },
+  "license": "MIT"
+}

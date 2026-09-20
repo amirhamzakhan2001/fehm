@@ -1,0 +1,16 @@
+node_modules
+dist
+coverage
+.fehm
+.git
+.github
+*.log
+.DS_Store
+.env
+.env.*
+test
+build
+python-dist
+.venv
+__pycache__
+website

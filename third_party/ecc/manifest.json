@@ -1,0 +1,12 @@
+{
+  "repository": "https://github.com/affaan-m/ECC",
+  "commit": "9ac593b55cba44c8b20152a5c7f28d300a67ec7e",
+  "license": "MIT",
+  "files": [
+    {
+      "path": "scripts/lib/instinct-relevance.js",
+      "sha256": "64aae588687ba3ebb9f0975488c4e55d96f512d9851cde8aaacfa2bc040b4573"
+    }
+  ],
+  "snapshotDirectory": "vendor"
+}

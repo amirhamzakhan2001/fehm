@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="fehm local codebase intelligence cockpit">
+  <title>fehm Cockpit</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">R</span><div><strong>fehm</strong><small>Codebase cockpit</small></div></div>
+      <label class="project-switcher"><span>Project</span><select id="project-selector" aria-label="Select project"></select></label>
+      <label class="global-search"><span>⌕</span><input id="search" placeholder="Find a file, symbol, or system…" autocomplete="off"></label>
+      <div class="health"><span class="pulse"></span><span id="health">Analyzing</span></div>
+      <div class="git-state">LOCAL-FIRST</div>
+    </header>
+    <aside class="sidebar">
+      <p class="eyebrow">Workspace</p>
+      <h1 id="repo-name">Repository</h1>
+      <nav id="nav" aria-label="Cockpit views">
+        <button data-view="projects"><span>⌂</span>Projects</button>
+        <button class="active" data-view="graph"><span>◉</span>Graph</button>
+        <button data-view="relationships"><span>⇄</span>Relationships</button>
+        <button data-view="health"><span>♥</span>Health</button>
+        <button data-view="readiness"><span>◎</span>Readiness</button>
+        <button data-view="intelligence"><span>◆</span>Intelligence</button>
+        <button data-view="system-map"><span>◈</span>System Map</button>
+        <button data-view="flows"><span>⇢</span>Flows</button>
+        <button data-view="practices"><span>✓</span>Practices &amp; drift</button>
+        <button data-view="architecture"><span>▦</span>Architecture</button>
+        <button data-view="code"><span>⌘</span>Code</button>
+        <button data-view="impact"><span>⌁</span>Impact</button>
+        <button data-view="tests"><span>✓</span>Tests</button>
+        <button data-view="security"><span>◇</span>Security</button>
+        <button data-view="git"><span>↗</span>Git & memory</button>
+        <button data-view="context"><span>✦</span>AI Context</button>
+        <button data-view="prompt-lab"><span>◫</span>Prompt Lab</button>
+      </nav>
+      <div id="sync-card" class="sync-card"></div>
+      <div class="truth-card"><p class="eyebrow">Evidence model</p><div><i class="fact"></i>Verified fact</div><div><i class="inference"></i>Derived inference</div><div><i class="hypothesis"></i>Hypothesis</div></div>
+    </aside>
+    <main>
+      <section id="graph-view" class="view active">
+        <div class="view-head"><div><p class="eyebrow">Live system map</p><h2>Code graph</h2></div><div class="controls"><select id="level"><option value="system">System</option><option value="modules" selected>Modules</option><option value="files">Files</option><option value="symbols">Symbols</option></select><button id="reset">Reset view</button></div></div>
+        <div class="graph-stage"><canvas id="graph-canvas" aria-label="Interactive code graph"></canvas><div class="graph-hint">Scroll to zoom · drag to pan · select a node for evidence</div></div>
+      </section>
+      <section id="panel-view" class="view"></section>
+    </main>
+    <aside class="details"><p class="eyebrow">Inspector</p><div id="details"><div class="empty-state"><span>◎</span><h3>Select a node</h3><p>Inspect its location, relationships, confidence, and truth level.</p></div></div></aside>
+    <footer><div id="metrics"></div><span>Brain engine connected locally</span></footer>
+  </div>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

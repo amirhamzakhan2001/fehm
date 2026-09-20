@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "status": "proposed",
+  "generatedAt": "2026-09-19T08:15:52.659Z",
+  "repositoryFingerprint": "5fc071d16dc49a8b0790082fc9786b24bdae1f723eaa7416ce848e8f2308f0ec",
+  "proposalFingerprint": "e8ea381d3397046905c46165f7fd4c022b13e5289697ad86e120c7e3d8f7e5d4",
+  "confidence": 84,
+  "detectedTechnologies": [
+    "Automated tests",
+    "JavaScript",
+    "TypeScript"
+  ],
+  "evidence": [
+    "4 architectural layer(s) inferred from directory boundaries",
+    "453 verified import relationship(s) analyzed",
+    "JavaScript indexed source graph",
+    "TypeScript indexed source graph",
+    "package.json declares typescript"
+  ],
+  "config": {
+    "version": 1,
+    "layers": [
+      {
+        "name": "testing",
+        "patterns": [
+          "test/**"
+        ]
+      },
+      {
+        "name": "public",
+        "patterns": [
+          "public/**"
+        ]
+      },
+      {
+        "name": "scripts",
+        "patterns": [
+          "scripts/**"
+        ]
+      },
+      {
+        "name": "src",
+        "patterns": [
+          "src/**"
+        ]
+      }
+    ],
+    "allowedDependencies": {
+      "testing": [
+        "public",
+        "scripts",
+        "src"
+      ],
+      "public": [],
+      "scripts": [],
+      "src": []
+    },
+    "intent": {
+      "testing": "Automated verification code.",
+      "public": "Project module rooted at public/**.",
+      "scripts": "Project module rooted at scripts/**.",
+      "src": "Project module rooted at src/**."
+    }
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "version": "1.12.7",
+  "repository": "https://github.com/alibaba/open-code-review",
+  "commit": "85cecfe5f935da2b2aae8f91ce4fee8ed343a681",
+  "sourceSha256": "ff4e4ff4aeceb7332aef7f8d222ea51646c002e820e09a60db1ec108085181b4",
+  "assets": {
+    "darwin-x64": {
+      "name": "opencodereview-darwin-amd64",
+      "url": "https://github.com/alibaba/open-code-review/releases/download/v1.12.7/opencodereview-darwin-amd64",
+      "sha256": "5566e4897bc10bb9d7d147ac8665fe5e8f273f590b6906e9888b4f6b22bbc83b"
+    },
+    "darwin-arm64": {
+      "name": "opencodereview-darwin-arm64",
+      "url": "https://github.com/alibaba/open-code-review/releases/download/v1.12.7/opencodereview-darwin-arm64",
+      "sha256": "d98177ade9b3ecbd0c8a48c7fe42da821bc6c8228b0ac6c8f7c811b3d297d8d6"
+    },
+    "linux-x64": {
+      "name": "opencodereview-linux-amd64",
+      "url": "https://github.com/alibaba/open-code-review/releases/download/v1.12.7/opencodereview-linux-amd64",
+      "sha256": "56649575421b8ca3be3cfaededc0a9037ae7cc9ae560f167bf504bfb4054451a"
+    },
+    "linux-arm64": {
+      "name": "opencodereview-linux-arm64",
+      "url": "https://github.com/alibaba/open-code-review/releases/download/v1.12.7/opencodereview-linux-arm64",
+      "sha256": "32c8f89453358104833df47f500132a43e2a0f7983286131d8ff8c01e81f9dd1"
+    },
+    "win32-x64": {
+      "name": "opencodereview-windows-amd64.exe",
+      "url": "https://github.com/alibaba/open-code-review/releases/download/v1.12.7/opencodereview-windows-amd64.exe",
+      "sha256": "7c40f72363c66bd49aa16ddde48ddb458eed6d8492c3a0c35a94d6a9bac1bb64"
+    },
+    "win32-arm64": {
+      "name": "opencodereview-windows-arm64.exe",
+      "url": "https://github.com/alibaba/open-code-review/releases/download/v1.12.7/opencodereview-windows-arm64.exe",
+      "sha256": "57093a65434b64519dad7f5fda4a9ae0193040f644a86421a338cd19bc429ad7"
+    }
+  }
+}

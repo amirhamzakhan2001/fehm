@@ -1,0 +1,12 @@
+{
+  "repository": "https://github.com/DeusData/codebase-memory-mcp",
+  "commit": "92abefa3f57a94591a92bcecd6a6f102da373575",
+  "license": "MIT",
+  "files": [
+    {
+      "path": "src/store/store.c",
+      "sha256": "b11ac645f6632ba1ef0a2c3a8bbe1c95f13669bd14964f02b5f2f9891dfa244c"
+    }
+  ],
+  "snapshotDirectory": "vendor"
+}
