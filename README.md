@@ -269,7 +269,7 @@ npm --prefix website run dev
 npm --prefix website run check
 ```
 
-Preview at **http://127.0.0.1:4321**. The site includes capability groups, assistant setup and thirteen documentation guides. Production indexing requires a configured public URL; Google Analytics is optional and consent-based. Hosting and live analytics require deployment configuration. See the [website plan](website/PLAN.md).
+Preview at **http://127.0.0.1:4321**. The site includes capability groups, assistant setup and thirteen documentation guides. Production indexing requires a configured public URL; Google Analytics is optional and consent-based. Hosting and live analytics require deployment configuration. See the [website setup guide](website/README.md).
 
 ## Contributors and acknowledgments
 
@@ -293,7 +293,7 @@ To contribute, open an issue describing the problem, make a focused change with 
 
 ## Security and badge status
 
-The CI badge reads the actual GitHub workflow, which includes engine tests, website checks, platform wheel smoke tests and a container build. Release and download badges currently state that no release or downloadable release assets are published. After the first release, maintainers can switch to the live GitHub release and asset-download badges described in [repository publishing metadata](docs/GITHUB_PUBLISHING.md). Remote CI and pull-request badges require a publicly accessible repository; they do not represent locally run checks.
+The CI badge reads the actual GitHub workflow, which includes engine tests, website checks, platform wheel smoke tests and a container build. Release and download badges currently state that no release or downloadable release assets are published. After the first release, update the availability table and replace the unpublished badges with live GitHub release and asset-download badges. Remote CI and pull-request badges require a publicly accessible repository; they do not represent locally run checks.
 
 SLSA and OpenSSF are marked **not assessed**. This repository does not currently establish a SLSA level, publish build-provenance attestations, or include an OpenSSF Best Practices registration or Scorecard result. These labels are status disclosures, not certification badges. See [SLSA](https://slsa.dev/), [OpenSSF Best Practices](https://www.bestpractices.dev/en) and the [security policy](SECURITY.md).
 
