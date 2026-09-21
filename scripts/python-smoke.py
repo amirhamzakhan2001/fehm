@@ -45,7 +45,13 @@ def main():
         assert "1.12.7" in run("review", "engine-version")
         run("scan", ".")
         graph = json.loads((repo / ".fehm/graph.json").read_text())
-        assert graph["repository"]["root"] == str(repo.resolve())
+        # Windows short names (RUNNER~1), casing and symlink resolution can
+        # differ between Node and Python while naming the same directory.
+        indexed_root = Path(graph["repository"]["root"])
+        assert indexed_root.is_absolute(), f"Graph root is not absolute: {indexed_root}"
+        assert indexed_root.samefile(repo), (
+            f"Graph indexed the wrong directory: {indexed_root}; expected {repo.resolve()}"
+        )
         assert "authenticate" in run("query", "authenticate")
         run("practices", "audit", "--json")
         for platform in ["claude", "cursor", "codex", "gemini", "copilot", "vscode", "generic"]:

@@ -6,7 +6,6 @@ import type {
   ArchitectureConfig,
   ArchitectureViolation,
   CodeGraph,
-  GraphEdge,
   SecurityFinding,
   SecuritySeverity,
   VerificationCommandResult,

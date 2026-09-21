@@ -4,7 +4,7 @@ Fehm is a local CLI with an optional browser cockpit. The primary end-user distr
 
 Developers still use npm to build and test the TypeScript engine. There is no Python rewrite and no npm install on first launch. Git and the target project's own toolchain remain necessary for Git operations and commands that build/test that project.
 
-**Publication status:** these instructions do not imply a public release exists. PyPI returned 404 for `fehm` on 20 September 2026; this does not reserve the name. Until the owner publishes it, use the locally built wheel or a reviewed wheel supplied by the developer. The initial website is implemented in `website/` with a separate static build; hosting and public launch are pending. See [WEBSITE_PLAN.md](WEBSITE_PLAN.md).
+**Publication status:** these instructions do not imply a public release exists. PyPI returned 404 for `fehm` on 20 September 2026; this does not reserve the name. Until the owner publishes it, use the locally built wheel or a reviewed wheel supplied by the developer. The initial website is implemented in `website/` with a separate static build; the website uses Cloudflare Pages at `https://fehm.pages.dev`. See [website setup](../website/README.md).
 
 ## Part 1 — Developer: build, test, and publish
 
