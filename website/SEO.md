@@ -18,7 +18,7 @@
 | LLM index | Generated llms.txt links to on-site documentation; llm.txt is an alias. This is supplemental documentation, not a Google indexing requirement. |
 | JavaScript | Two first-party files total 4,688 bytes uncompressed; regression budget 15 KB. Optional Google Analytics is separate and loads only with consent. |
 | Source maps | No generated .map files or sourceMappingURL references in shipped JavaScript. |
-| Browser console | Syntax checks and simulated DOM interaction checks pass. A real-browser console/network audit remains to be done; no browser session is available in this environment. |
+| Browser console | Syntax checks and simulated DOM interaction checks pass. A local headless Chromium audit visited all 27 content routes at 320, 390, 768 and 1024px: no uncaught JavaScript exceptions after the responsive fix. Production network/analytics checks remain pending. |
 
 ## Page targeting
 
@@ -50,27 +50,33 @@ Keep each guide focused on its own task. Prefer concrete instructions and source
 7. Check an unknown URL returns HTTP 404; test mobile navigation, copy buttons, reduced motion and the browser console. Check optional analytics requests only after consent.
 8. Monitor indexing, queries, clicks and Core Web Vitals after traffic becomes available. Review title/description relevance using actual query data. Indexing and positions are decided by search engines.
 
-The intended domain is `fehm.com` on Cloudflare Pages; ownership and connection have not been verified. Search Console ownership, sitemap submission, production hosting and real-browser qualification have not been performed. The default build remains a safe local preview.
+The selected production address is `https://fehm.pages.dev`; the live deployment has not been verified here. Search Console ownership, sitemap submission, production hosting and full cross-browser qualification have not been performed. The default build remains a safe local preview.
 
 References: [Google SEO starter guide](https://developers.google.com/search/docs/fundamentals/seo-starter-guide), [sitemap submission](https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap), [llms.txt proposal](https://llmstxt.org/).
 
-## Planned Cloudflare Pages deployment
+## Cloudflare Pages production setup
 
-Use these settings after confirming you control `fehm.com`:
+The chosen public origin is `https://fehm.pages.dev`. Confirm that this is the project’s assigned production URL, not a branch preview. No custom domain, DNS changes or registrar purchase is required.
 
 | Setting | Value |
 | --- | --- |
-| Repository | The same Fehm repository |
-| Root directory | Repository root |
+| Root directory | Repository root (leave empty in dashboard) |
 | Build command | `npm --prefix website run build` |
 | Output directory | `website/dist` |
-| Node version | `24` |
-| Production SITE_URL | `https://fehm.com` |
-| Production SITE_INDEXABLE | `true`, once the custom domain is ready |
+| NODE_VERSION | `24` |
+| SKIP_DEPENDENCY_INSTALL | `true` for production and preview |
+| Production SITE_URL | `https://fehm.pages.dev` |
+| Production SITE_INDEXABLE | `true` |
 | Preview SITE_INDEXABLE | `false` |
 
-Keeping the build root at the repository root lets the builder read the product version from the root package.json. Add `fehm.com` through Pages → Custom domains. An apex domain requires a Cloudflare zone and Cloudflare nameservers. Redirect the production pages.dev address and any www alias to the canonical domain, preserving paths. Check Cloudflare bot/WAF settings separately: generated robots.txt cannot override an edge-level crawler block.
+Skipping automatic dependency installation prevents Cloudflare from running `pip install .` on the engine package. The website has no third-party build dependencies. Set the production branch to the branch containing the current website changes. Keep preview deployments unindexed. Redeploy after changing build variables.
 
-Use DNS verification for a Search Console Domain property, then submit `https://fehm.com/sitemap.xml`. No account, DNS, deployment or Search Console changes have been made here.
+In Search Console, add a **URL-prefix** property for `https://fehm.pages.dev/` and choose HTML tag verification. Set `GOOGLE_SITE_VERIFICATION` to only the supplied tag’s `content` value, rebuild, then verify. Keep the token configured after verification. Submit `https://fehm.pages.dev/sitemap.xml`. DNS verification of a Domain property is not appropriate because you do not control pages.dev DNS.
 
-Cloudflare references: [static HTML hosting](https://developers.cloudflare.com/pages/framework-guides/deploy-anything/), [custom domains and redirects](https://developers.cloudflare.com/pages/configuration/custom-domains/).
+Optional analytics uses `GA_MEASUREMENT_ID` for your actual web stream. The existing consent flow controls loading. No verification, account or deployment changes are performed by local documentation edits.
+
+References: [Search Console property types](https://support.google.com/webmasters/answer/34592), [Cloudflare preview indexing](https://developers.cloudflare.com/pages/configuration/preview-deployments/).
+
+## Responsive layout verification
+
+Local Chromium reproduced overflow on documentation and assistant guides caused by the sidebar’s intrinsic minimum width. Grid children now use `min-width: 0`; mobile columns use `minmax(0, 1fr)`. Integration overview columns and the FAQ stack on phones. Narrow-screen padding and wrapping were adjusted without hiding page overflow. All 108 content-route/viewport combinations passed document-width checks, and the 390px installation guide screenshot was visually inspected. Sidebar navigation and code examples retain intentional internal horizontal scrolling. Safari, Firefox and physical-device testing remain separate.
