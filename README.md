@@ -8,8 +8,8 @@
   <a href="https://github.com/amirhamzakhan2001/fehm/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/amirhamzakhan2001/fehm/ci.yml?branch=main&amp;style=flat-square&amp;label=CI%20%26%20tests" alt="CI and tests"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-22977a?style=flat-square" alt="License: MIT"></a>
   <a href="https://github.com/amirhamzakhan2001/fehm/pulls"><img src="https://img.shields.io/github/issues-pr/amirhamzakhan2001/fehm?style=flat-square&amp;label=pull%20requests" alt="Open pull requests"></a>
-  <a href="https://github.com/amirhamzakhan2001/fehm/releases"><img src="https://img.shields.io/github/v/release/amirhamzakhan2001/fehm?style=flat-square" alt="Latest GitHub release"></a>
-  <a href="https://github.com/amirhamzakhan2001/fehm/releases"><img src="https://img.shields.io/github/downloads/amirhamzakhan2001/fehm/total?style=flat-square&amp;label=release%20downloads" alt="GitHub release asset downloads"></a>
+  <a href="https://github.com/amirhamzakhan2001/fehm/releases"><img src="https://img.shields.io/badge/release-not%20published-64748b?style=flat-square" alt="Release: not published"></a>
+  <a href="https://github.com/amirhamzakhan2001/fehm/releases"><img src="https://img.shields.io/badge/release%20downloads-not%20available-64748b?style=flat-square" alt="Release downloads: not available"></a>
 </p>
 <p align="center">
   <a href="src/"><img src="https://img.shields.io/badge/engine-TypeScript-3178c6?style=flat-square&amp;logo=typescript&amp;logoColor=white" alt="TypeScript engine"></a>
@@ -26,6 +26,8 @@ Source scanning and ordinary graph queries run locally. Model-based features use
 
 ## Contents
 
+- [About](#about)
+- [Releases and packages](#releases-and-packages)
 - [Capabilities](#capabilities)
 - [Get started](#get-started)
 - [Connect your assistant](#connect-your-assistant)
@@ -33,10 +35,54 @@ Source scanning and ordinary graph queries run locally. Model-based features use
 - [Open-source foundations](#open-source-foundations)
 - [Scope and limits](#scope-and-limits)
 - [Build and contribute](#build-and-contribute)
+- [Contributors and acknowledgments](#contributors-and-acknowledgments)
+- [Resources](#resources)
 - [Security and badge status](#security-and-badge-status)
 - [Brand assets](#brand-assets)
 - [Documentation](#documentation)
 - [License](#license)
+
+## About
+
+Local codebase intelligence for AI coding assistants: source graphs, focused context, architecture drift and evidence-linked code review.
+
+Fehm is built for developers understanding unfamiliar repositories, teams reviewing changes and AI assistants that need source-backed context. One repository graph supports terminal exploration, assistant tools and a private browser workspace.
+
+### How it works
+
+```mermaid
+flowchart LR
+    A[Repository source] --> B[Local graph with evidence]
+    B --> C[Budgeted context]
+    B --> D[Architecture and practice checks]
+    B --> E[Change impact]
+    C --> F[CLI · MCP · cockpit]
+    D --> F
+    E --> F
+    C -. Explicit provider opt-in .-> G[Open Code Review]
+```
+
+## Releases and packages
+
+The source version is **1.4.0**. A source version is not a published release.
+
+| Distribution | Current availability | Where to find it |
+| --- | --- | --- |
+| GitHub Releases | No releases published | [Releases](https://github.com/amirhamzakhan2001/fehm/releases) |
+| Release downloads | No release assets available yet | Build a wheel using the [developer guide](docs/DEPLOYMENT.md) |
+| GitHub Packages | No packages published | [Packages](https://github.com/users/amirhamzakhan2001/packages?repo_name=fehm) |
+| Python distribution | Local or maintainer-supplied wheels; public PyPI publication pending | [Install with uv](#get-started) |
+
+<details>
+<summary>Maintainer publishing links</summary>
+
+- [Create a new release](https://github.com/amirhamzakhan2001/fehm/releases/new)
+- [Publish your first GitHub package](https://github.com/amirhamzakhan2001/fehm/packages)
+- [Release and deployment instructions](docs/DEPLOYMENT.md)
+
+GitHub Releases, GitHub Packages and PyPI are separate distribution channels. Fehm’s uv installation workflow uses Python wheels; publishing a GitHub package alone does not make `uv tool install fehm` available. Before publication, run the release checks and validate each wheel on its target platform.
+
+</details>
 
 ## Capabilities
 
@@ -225,9 +271,29 @@ npm --prefix website run check
 
 Preview at **http://127.0.0.1:4321**. The site includes capability groups, assistant setup and thirteen documentation guides. Production indexing requires a configured public URL; Google Analytics is optional and consent-based. Hosting and live analytics require deployment configuration. See the [website plan](website/PLAN.md).
 
+## Contributors and acknowledgments
+
+- **[Amir Hamza Khan](https://github.com/amirhamzakhan2001)** — project maintainer.
+- **Claude and OpenAI Codex** — AI development assistance. These are tool acknowledgments, not human maintainers or endorsements by their providers.
+- **Open-source authors and contributors** — the projects credited in [Open-source foundations](#open-source-foundations), with original notices retained in `third_party/`.
+
+Human contributors remain responsible for reviewing changes and their test evidence. GitHub’s contributor list is generated from commit authorship; README credits do not modify that list.
+
+To contribute, open an issue describing the problem, make a focused change with relevant tests and documentation, then submit a pull request. For security reports, follow [SECURITY.md](SECURITY.md).
+
+## Resources
+
+- [Documentation](#documentation) and [quick setup](#get-started)
+- [Report a bug or request a feature](https://github.com/amirhamzakhan2001/fehm/issues)
+- [Review pull requests](https://github.com/amirhamzakhan2001/fehm/pulls)
+- [CI and test runs](https://github.com/amirhamzakhan2001/fehm/actions/workflows/ci.yml)
+- [Releases](https://github.com/amirhamzakhan2001/fehm/releases) and [Packages](https://github.com/users/amirhamzakhan2001/packages?repo_name=fehm)
+- [Roadmap](docs/ROADMAP.md), [security policy](SECURITY.md) and [license](LICENSE)
+- [Logo and brand assets](assets/brand/README.md)
+
 ## Security and badge status
 
-The CI badge reads the actual GitHub workflow, which includes engine tests, website checks, platform wheel smoke tests and a container build. Release and download badges use GitHub release data; downloads count release assets, not PyPI installations. Remote badges may show unavailable until this repository, its workflow runs and releases are public.
+The CI badge reads the actual GitHub workflow, which includes engine tests, website checks, platform wheel smoke tests and a container build. Release and download badges currently state that no release or downloadable release assets are published. After the first release, maintainers can switch to the live GitHub release and asset-download badges described in [repository publishing metadata](docs/GITHUB_PUBLISHING.md). Remote CI and pull-request badges require a publicly accessible repository; they do not represent locally run checks.
 
 SLSA and OpenSSF are marked **not assessed**. This repository does not currently establish a SLSA level, publish build-provenance attestations, or include an OpenSSF Best Practices registration or Scorecard result. These labels are status disclosures, not certification badges. See [SLSA](https://slsa.dev/), [OpenSSF Best Practices](https://www.bestpractices.dev/en) and the [security policy](SECURITY.md).
 
