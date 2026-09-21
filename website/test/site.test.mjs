@@ -18,6 +18,7 @@ test('production configuration prevents accidental preview indexing and invalid 
 test('all static pages have meaningful SEO, resolvable local links and current release instructions',async()=>{
   const {content,output,config}=await build({});
   const titles=new Set();
+  const descriptions=new Set();
   for(const page of content) {
     const file=path.join(output,page.path==='/404.html'?'404.html':page.path.slice(1)+'index.html');
     const html=await readFile(file,'utf8');
@@ -25,6 +26,16 @@ test('all static pages have meaningful SEO, resolvable local links and current r
     const title=html.match(/<title>(.*?)<\/title>/)[1];
     assert.ok(!titles.has(title),`Duplicate title: ${title}`); titles.add(title);
     assert.match(html,/<meta name="robots" content="noindex, nofollow">/);
+    assert.match(html,/<html lang="en">/);
+    assert.doesNotMatch(html, /Vite \+ React|sourceMappingURL/);
+    const description=html.match(/<meta name="description" content="([^"]+)"/)[1];
+    assert.ok(description.length > 35, page.path);
+    assert.ok(!descriptions.has(description), `Duplicate description: ${page.path}`);
+    descriptions.add(description);
+    for (const [img] of html.matchAll(/<img\b[^>]*>/g)) assert.match(img, /\balt="[^"]*"/);
+    assert.match(html, /property="og:image" content="http[^"]+"/);
+    assert.equal((html.match(/rel="canonical"/g)||[]).length,1);
+    JSON.parse(html.match(/<script type="application\/ld\+json">(.*?)<\/script>/s)[1]);
     assert.match(html,/rel="canonical"/);
     assert.match(html,/application\/ld\+json/);
     assert.match(html,/class="site-art" aria-hidden="true"/);
@@ -63,11 +74,20 @@ test('all static pages have meaningful SEO, resolvable local links and current r
     await new Promise(resolve=>server.close(resolve));
   }
   try {
-    await build({SITE_URL:'https://example.com',SITE_INDEXABLE:'true',GA_MEASUREMENT_ID:'G-TEST1234'});
+    await build({SITE_URL:'https://example.com',SITE_INDEXABLE:'true',GA_MEASUREMENT_ID:'G-TEST1234',GOOGLE_SITE_VERIFICATION:'test_verification_token'});
     const home=await readFile(path.join(output,'index.html'),'utf8');
     const missing=await readFile(path.join(output,'404.html'),'utf8');
     assert.match(home,/<link rel="canonical" href="https:\/\/example.com\/">/);
     assert.match(home,/<meta name="robots" content="index, follow">/);
+    assert.match(home,/name="google-site-verification" content="test_verification_token"/);
+    const robots=await readFile(path.join(output,'robots.txt'),'utf8');
+    assert.doesNotMatch(robots,/Disallow|GPTBot|ClaudeBot/);
+    const llms=await readFile(path.join(output,'llms.txt'),'utf8');
+    assert.match(llms,/https:\/\/example.com\/docs\/installation\//);
+    assert.equal(llms,await readFile(path.join(output,'llm.txt'),'utf8'));
+    let jsBytes=0;
+    for (const file of ['app.js','motion.js']) { const source=await readFile(path.join(output,file),'utf8'); jsBytes+=Buffer.byteLength(source); assert.doesNotMatch(source,/sourceMappingURL/); }
+    assert.ok(jsBytes<15000, 'Keep first-party JavaScript below 15 KB uncompressed');
     assert.match(home,/<meta name="fehm-ga-id" content="G-TEST1234">/);
     assert.doesNotMatch(home,/<script[^>]+src="https:\/\/www.googletagmanager.com/);
     assert.match(missing,/<meta name="robots" content="noindex, nofollow">/);

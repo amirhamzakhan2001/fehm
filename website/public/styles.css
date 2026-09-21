@@ -41,3 +41,33 @@ body:has(button:hover) .art-orb-blue,body:has(input:focus-visible) .art-orb-blue
 @media(max-width:1120px){.docs-layout{grid-template-columns:180px minmax(0,1fr);gap:24px}.on-this-page{display:none}.page-intro{padding:38px}}
 @media(max-width:760px){.art-grid{background-size:42px 42px}.art-orbit{right:-480px;opacity:.6}.art-orb{width:110vw;height:110vw}.page-intro{margin:28px 0;padding:28px 24px;min-height:0;border-radius:13px}.page-intro h1{font-size:clamp(32px,8vw,44px)}.page-intro .lead{font-size:14px}.feature-detail,.setup-flow section,.prose,.status-section,.two-column.section{padding:24px;margin:18px 0;border-radius:12px}.feature-detail{grid-template-columns:1fr;gap:10px}.feature-detail h2{font-size:26px}.docs-layout{grid-template-columns:1fr;gap:20px}.docs-sidebar{padding:16px}.docs-sidebar nav{padding:5px 0 10px}.doc-article{padding:19px}.doc-article header{padding:23px 19px}.doc-article header h1{font-size:29px;overflow-wrap:anywhere}.docs-search{gap:12px;padding:10px 12px}.docs-search input{min-width:0}.two-column.section{gap:25px}.integration-card{padding:24px}.closing{margin-top:24px}.prose{overflow-wrap:anywhere}}
 @media(prefers-reduced-motion:reduce){.site-art *{transition:none!important;transform:none!important}}
+
+/* Grid children must shrink independently of unbroken navigation and code. */
+.docs-layout > *, .feature-detail > *, .two-column > *, .integration-card > * {
+  min-width: 0;
+}
+.doc-article, .feature-detail, .two-column, .integration-card {
+  overflow-wrap: anywhere;
+}
+.assistant-mark, .link-arrow { flex-shrink: 0; }
+.docs-sidebar nav { max-width: 100%; }
+@media (max-width: 760px) {
+  .docs-layout, .feature-detail, .two-column, .faq {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .docs-sidebar nav a { flex-shrink: 0; }
+  .doc-article { padding: 18px; }
+  .doc-article header { padding: 22px 18px; }
+  .doc-article header h1 { font-size: clamp(25px, 6vw, 32px); }
+  .two-column { gap: 28px; }
+  .code-block, .next-links { min-width: 0; max-width: 100%; }
+  .copy { min-height: 32px; min-width: 44px; }
+  .copy:before { top: 11px; }
+}
+@media (max-width: 420px) {
+  .shell, .reading-shell { padding-left: 16px; padding-right: 16px; }
+  .feature-detail, .setup-flow section, .prose, .two-column.section { padding: 20px; }
+  .doc-article { padding: 14px; }
+  .doc-article header { padding: 20px 16px; }
+  .integration-card { gap: 12px; padding: 20px; }
+}

@@ -11,7 +11,7 @@ cd website
 npm run dev
 ```
 
-Open http://126.0.0.1:4321. Edit files, rerun the build, and refresh; the initial server does not implement hot reload.
+Open http://127.0.0.1:4321. Edit files, rerun the build, and refresh; the initial server does not implement hot reload.
 
 ```bash
 npm run check
@@ -40,3 +40,7 @@ The site has 28 generated pages, including thirteen native documentation guides,
 All routes share the same grid artwork, blue introduction panels, color palette, and card styling. Subtle hover/focus responses respect reduced motion. Beta labels are removed without changing package availability claims.
 
 Homepage copy is in `src/home.mjs`; other product copy is in `src/content.mjs`; detailed documentation is in `src/guides.mjs`. Update these alongside core command changes. Fonts, styles, graphics, and interaction scripts are in `public/`. Automated interaction tests use a simulated DOM; a real browser review is still required before deployment.
+
+## Search and indexing
+
+See [SEO audit and Search Console setup](SEO.md) for page targeting, production verification and crawler checks. Optional `GOOGLE_SITE_VERIFICATION` adds your Search Console HTML verification token. The build also generates `/llms.txt` and its `/llm.txt` alias.
