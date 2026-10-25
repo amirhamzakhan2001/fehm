@@ -3,7 +3,7 @@ import type { RetrievalHit } from "./model.js";
 /*
  * ── Upstream adaptation ───────────────────────────────────────────────────
  * Upstream: trailhq/Graft @ 8c05769618d413041ea2c8891f82d566f0461b3c
- * File:     src/ask/file-selection.ts (MIT, see legal/upstream/graft)
+ * File:     src/ask/file-selection.ts (MIT; attribution in THIRD_PARTY_NOTICES.md)
  * Copied:   FileFirstCandidate, fileFirstRoundRobin — algorithm unchanged.
  * Changed:  `queue[depth]` → `queue[depth]!` for Fehm's noUncheckedIndexedAccess.
  * Omitted:  roundRobinQueues (unused), and all of Graft's CLI, hooks, daemon,

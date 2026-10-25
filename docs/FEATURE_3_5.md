@@ -298,7 +298,7 @@ fehm health --fail-on critical|high|medium|new         # CI gate; new = not in t
   - Its weighted "test quality score" does not carry over: it was an invented number.
 - **No overall number.** The spec's mock-up shows "78 HEALTHY". Following its own rule 3.5.3, the overall indicator is a status derived from the dimensions, and only measured dimensions show numbers. The same goes for a debt percentage: Skylos' `score_pct` is not reproduced; hotspots and points are.
 - **Confidence** uses Fehm's vocabulary instead of percentages (as 3.3 and 3.4).
-- **Skylos integration** is the spec's option C (hybrid): its rules and thresholds re-implemented in TypeScript on Fehm's graph, with attribution. Nothing runs Python. See `legal/upstream/skylos/`.
+- **Skylos integration** is the spec's option C (hybrid): its rules and thresholds re-implemented in TypeScript on Fehm's graph, with attribution. Nothing runs Python. See `THIRD_PARTY_NOTICES.md`.
 - **Deferred:**
   - mutation testing;
   - test duplication detection;

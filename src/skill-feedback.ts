@@ -45,7 +45,7 @@ export function recordSkillFeedback(
 /*
  * ── Upstream adaptation ───────────────────────────────────────────────────
  * Upstream: rohitg00/agentmemory @ bcf4f0d00d1c71e9221287a4778e4122ce2d7574
- * File:     src/functions/lessons.ts (Apache-2.0, see legal/upstream/agentmemory)
+ * File:     src/functions/lessons.ts (Apache-2.0; attribution in THIRD_PARTY_NOTICES.md)
  * Kept:     reinforceLesson's bounded update `c + 0.1·(1 − c)` and the
  *           lesson-search recency boost `1 / (1 + days·0.01)`.
  * Changed:  - a "lesson" is a (similar task → skill) association built on the

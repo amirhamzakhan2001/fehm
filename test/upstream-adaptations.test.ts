@@ -1,7 +1,4 @@
 import assert from "node:assert/strict";
-import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import { test } from "node:test";
 import { diversifyHits, fileFirstRoundRobin } from "../src/context-selection.js";
 import { LexicalIndex } from "../src/lexical-index.js";
@@ -10,38 +7,6 @@ import type { MemoryEntry, RetrievalHit } from "../src/model.js";
 import { stem } from "../src/stemmer.js";
 import { getSynonyms } from "../src/synonyms.js";
 import { camelShouldSplit, splitIdentifier } from "../src/text.js";
-import { REPO_ROOT } from "./helpers.js";
-
-// ── Provenance: vendored snapshots match their pinned manifests ────────────
-
-for (const project of ["graft", "codebase-memory", "agentmemory", "ecc"]) {
-  test(`legal/upstream/${project}: manifest hashes match vendored upstream files`, () => {
-    const dir = join(REPO_ROOT, "legal", "upstream", project);
-    const manifest = JSON.parse(readFileSync(join(dir, "manifest.json"), "utf8")) as {
-      repository: string;
-      commit: string;
-      license: string;
-      files: { path: string; sha256: string }[];
-    };
-    assert.match(manifest.commit, /^[0-9a-f]{40}$/);
-    assert.ok(readFileSync(join(dir, "LICENSE"), "utf8").length > 100);
-    for (const file of manifest.files) {
-      const content = readFileSync(join(dir, "vendor", file.path));
-      assert.equal(createHash("sha256").update(content).digest("hex"), file.sha256, file.path);
-    }
-  });
-}
-
-test("legal/upstream/skylos: manifest hashes match vendored upstream files (pinned by version)", () => {
-  const dir = join(REPO_ROOT, "legal", "upstream", "skylos");
-  const manifest = JSON.parse(readFileSync(join(dir, "manifest.json"), "utf8")) as { version: string; license: string; files: { path: string; sha256: string }[] };
-  assert.match(manifest.version, /^\d+\.\d+\.\d+$/);
-  assert.equal(manifest.license, "Apache-2.0");
-  assert.match(readFileSync(join(dir, "LICENSE"), "utf8"), /Apache License/);
-  assert.ok(manifest.files.length > 0);
-  for (const file of manifest.files) assert.equal(createHash("sha256").update(readFileSync(join(dir, "vendor", file.path))).digest("hex"), file.sha256, file.path);
-});
-
 // ── Graft: fileFirstRoundRobin (upstream test/ask-file-selection.test.ts) ──
 
 test("graft upstream: leaders before sibling spans, file order preserved, bounded prefix", () => {

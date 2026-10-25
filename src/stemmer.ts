@@ -2,7 +2,7 @@
  * Porter-style English stemmer.
  *
  * Upstream: rohitg00/agentmemory @ bcf4f0d00d1c71e9221287a4778e4122ce2d7574
- * File:     src/state/stemmer.ts  (Apache-2.0, see legal/upstream/agentmemory)
+ * File:     src/state/stemmer.ts  (Apache-2.0; attribution in THIRD_PARTY_NOTICES.md)
  * Changes:  none to the algorithm; this header added and three `!` non-null
  *           assertions for Fehm's `noUncheckedIndexedAccess` compiler setting.
  */

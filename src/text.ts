@@ -4,7 +4,7 @@ import { stem } from "./stemmer.js";
  * Identifier boundary rule.
  *
  * Upstream: DeusData/codebase-memory-mcp @ 92abefa3f57a94591a92bcecd6a6f102da373575
- * File:     src/store/store.c — camel_should_split() (MIT, see legal/upstream/codebase-memory)
+ * File:     src/store/store.c — camel_should_split() (MIT; attribution in THIRD_PARTY_NOTICES.md)
  * Changes:  C → TypeScript; takes a JS string instead of a NUL-terminated buffer
  *           (out-of-range `next` reads as "" instead of '\0'). Rules unchanged:
  *   1. split before an uppercase letter preceded by a lowercase letter

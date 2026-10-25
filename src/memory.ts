@@ -50,7 +50,7 @@ export function removeMemory(root: string, id: string, dir?: string): boolean {
 /*
  * ── Upstream adaptation ───────────────────────────────────────────────────
  * Upstream: affaan-m/ECC @ 9ac593b55cba44c8b20152a5c7f28d300a67ec7e
- * File:     scripts/lib/instinct-relevance.js (MIT, see legal/upstream/ecc)
+ * File:     scripts/lib/instinct-relevance.js (MIT; attribution in THIRD_PARTY_NOTICES.md)
  * Kept:     DEFAULT_PROJECT_SCOPE_BOOST 0.25, DEFAULT_STACK_MATCH_BOOST 0.2,
  *           whole-token `tokenize` (avoids `go` matching `good`),
  *           computeRelevanceBoost's additive structure.

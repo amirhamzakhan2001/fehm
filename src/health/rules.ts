@@ -4,7 +4,7 @@ import type { DimensionId } from "./types.js";
 /**
  * Feature 3.5's rule catalog. Each rule names the dimension it counts toward
  * and, when it was adapted from Skylos (Apache-2.0, see
- * legal/upstream/skylos), the Skylos rule id it corresponds to. The Skylos
+ * THIRD_PARTY_NOTICES.md), the Skylos rule id it corresponds to. The Skylos
  * checks were re-implemented in TypeScript over Fehm's code graph; no Python
  * runs.
  */

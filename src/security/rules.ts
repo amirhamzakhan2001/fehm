@@ -5,7 +5,7 @@ import type { SecurityDomain, SecurityFinding, Trace } from "./types.js";
  * Feature 3.6's rule catalog. Every rule names its domain, CWE and the
  * framework categories it provides evidence for (OWASP Top 10 2021, OWASP
  * API Security 2023, OWASP LLM Top 10 2025, OWASP Agentic 2026), and, when it
- * was adapted from Skylos (Apache-2.0, see legal/upstream/skylos), the Skylos
+ * was adapted from Skylos (Apache-2.0; see THIRD_PARTY_NOTICES.md), the Skylos
  * rule id. A mapping means "evidence relevant to this category", never
  * compliance.
  */

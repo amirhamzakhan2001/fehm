@@ -2,7 +2,7 @@
  * Deterministic synonym groups — Fehm's LLM-free "semantic" signal.
  *
  * Upstream: rohitg00/agentmemory @ bcf4f0d00d1c71e9221287a4778e4122ce2d7574
- * File:     src/state/synonyms.ts  (Apache-2.0, see legal/upstream/agentmemory)
+ * File:     src/state/synonyms.ts  (Apache-2.0; attribution in THIRD_PARTY_NOTICES.md)
  * Changes:  import path; added FEHM_SYNONYM_GROUPS (code-domain groups, marked
  *           below) which are registered by the same loop as the upstream groups.
  */

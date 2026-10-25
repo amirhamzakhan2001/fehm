@@ -131,7 +131,7 @@ The catalog in `skills/` (1 018 skills) was assembled before this feature from l
 | AgentMemory (rohitg00/agentmemory @ bcf4f0d) | — | Apache-2.0 | `lessons.ts` reinforcement + recency (vendored, hash-verified) | server, KV, vectors, hooks |
 | Codebase Memory (DeusData @ 92abefa) | — | MIT | Feature 1's identifier splitter, reused as is | AST engine, SQLite graph, MCP, daemon, UI |
 
-Upstream code adapted in this feature: only AgentMemory `src/functions/lessons.ts` (`legal/upstream/agentmemory/`). `src/integrations.ts` is Fehm's own earlier code restored from git.
+Upstream code adapted in this feature: only AgentMemory `src/functions/lessons.ts` (attribution in `THIRD_PARTY_NOTICES.md`). `src/integrations.ts` is Fehm's own earlier code restored from git.
 
 ## Evaluation (`npm run bench:skills` → `bench/skills-results.json`)
 

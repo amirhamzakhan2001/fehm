@@ -48,7 +48,7 @@ The supplied audit documents catalog work done before this repository detector;
 it is not claimed as FEHM integration validation.
 
 `exta_file` is no longer needed. Upstream licenses, manifests and pinned source
-snapshots have been preserved under `legal/upstream`; attribution references,
+attribution is recorded in `THIRD_PARTY_NOTICES.md`; attribution references,
 provenance tests and npm packaging use that location. FEHM's adapted algorithms
 already live in `src`. The original `third_party` directory can also be deleted.
 Both the canonical catalog and retained attribution records ship in the package.

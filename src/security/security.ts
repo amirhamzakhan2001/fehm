@@ -218,7 +218,7 @@ export function buildSecurityReport(options: SecurityOptions): SecurityReport {
       digest,
       inputs: [`${engine.fileHashes().size} indexed files (content hashes)`, `${SECURITY_RULES.length} rules, security v${SECURITY_VERSION}`, ...(deps.checkedAt ? [`OSV.dev advisories (${deps.checkedAt})`] : [])],
       excluded: ["files the Feature 1 scanner ignores (.gitignore, .fehmignore, node_modules, build output)", ...config.ignore.map((g) => `${g} (.fehm/health.json ignore)`)],
-      rulesDerivedFrom: "Skylos 4.x danger, secrets, CI/CD and defend rules (Apache-2.0), re-implemented in TypeScript; see legal/upstream/skylos",
+      rulesDerivedFrom: "Skylos 4.x danger, secrets, CI/CD and defend rules (Apache-2.0), re-implemented in TypeScript; see THIRD_PARTY_NOTICES.md",
     },
     ...(baseline ? { baseline } : {}),
     trend,

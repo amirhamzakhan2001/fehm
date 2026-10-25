@@ -235,7 +235,7 @@ export function buildHealthReport(options: HealthOptions): HealthReport {
     digest: digest(engine, skip, [configHash(config), ...cov.hashes, ...build.checks.map((c) => (c.last ? `${c.id}@${c.last.at}` : "")), deps.report.advisories.checkedAt ?? "", scope]),
     inputs: [`${indexed.size} indexed files (content hashes)`, configFile ? `${configFile} (${configHash(config)})` : "default configuration", ...(cov.report ? [`coverage artifact ${cov.report.artifacts[0]!.path}`] : []), ...(build.checks.some((c) => c.last) ? ["build check results"] : []), ...(deps.report.advisories.checkedAt ? [`OSV.dev advisories (${deps.report.advisories.checkedAt})`] : []), `health rules v${HEALTH_VERSION}`],
     excluded: ["files the Feature 1 scanner ignores (.gitignore, .fehmignore, node_modules, build output)", ...config.ignore.map((g) => `${g} (.fehm/health.json ignore)`)],
-    rulesDerivedFrom: "Skylos 4.x rule catalog (Apache-2.0), re-implemented in TypeScript; see legal/upstream/skylos",
+    rulesDerivedFrom: "Skylos 4.x rule catalog (Apache-2.0), re-implemented in TypeScript; see THIRD_PARTY_NOTICES.md",
   };
   const trendMetrics = trendPoint(report as HealthReport, summary, structural);
   const trend = writable ? recordTrend(state, { at: report.generatedAt, ...(git.commit ? { commit: git.commit } : {}), ...(git.dirty !== undefined ? { dirty: git.dirty } : {}), version: HEALTH_VERSION, metrics: trendMetrics, digest: provenance.digest }) : [{ at: report.generatedAt, version: HEALTH_VERSION, metrics: trendMetrics }];

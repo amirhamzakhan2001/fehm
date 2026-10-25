@@ -28,7 +28,7 @@ import type { SinkKind, SourceKind, Trace, TraceStep } from "./types.js";
  * function ranges (heuristic, labelled so).
  *
  * Sink kinds and sources follow Skylos' danger rules (SKY-D211/212/215/216/
- * 228/230/233/234/261/262); see legal/upstream/skylos.
+ * 228/230/233/234/261/262); see THIRD_PARTY_NOTICES.md.
  */
 
 export interface TaintFlow {

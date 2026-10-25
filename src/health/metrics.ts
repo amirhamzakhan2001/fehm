@@ -14,7 +14,7 @@ import type { FileAnalysisResult, FunctionMetrics, PatternHit, TestFileFacts } f
  * Python, Go, Java and Rust use line-level analysis over the function ranges
  * the Feature 1 analyzer already found (`heuristic`). The complexity rules
  * follow Skylos (SKY-Q301, Q306, Q302, C303, C304, Q305); see
- * legal/upstream/skylos.
+ * THIRD_PARTY_NOTICES.md.
  */
 
 const TS_LANGS = new Set<Language>(["typescript", "javascript"]);

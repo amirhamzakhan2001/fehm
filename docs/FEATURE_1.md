@@ -134,7 +134,7 @@ Symbols can be disambiguated as `name@path` or by node id; ambiguous names retur
 | rohitg00/agentmemory `src/state/{search-index,stemmer,synonyms}.ts` | `bcf4f0d00d1c71e9221287a4778e4122ce2d7574` | Apache-2.0 | `src/lexical-index.ts`, `src/stemmer.ts`, `src/synonyms.ts` | BM25 index, Porter stemmer, synonym groups |
 | affaan-m/ECC `scripts/lib/instinct-relevance.js` | `9ac593b55cba44c8b20152a5c7f28d300a67ec7e` | MIT | `src/memory.ts` | additive relevance boosts, whole-token matching |
 
-Originals are preserved byte-for-byte under `legal/upstream/<project>/vendor/` with `LICENSE`, `manifest.json` (hashes, verified by tests) and a README listing every modification. Caveman, Open Code Review, gstack and Agency Agents are not Feature 1 dependencies.
+Attribution for adapted upstream work is recorded in `THIRD_PARTY_NOTICES.md`. Caveman, Open Code Review, gstack and Agency Agents are not Feature 1 dependencies.
 
 ## Benchmarks
 

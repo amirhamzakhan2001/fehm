@@ -5,7 +5,7 @@ import { tokenize } from "./text.js";
  * BM25 inverted index with prefix and synonym expansion.
  *
  * Upstream: rohitg00/agentmemory @ bcf4f0d00d1c71e9221287a4778e4122ce2d7574
- * File:     src/state/search-index.ts — class SearchIndex (Apache-2.0, see legal/upstream/agentmemory)
+ * File:     src/state/search-index.ts — class SearchIndex (Apache-2.0; attribution in THIRD_PARTY_NOTICES.md)
  * Kept:     k1 = 1.2, b = 0.75, BM25 idf formula, prefix matches at half idf,
  *           synonym terms at weight 0.7, sorted-terms lower-bound prefix scan,
  *           add/remove bookkeeping.

@@ -107,7 +107,7 @@ test('context is a bounded projection with explicit tokenizer availability and a
 
 test('packaged assets and attribution no longer depend on removable input folders',()=>{
   const pkg=JSON.parse(readFileSync(join(REPO_ROOT,'package.json'),'utf8'));
-  assert.ok(pkg.files.includes('assets/ontology'));assert.ok(pkg.files.includes('legal/upstream'));assert.ok(!pkg.files.includes('third_party'));
+  assert.ok(pkg.files.includes('assets/ontology'));assert.ok(pkg.files.includes('THIRD_PARTY_NOTICES.md'));assert.ok(!pkg.files.includes('third_party'));
   assert.equal(createHash('sha256').update(readFileSync(ONTOLOGY_PATH)).digest('hex'),'c845161771f6656ec99b1faf5bbe3a96f4da4c8e057e4becb343dcaa9211de71');
   const result=JSON.parse(execFileSync(process.execPath,['--import','tsx','src/cli.ts','ontology','LSP','--dry-run','--json'],{cwd:REPO_ROOT,encoding:'utf8'}));assert.equal(result.ambiguous,true);
 });
