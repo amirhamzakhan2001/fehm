@@ -1,267 +1,272 @@
-import { createHash } from "node:crypto";
-import { readFile } from "node:fs/promises";
-import path from "node:path";
-import { maintainAdrDrafts, recordArchitectureSnapshot } from "./history-intelligence.js";
-import { analyzeTypeScript } from "./analyzer.js";
-import type { FehmConfig } from "./config.js";
-import { calculateStats } from "./graph.js";
-import { atomicWriteJson } from "./persistence.js";
+import { readFileSync } from "node:fs";
+import { join, posix } from "node:path";
+import { analyzeConfigFile, isConfigAnalyzable } from "./analyzer-config.js";
+import { analyzeHeuristicFile, HEURISTIC_LANGUAGES } from "./analyzer-heuristic.js";
+import { analyzeMarkdownFile } from "./analyzer-markdown.js";
+import { analyzeTypeScriptFiles } from "./analyzer-typescript.js";
+import { CodeGraph } from "./graph.js";
+import { directoryId, fileId, repositoryId } from "./ids.js";
+import { linkPending } from "./linker.js";
 import {
+  ANALYSIS_VERSION,
   GRAPH_SCHEMA_VERSION,
-  type CodeGraph,
-  type GraphEdge,
-  type GraphNode,
-  type IndexSynchronization,
-  type RepositoryChanges,
+  type FileAnalysis,
+  type ScanResult,
+  type ScannedFile,
+  type SerializedGraph,
+  type SyncReport,
 } from "./model.js";
-import { scanRepository } from "./scanner.js";
+import { readJson, stateDir, writeJsonAtomic } from "./persistence.js";
+import { diffScan, scanRepository, type ScanOptions } from "./scanner.js";
+import { staleSummaryNodes } from "./semantic-summary.js";
 
-interface CachedFileUnit {
+const TS_LANGUAGES = new Set(["typescript", "javascript"]);
+
+interface CachedFile {
   hash: string;
-  nodes: GraphNode[];
-  edges: GraphEdge[];
-  unresolvedCalls: number;
+  analysis: FileAnalysis;
 }
 
-interface AnalysisCache {
-  version: 2;
-  repositoryFingerprint: string;
-  units: Record<string, CachedFileUnit>;
+export interface IndexCache {
+  schemaVersion: string;
+  analysisVersion: string;
+  root: string;
+  files: Record<string, CachedFile>;
 }
 
-async function loadPreviousGraph(outputDirectory: string): Promise<CodeGraph | undefined> {
-  try {
-    return JSON.parse(await readFile(path.join(outputDirectory, "graph.json"), "utf8")) as CodeGraph;
-  } catch {
-    return undefined;
+export interface IndexOptions extends ScanOptions {
+  /** Ignore the cache and re-analyze everything. */
+  force?: boolean;
+  /** Override the `.fehm` state directory. */
+  stateDirectory?: string;
+  /** Do not write cache/graph to disk. */
+  dryRun?: boolean;
+}
+
+export interface IndexResult {
+  graph: CodeGraph;
+  scan: ScanResult;
+  report: SyncReport;
+  /** Current content hash per indexed file. */
+  hashes: Map<string, string>;
+}
+
+export const cachePath = (root: string, dir?: string): string => join(stateDir(root, dir), "index.json");
+export const graphPath = (root: string, dir?: string): string => join(stateDir(root, dir), "graph.json");
+
+/**
+ * Scan → diff against cache → (re)analyze only what changed plus dependents →
+ * link heuristic references → build graph → persist.
+ */
+export function indexRepository(root: string, options: IndexOptions = {}): IndexResult {
+  const started = performance.now();
+  const scan = scanRepository(root, options);
+  const hashes = new Map(scan.files.map((f) => [f.path, f.hash]));
+  const dir = options.stateDirectory;
+
+  let cache: IndexCache | undefined;
+  let reason: string | undefined;
+  if (options.force) reason = "forced";
+  else {
+    const read = readJson<IndexCache>(cachePath(scan.root, dir));
+    if (!read.ok) reason = read.reason === "missing" ? "no cache" : `cache unreadable (${read.detail}); rebuilt`;
+    else if (!isValidCache(read.value)) reason = "cache schema/analysis version changed or cache malformed; rebuilt";
+    else cache = read.value;
   }
-}
 
-async function loadAnalysisCache(outputDirectory: string): Promise<AnalysisCache | undefined> {
-  try {
-    const value = JSON.parse(await readFile(path.join(outputDirectory, "analysis-cache.json"), "utf8")) as AnalysisCache;
-    return value.version === 2 && value.units && typeof value.units === "object" ? value : undefined;
-  } catch {
-    return undefined;
-  }
-}
+  const previous = new Map(Object.entries(cache?.files ?? {}).map(([p, c]) => [p, c.hash]));
+  const changes = diffScan(previous, scan.files);
+  const changed = new Set([...changes.added, ...changes.modified]);
+  const removed = new Set(changes.deleted);
 
-function changesFor(current: Record<string, string>, previous: Record<string, string> = {}): RepositoryChanges {
-  const currentPaths = new Set(Object.keys(current));
-  const previousPaths = new Set(Object.keys(previous));
-  return {
-    added: [...currentPaths].filter((name) => !(name in previous)).sort(),
-    changed: [...currentPaths].filter((name) => name in previous && current[name] !== previous[name]).sort(),
-    removed: [...previousPaths].filter((name) => !currentPaths.has(name)).sort(),
-    unchanged: [...currentPaths].filter((name) => current[name] === previous[name]).sort(),
-  };
-}
-
-function fingerprintFor(fileHashes: Record<string, string>): string {
-  return createHash("sha256")
-    .update(Object.entries(fileHashes).sort().map(([name, hash]) => `${name}:${hash}`).join("\n"))
-    .digest("hex");
-}
-
-function nodePaths(graph: CodeGraph): Map<string, string> {
-  return new Map(graph.nodes.flatMap((node) => node.path ? [[node.id, node.path] as const] : []));
-}
-
-function affectedFiles(previous: CodeGraph | undefined, changes: RepositoryChanges): Set<string> {
-  const affected = new Set([...changes.added, ...changes.changed, ...changes.removed]);
-  if (!previous) return affected;
-  const paths = nodePaths(previous);
-  let expanded = true;
-  while (expanded) {
-    expanded = false;
-    for (const edge of previous.edges) {
-      if (!["imports", "calls", "references", "uses", "extends", "implements"].includes(edge.kind)) continue;
-      const targetPath = paths.get(edge.target);
-      const sourcePath = paths.get(edge.source);
-      if (!targetPath || !sourcePath || !affected.has(targetPath) || affected.has(sourcePath)) continue;
-      affected.add(sourcePath);
-      expanded = true;
+  // Unchanged TS/JS files whose resolved relationships point into changed or
+  // deleted files must be re-resolved by the type checker. Files with
+  // unresolved imports are retried when new files appear.
+  const invalidated = new Set<string>();
+  if (cache) {
+    for (const path of changes.unchanged) {
+      const cached = cache.files[path]!.analysis;
+      if (!TS_LANGUAGES.has(cached.language)) continue;
+      const touchesChange = cached.dependsOn.some((d) => changed.has(d) || removed.has(d));
+      const mayNowResolve = changes.added.length > 0 && cached.unresolved.some((u) => u.kind === "import");
+      if (touchesChange || mayNowResolve) invalidated.add(path);
     }
   }
-  return affected;
+
+  const toAnalyze = cache ? new Set([...changed, ...invalidated]) : new Set(scan.files.map((f) => f.path));
+  const analyses = new Map<string, FileAnalysis>();
+  for (const file of scan.files) {
+    if (!toAnalyze.has(file.path)) analyses.set(file.path, cache!.files[file.path]!.analysis);
+  }
+  for (const [path, analysis] of analyzeFiles(scan, toAnalyze)) analyses.set(path, analysis);
+
+  const graph = buildGraph(scan, analyses);
+
+  // Change accounting against the previous graph.
+  const prevGraph = cache ? readJson<SerializedGraph>(graphPath(scan.root, dir)) : undefined;
+  const prevSymbols = new Set<string>();
+  const prevEdges = new Set<string>();
+  if (cache) for (const c of Object.values(cache.files)) for (const n of c.analysis.nodes) if (n.kind !== "package") prevSymbols.add(n.id);
+  if (prevGraph?.ok) for (const e of prevGraph.value.edges ?? []) prevEdges.add(e.id);
+  const nextSymbols = new Set<string>();
+  for (const a of analyses.values()) for (const n of a.nodes) if (n.kind !== "package") nextSymbols.add(n.id);
+  const nextEdges = new Set(graph.edges().map((e) => e.id));
+
+  const mode: SyncReport["mode"] = !cache ? "full" : toAnalyze.size === 0 && removed.size === 0 ? "cache-hit" : "incremental";
+  const report: SyncReport = {
+    mode,
+    ...(reason ? { reason } : {}),
+    analyzedFiles: [...toAnalyze].filter((p) => !invalidated.has(p)).sort(),
+    reusedFiles: [...analyses.keys()].filter((p) => !toAnalyze.has(p)).sort(),
+    invalidatedFiles: [...invalidated].sort(),
+    removedFiles: [...removed].sort(),
+    changedSymbols: {
+      added: cache ? [...nextSymbols].filter((s) => !prevSymbols.has(s)).sort() : [],
+      removed: [...prevSymbols].filter((s) => !nextSymbols.has(s)).sort(),
+    },
+    changedRelationships: {
+      added: prevGraph?.ok ? [...nextEdges].filter((e) => !prevEdges.has(e)).length : cache ? nextEdges.size : 0,
+      removed: [...prevEdges].filter((e) => !nextEdges.has(e)).length,
+    },
+    staleSummaries: staleSummaryNodes(scan.root, graph, hashes, dir),
+    scanErrors: scan.errors,
+    durationMs: Math.round(performance.now() - started),
+  };
+
+  if (!options.dryRun) {
+    const files: Record<string, CachedFile> = {};
+    for (const file of scan.files) files[file.path] = { hash: file.hash, analysis: analyses.get(file.path)! };
+    writeJsonAtomic(cachePath(scan.root, dir), {
+      schemaVersion: GRAPH_SCHEMA_VERSION,
+      analysisVersion: ANALYSIS_VERSION,
+      root: scan.root,
+      files,
+    } satisfies IndexCache);
+    writeJsonAtomic(graphPath(scan.root, dir), graph.toJSON());
+  }
+  return { graph, scan, report, hashes };
 }
 
-function mergeUnique<T extends { id: string }>(groups: T[][]): T[] {
-  const values = new Map<string, T>();
-  for (const group of groups) for (const value of group) values.set(value.id, value);
-  return [...values.values()].sort((left, right) => left.id.localeCompare(right.id));
+function isValidCache(value: unknown): value is IndexCache {
+  const c = value as IndexCache | null;
+  if (!c || typeof c !== "object" || c.schemaVersion !== GRAPH_SCHEMA_VERSION || c.analysisVersion !== ANALYSIS_VERSION) return false;
+  if (!c.files || typeof c.files !== "object") return false;
+  return Object.values(c.files).every(
+    (f) => f && typeof f.hash === "string" && f.analysis && Array.isArray(f.analysis.nodes) && Array.isArray(f.analysis.edges) && Array.isArray(f.analysis.dependsOn) && Array.isArray(f.analysis.pending),
+  );
 }
 
-function summaryFreshness(nodes: GraphNode[]): IndexSynchronization["summaryFreshness"] {
-  const summarized = nodes.filter((node) => node.summary);
-  const fresh = summarized.filter((node) => node.summaryStatus === "fresh").length;
-  const stale = summarized.filter((node) => node.summaryStatus === "stale").length;
-  const notGenerated = summarized.filter((node) => node.summaryStatus === "not-generated").length;
-  const failed = summarized.filter((node) => node.summaryStatus === "failed").length;
+function analyzeFiles(scan: ScanResult, targets: ReadonlySet<string>): Map<string, FileAnalysis> {
+  const out = new Map<string, FileAnalysis>();
+  const tsTargets = new Set<string>();
+  for (const file of scan.files) {
+    if (!targets.has(file.path)) continue;
+    if (file.skipped) out.set(file.path, emptyAnalysis(file, `not analyzed: ${file.skipped}`));
+    else if (TS_LANGUAGES.has(file.language) && file.role !== "manifest") tsTargets.add(file.path);
+    else {
+      const analyzer =
+        HEURISTIC_LANGUAGES.has(file.language) && file.role !== "manifest" ? analyzeHeuristicFile
+        : file.language === "markdown" ? analyzeMarkdownFile
+        : isConfigAnalyzable(file.path) ? analyzeConfigFile
+        : undefined;
+      if (!analyzer) {
+        out.set(file.path, emptyAnalysis(file, file.language === "other" ? "unsupported language" : undefined));
+        continue;
+      }
+      let text: string;
+      try {
+        text = readFileSync(file.absolutePath, "utf8");
+      } catch (error) {
+        out.set(file.path, emptyAnalysis(file, `unreadable: ${(error as Error).message}`));
+        continue;
+      }
+      out.set(file.path, analyzer(file, text));
+    }
+  }
+  if (tsTargets.size > 0) {
+    const programFiles = scan.files.filter((f) => TS_LANGUAGES.has(f.language) && !f.skipped);
+    const results = analyzeTypeScriptFiles(scan.root, programFiles, tsTargets);
+    for (const path of tsTargets) {
+      const file = scan.files.find((f) => f.path === path)!;
+      out.set(path, results.get(path) ?? emptyAnalysis(file, "TypeScript program did not include file"));
+    }
+  }
+  return out;
+}
+
+function emptyAnalysis(file: ScannedFile, diagnostic?: string): FileAnalysis {
   return {
-    fresh,
-    stale,
-    notGenerated,
-    failed,
-    percent: summarized.length ? Math.round((fresh / summarized.length) * 1_000) / 10 : 100,
+    path: file.path,
+    hash: file.hash,
+    analysisVersion: ANALYSIS_VERSION,
+    language: file.language,
+    resolution: "none",
+    nodes: [],
+    edges: [],
+    unresolved: [],
+    pending: [],
+    dependsOn: [],
+    diagnostics: diagnostic ? [diagnostic] : [],
   };
 }
 
-function symmetricDifferenceCount(left: string[], right: string[]): number {
-  const a = new Set(left);
-  const b = new Set(right);
-  let count = 0;
-  for (const value of a) if (!b.has(value)) count += 1;
-  for (const value of b) if (!a.has(value)) count += 1;
-  return count;
-}
+/** Assemble the graph from structure (scan) + per-file analyses + global link pass. */
+export function buildGraph(scan: ScanResult, analyses: ReadonlyMap<string, FileAnalysis>): CodeGraph {
+  const graph = new CodeGraph(scan.root);
+  const fs = { provenance: "filesystem" as const, confidence: 1 };
+  const rootName = posix.basename(scan.root.split("\\").join("/")) || ".";
+  graph.addNode({ id: repositoryId(), kind: "repository", name: rootName, path: ".", evidence: fs });
 
-function cacheFromGraph(graph: CodeGraph, unresolvedByFile: Record<string, number> = {}): AnalysisCache {
-  const nodesById = new Map(graph.nodes.map((node) => [node.id, node]));
-  const nodesByPath = new Map<string, GraphNode[]>();
-  const edgesByPath = new Map<string, GraphEdge[]>();
-  for (const node of graph.nodes) {
-    if (!node.path) continue;
-    const owned = nodesByPath.get(node.path);
-    if (owned) owned.push(node);
-    else nodesByPath.set(node.path, [node]);
+  const dirs = new Set(scan.directories);
+  for (const file of scan.files) {
+    for (let d = posix.dirname(file.path); d !== "."; d = posix.dirname(d)) dirs.add(d);
   }
-  for (const edge of graph.edges) {
-    const sourcePath = nodesById.get(edge.source)?.path;
-    if (!sourcePath) continue;
-    const owned = edgesByPath.get(sourcePath);
-    if (owned) owned.push(edge);
-    else edgesByPath.set(sourcePath, [edge]);
+  for (const d of [...dirs].sort()) graph.addNode({ id: directoryId(d), kind: "directory", name: posix.basename(d), path: d, evidence: fs });
+  for (const d of [...dirs].sort()) {
+    const parent = posix.dirname(d);
+    graph.addEdge("contains", parent === "." ? repositoryId() : directoryId(parent), directoryId(d), fs);
   }
-  const units: Record<string, CachedFileUnit> = {};
-  for (const [filePath, hash] of Object.entries(graph.fileHashes)) {
-    const ownedNodes = nodesByPath.get(filePath) ?? [];
-    const edges = edgesByPath.get(filePath) ?? [];
-    const dependencyNodes = edges
-      .map((edge) => nodesById.get(edge.target))
-      .filter((node): node is GraphNode => Boolean(node && !node.path));
-    units[filePath] = {
-      hash,
-      nodes: mergeUnique([ownedNodes, dependencyNodes]),
-      edges,
-      unresolvedCalls: unresolvedByFile[filePath] ?? 0,
-    };
-  }
-  return { version: 2, repositoryFingerprint: graph.repository.fingerprint, units };
-}
-
-export async function buildIndex(config: FehmConfig): Promise<CodeGraph> {
-  const scan = await scanRepository(config);
-  const previous = await loadPreviousGraph(config.outputDirectory);
-  const savedCache = await loadAnalysisCache(config.outputDirectory);
-  // Graph and cache are separately atomic files; an interrupted write may leave
-  // them from different scans. Never merge units from another snapshot or root.
-  const cache = previous?.repository.root === config.root && previous.schemaVersion === GRAPH_SCHEMA_VERSION
-    && savedCache?.repositoryFingerprint === previous.repository.fingerprint ? savedCache : undefined;
-  const fileHashes = Object.fromEntries(scan.files.map((file) => [file.relativePath, file.hash]));
-  const changes = changesFor(fileHashes, previous?.fileHashes);
-  const fingerprint = fingerprintFor(fileHashes);
-  const noChanges = previous && cache && previous.schemaVersion === GRAPH_SCHEMA_VERSION
-    && changes.added.length === 0
-    && changes.changed.length === 0
-    && changes.removed.length === 0;
-
-  if (noChanges) {
-    const nodes = previous.nodes.map((node) => node.summary && !node.summaryStatus
-      ? { ...node, summaryStatus: "fresh" as const, summarySource: "deterministic" as const }
-      : node);
-    const graph: CodeGraph = {
-      ...previous,
-      generatedAt: new Date().toISOString(),
-      changes,
-      nodes,
-      synchronization: {
-        mode: "cache-hit",
-        lastSyncAt: new Date().toISOString(),
-        analyzedFiles: [],
-        reusedFiles: changes.unchanged,
-        invalidatedFiles: [],
-        changedSymbols: 0,
-        changedRelationships: 0,
-        summaryFreshness: summaryFreshness(nodes),
-      },
-    };
-    Object.defineProperty(graph, "__unresolvedCallsByFile", {
-      value: Object.fromEntries(Object.entries(cache?.units ?? {}).map(([filePath, unit]) => [filePath, unit.unresolvedCalls])),
-      enumerable: false,
+  for (const file of scan.files) {
+    graph.addNode({
+      id: fileId(file.path),
+      kind: "file",
+      name: posix.basename(file.path),
+      path: file.path,
+      language: file.language,
+      isTest: file.isTest,
+      evidence: { ...fs, detail: file.skipped ? `role=${file.role}; not analyzed: ${file.skipped}` : `role=${file.role}` },
     });
-    return graph;
+    const parent = posix.dirname(file.path);
+    graph.addEdge("contains", parent === "." ? repositoryId() : directoryId(parent), fileId(file.path), fs);
   }
 
-  const invalidated = previous ? affectedFiles(previous, changes) : new Set(Object.keys(fileHashes));
-  const canIncrement = Boolean(previous && cache);
-  const analyzedFiles = canIncrement
-    ? new Set([...invalidated].filter((filePath) => filePath in fileHashes))
-    : new Set(Object.keys(fileHashes));
-  const analysis = analyzeTypeScript(config, scan.files, canIncrement ? { includePaths: analyzedFiles } : {});
-  const freshNodes = analysis.graph.getNodes();
-  const freshEdges = analysis.graph.getEdges();
-  const structuralNodes = freshNodes.filter((node) => node.kind === "repository" || node.kind === "directory" || node.kind === "file");
-  const structuralEdges = freshEdges.filter((edge) => edge.kind === "contains");
-  const reusedEntries = canIncrement
-    ? Object.entries(cache?.units ?? {})
-      .filter(([filePath, unit]) => fileHashes[filePath] === unit.hash && !invalidated.has(filePath))
-    : [];
-  const reusedUnits = reusedEntries.map(([, unit]) => unit);
-  const nodes = canIncrement
-    ? mergeUnique([structuralNodes, freshNodes.filter((node) => !["repository", "directory", "file"].includes(node.kind)), ...reusedUnits.map((unit) => unit.nodes)])
-    : freshNodes;
-  const nodeIds = new Set(nodes.map((node) => node.id));
-  const edges = (canIncrement
-    ? mergeUnique([structuralEdges, freshEdges.filter((edge) => edge.kind !== "contains"), ...reusedUnits.map((unit) => unit.edges)])
-    : freshEdges).filter((edge) => nodeIds.has(edge.source) && nodeIds.has(edge.target));
-  const unresolvedCalls = analysis.unresolvedCalls + reusedUnits.reduce((total, unit) => total + unit.unresolvedCalls, 0);
-  const previousSymbolIds = previous?.nodes.filter((node) => !["repository", "directory", "file", "package"].includes(node.kind)).map((node) => node.id) ?? [];
-  const symbolIds = nodes.filter((node) => !["repository", "directory", "file", "package"].includes(node.kind)).map((node) => node.id);
-  const previousEdgeIds = previous?.edges.map((edge) => edge.id) ?? [];
-  const graph: CodeGraph = {
-    schemaVersion: GRAPH_SCHEMA_VERSION,
-    generatedAt: new Date().toISOString(),
-    repository: { name: path.basename(config.root), root: config.root, fingerprint },
-    changes,
-    stats: calculateStats(nodes, edges, unresolvedCalls),
-    nodes,
-    edges,
-    fileHashes,
-    synchronization: {
-      mode: canIncrement ? "incremental" : "full",
-      lastSyncAt: new Date().toISOString(),
-      analyzedFiles: [...analyzedFiles].sort(),
-      reusedFiles: canIncrement ? changes.unchanged.filter((filePath) => !invalidated.has(filePath)) : [],
-      invalidatedFiles: [...invalidated].sort(),
-      changedSymbols: symmetricDifferenceCount(previousSymbolIds, symbolIds),
-      changedRelationships: symmetricDifferenceCount(previousEdgeIds, edges.map((edge) => edge.id)),
-      summaryFreshness: summaryFreshness(nodes),
-    },
-  };
-  Object.defineProperty(graph, "__unresolvedCallsByFile", {
-    value: {
-      ...Object.fromEntries(reusedEntries.map(([filePath, unit]) => [filePath, unit.unresolvedCalls])),
-      ...analysis.unresolvedCallsByFile,
-    },
-    enumerable: false,
-  });
+  const list = [...analyses.values()].sort((a, b) => (a.path < b.path ? -1 : 1));
+  for (const a of list) for (const n of a.nodes) graph.addNode(n);
+  const goModules: { dir: string; module: string }[] = [];
+  for (const f of scan.files) {
+    if (posix.basename(f.path) !== "go.mod") continue;
+    try {
+      const module = /^module\s+(\S+)/m.exec(readFileSync(f.absolutePath, "utf8"))?.[1];
+      if (module) goModules.push({ dir: posix.dirname(f.path), module });
+    } catch {
+      // unreadable go.mod: Go imports stay external/unresolved
+    }
+  }
+  const linked = linkPending(list, { files: new Set(scan.files.map((f) => f.path)), goModules });
+  for (const n of linked.nodes) graph.addNode(n);
+  for (const a of list) for (const e of a.edges) graph.addEdge(e.kind, e.source, e.target, e.evidence);
+  for (const e of linked.edges) graph.addEdge(e.kind, e.source, e.target, e.evidence);
+  graph.unresolved = [...list.flatMap((a) => a.unresolved), ...linked.unresolved];
   return graph;
 }
 
-export async function writeIndex(graph: CodeGraph, outputDirectory: string): Promise<string> {
-  const destination = path.join(outputDirectory, "graph.json");
-  await atomicWriteJson(destination, graph);
-
-  const unresolvedByFile = (graph as CodeGraph & { __unresolvedCallsByFile?: Record<string, number> }).__unresolvedCallsByFile ?? {};
-  const cache = cacheFromGraph(graph, unresolvedByFile);
-  const cacheDestination = path.join(outputDirectory, "analysis-cache.json");
-  await atomicWriteJson(cacheDestination, cache);
-  await recordArchitectureSnapshot(graph);
-  await maintainAdrDrafts(graph);
-  return destination;
-}
-
-export async function readIndex(indexPath: string): Promise<CodeGraph> {
-  return JSON.parse(await readFile(indexPath, "utf8")) as CodeGraph;
+/** Load the persisted graph without rescanning. */
+export function loadGraph(root: string, dir?: string): CodeGraph | undefined {
+  const read = readJson<SerializedGraph>(graphPath(root, dir));
+  if (!read.ok) return undefined;
+  try {
+    return CodeGraph.fromJSON(read.value);
+  } catch {
+    return undefined;
+  }
 }

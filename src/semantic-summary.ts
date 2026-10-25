@@ -1,79 +1,159 @@
-import { readFile } from "node:fs/promises";
-import path from "node:path";
-import type { CodeGraph, GraphNode, PromptProviderConfig, SemanticSummaryResult } from "./model.js";
-import { callPromptModel } from "./prompt-runtime.js";
+import { spawn } from "node:child_process";
+import { join } from "node:path";
+import type { CodeGraph } from "./graph.js";
+import { SUMMARY_VERSION } from "./model.js";
+import { readJson, stateDir, writeJsonAtomic } from "./persistence.js";
 
-function sourceExcerpt(content: string, node: GraphNode): string {
-  if (!node.location) return content.slice(0, 6_000);
-  const lines = content.split(/\r?\n/);
-  return lines.slice(Math.max(0, node.location.line - 1), Math.min(lines.length, node.location.endLine ?? node.location.line + 40)).join("\n").slice(0, 6_000);
+/**
+ * Optional, opt-in semantic summaries produced by a caller-supplied provider.
+ * Nothing in Feature 1 calls a provider implicitly; basic operation never
+ * needs one. Each cached summary records its model and the content hash of
+ * the source file it was generated from, and is reported stale as soon as that
+ * hash (or SUMMARY_VERSION) changes.
+ */
+export interface SummaryProvider {
+  /** Provider identifier, e.g. "command". */
+  name: string;
+  /** Model identifier as reported by the provider. */
+  model: string;
+  summarize(prompt: string): Promise<string>;
 }
 
-function deterministicSemanticSummary(graph: CodeGraph, node: GraphNode, source: string): string {
-  const outgoing = graph.edges.filter((edge) => edge.source === node.id);
-  const nodes = new Map(graph.nodes.map((item) => [item.id, item]));
-  const called = outgoing.filter((edge) => edge.kind === "calls").map((edge) => nodes.get(edge.target)?.name).filter(Boolean).slice(0, 5);
-  const used = outgoing.filter((edge) => edge.kind === "uses" || edge.kind === "references").map((edge) => nodes.get(edge.target)?.name).filter(Boolean).slice(0, 5);
-  const behaviors: string[] = [];
-  if (/\b(?:readFile|access|stat|readdir)\b/.test(source)) behaviors.push("reads filesystem state");
-  if (/\b(?:writeFile|rename|mkdir|unlink)\b/.test(source)) behaviors.push("persists filesystem changes");
-  if (/\bfetch\s*\(|\baxios\b/.test(source)) behaviors.push("communicates with an HTTP service");
-  if (/\b(?:execFile|spawn)\b/.test(source)) behaviors.push("runs a bounded external command");
-  if (/\bthrow\s+new\b|\bcatch\s*\(/.test(source)) behaviors.push("handles explicit failure paths");
-  const role = node.kind === "file" ? `Module ${node.qualifiedName}` : `${node.exported ? "Exported " : ""}${node.kind} ${node.qualifiedName}`;
-  const relations = [called.length ? `calls ${called.join(", ")}` : "", used.length ? `uses ${used.join(", ")}` : "", ...behaviors].filter(Boolean);
-  return `${role} ${relations.length ? relations.join("; ") : "encapsulates its indexed source behavior"}.`;
+export interface SemanticSummary {
+  nodeId: string;
+  text: string;
+  provider: string;
+  model: string;
+  sourceHash: string;
+  summaryVersion: string;
+  createdAt: string;
 }
 
-export async function refreshSemanticSummaries(
-  graph: CodeGraph,
-  options: { provider?: PromptProviderConfig; nodeIds?: string[]; limit?: number } = {},
-): Promise<SemanticSummaryResult> {
-  const selected = new Set(options.nodeIds ?? []);
-  const candidates = graph.nodes.filter((node) =>
-    ["file", "class", "interface", "function", "method"].includes(node.kind)
-    && (!selected.size || selected.has(node.id)),
-  ).slice(0, Math.max(1, options.limit ?? graph.nodes.length));
-  const cache = new Map<string, string>();
-  const failed: SemanticSummaryResult["failed"] = [];
-  let updated = 0;
-  for (const node of candidates) {
-    if (!node.path) continue;
-    let content = cache.get(node.path);
-    if (content === undefined) {
-      try { content = await readFile(path.join(graph.repository.root, node.path), "utf8"); } catch (error) {
-        failed.push({ nodeId: node.id, error: error instanceof Error ? error.message : String(error) });
-        continue;
-      }
-      cache.set(node.path, content);
+export type SummaryStatus = "fresh" | "stale" | "missing";
+
+interface SummaryStore {
+  summaryVersion: string;
+  entries: Record<string, SemanticSummary>;
+}
+
+const storePath = (root: string, dir?: string): string => join(stateDir(root, dir), "summaries.json");
+
+export function loadSummaries(root: string, dir?: string): Record<string, SemanticSummary> {
+  const read = readJson<SummaryStore>(storePath(root, dir));
+  if (!read.ok || typeof read.value?.entries !== "object" || read.value.entries === null) return {};
+  return read.value.entries;
+}
+
+export function summaryStatus(entry: SemanticSummary | undefined, currentHash: string | undefined): SummaryStatus {
+  if (!entry) return "missing";
+  return entry.summaryVersion === SUMMARY_VERSION && currentHash !== undefined && entry.sourceHash === currentHash ? "fresh" : "stale";
+}
+
+/** Node ids whose cached semantic summary no longer matches the source (or whose node is gone). */
+export function staleSummaryNodes(root: string, graph: CodeGraph, hashes: ReadonlyMap<string, string>, dir?: string): string[] {
+  const out: string[] = [];
+  for (const [id, entry] of Object.entries(loadSummaries(root, dir))) {
+    const node = graph.node(id);
+    const hash = node?.path ? hashes.get(node.path) : undefined;
+    if (summaryStatus(entry, hash) !== "fresh") out.push(id);
+  }
+  return out.sort();
+}
+
+/** A fresh semantic summary for a node, or undefined. Stale entries are never returned. */
+export function freshSemanticSummary(
+  summaries: Record<string, SemanticSummary>,
+  nodeId: string,
+  currentHash: string | undefined,
+): SemanticSummary | undefined {
+  const entry = summaries[nodeId];
+  return summaryStatus(entry, currentHash) === "fresh" ? entry : undefined;
+}
+
+export interface GenerateResult {
+  generated: string[];
+  reused: string[];
+  failed: { nodeId: string; error: string }[];
+}
+
+/**
+ * Generate and cache summaries for the given nodes. Fresh cache entries are
+ * reused; provider failures are collected, never thrown.
+ */
+export async function generateSemanticSummaries(
+  root: string,
+  requests: { nodeId: string; prompt: string; sourceHash: string }[],
+  provider: SummaryProvider,
+  dir?: string,
+): Promise<GenerateResult> {
+  const entries = loadSummaries(root, dir);
+  const result: GenerateResult = { generated: [], reused: [], failed: [] };
+  for (const req of requests) {
+    if (summaryStatus(entries[req.nodeId], req.sourceHash) === "fresh") {
+      result.reused.push(req.nodeId);
+      continue;
     }
-    const excerpt = sourceExcerpt(content, node);
     try {
-      const summary = options.provider
-        ? (await callPromptModel(
-          options.provider,
-          "Summarize the supplied code in one precise sentence. State responsibility, important side effects, and major collaborators. Return only the sentence. Do not invent behavior.",
-          `Symbol: ${node.qualifiedName}\nKind: ${node.kind}\n\n${excerpt}`,
-        )).trim().replace(/\s+/g, " ").slice(0, 600)
-        : deterministicSemanticSummary(graph, node, excerpt);
-      node.summary = summary;
-      node.summarySource = "semantic";
-      node.summaryStatus = "fresh";
-      updated += 1;
+      const text = (await provider.summarize(req.prompt)).trim().slice(0, 600);
+      if (!text) throw new Error("provider returned empty text");
+      entries[req.nodeId] = {
+        nodeId: req.nodeId,
+        text,
+        provider: provider.name,
+        model: provider.model,
+        sourceHash: req.sourceHash,
+        summaryVersion: SUMMARY_VERSION,
+        createdAt: new Date().toISOString(),
+      };
+      result.generated.push(req.nodeId);
     } catch (error) {
-      node.summaryStatus = "failed";
-      failed.push({ nodeId: node.id, error: error instanceof Error ? error.message : String(error) });
+      result.failed.push({ nodeId: req.nodeId, error: (error as Error).message });
     }
   }
-  if (graph.synchronization) {
-    const summarized = graph.nodes.filter((node) => ["file", "class", "interface", "function", "method"].includes(node.kind));
-    graph.synchronization.summaryFreshness = {
-      fresh: summarized.filter((node) => node.summaryStatus === "fresh").length,
-      stale: summarized.filter((node) => node.summaryStatus === "stale").length,
-      notGenerated: summarized.filter((node) => node.summaryStatus === "not-generated").length,
-      failed: summarized.filter((node) => node.summaryStatus === "failed").length,
-      percent: summarized.length ? Math.round(summarized.filter((node) => node.summaryStatus === "fresh").length / summarized.length * 1_000) / 10 : 100,
-    };
-  }
-  return { generatedAt: new Date().toISOString(), ...(options.provider ? { model: options.provider.model } : {}), updated, failed, graph };
+  writeJsonAtomic(storePath(root, dir), { summaryVersion: SUMMARY_VERSION, entries } satisfies SummaryStore);
+  return result;
+}
+
+export function summaryPrompt(deterministic: string, excerpt: string): string {
+  return [
+    "Summarize what this code does in at most two sentences. State only what the code shows.",
+    "",
+    `Structure: ${deterministic}`,
+    "",
+    "Source:",
+    excerpt,
+  ].join("\n");
+}
+
+/**
+ * Provider that pipes the prompt to a user-configured shell command and reads
+ * the summary from stdout (e.g. a local model CLI). Explicit opt-in only.
+ */
+export function commandProvider(command: string, model = command, timeoutMs = 60_000): SummaryProvider {
+  return {
+    name: "command",
+    model,
+    summarize: (prompt) =>
+      new Promise((resolvePromise, reject) => {
+        const child = spawn(command, { shell: true, stdio: ["pipe", "pipe", "pipe"] });
+        let out = "";
+        let err = "";
+        const timer = setTimeout(() => {
+          child.kill();
+          reject(new Error(`timed out after ${timeoutMs}ms`));
+        }, timeoutMs);
+        child.stdout.on("data", (d: Buffer) => (out += d.toString()));
+        child.stderr.on("data", (d: Buffer) => (err += d.toString()));
+        child.on("error", (e) => {
+          clearTimeout(timer);
+          reject(e);
+        });
+        child.on("close", (code) => {
+          clearTimeout(timer);
+          if (code === 0) resolvePromise(out);
+          else reject(new Error(`exit ${code}: ${err.trim().slice(0, 200)}`));
+        });
+        child.stdin.end(prompt);
+      }),
+  };
 }

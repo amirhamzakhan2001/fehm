@@ -1,0 +1,17 @@
+{
+  "$comment": "Canonical skills per task intent (ordered). Fehm fuses this with metadata search; a skill listed here still needs its intent to match the task. Edit freely; unknown ids are reported by fehm skills index.",
+  "intents": {
+    "debug": ["debugging/systematic-debugging", "debugging/investigate", "debugging/diagnosing-bugs", "workflows/bug-fixing"],
+    "implement": ["workflows/feature-development", "testing/test-driven-development", "engineering/ponytail-yagni", "engineering/lean-build"],
+    "refactor": ["workflows/refactoring", "engineering/safe-refactor", "architecture/deep-modules", "engineering/ponytail-audit"],
+    "test": ["testing/test-driven-development", "testing/tdd-red-green", "verification/verification-before-completion"],
+    "review": ["engineering/standards-code-review", "workflows/code-review", "engineering/review", "workflows/receiving-code-review"],
+    "explain": ["code-intelligence/code-explorer", "code-intelligence/codebase-onboarding"],
+    "plan": ["workflows/writing-plans", "workflows/brainstorming", "workflows/plan", "architecture/deep-modules"],
+    "ship": ["release/ship", "verification/verification-before-completion", "git/finishing-a-development-branch"],
+    "security": ["workflows/security-review", "security/security-reviewer"],
+    "performance": ["performance/performance-optimizer", "debugging/diagnosing-bugs"],
+    "docs": ["workflows/documentation", "documentation/doc-updater"],
+    "ui": ["accessibility/frontend-a11y", "design/design-system"]
+  }
+}

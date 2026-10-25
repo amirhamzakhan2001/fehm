@@ -1,0 +1,1 @@
+{ "name": "corpus-shop", "version": "1.0.0", "main": "src/index.ts", "dependencies": { "express": "^4.0.0" } }

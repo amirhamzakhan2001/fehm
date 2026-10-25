@@ -1,0 +1,7 @@
+# frameworks / rails
+
+Load only skills relevant to the task. [Library compatibility contract](../../COMPATIBILITY.md).
+
+| Skill | Purpose |
+| --- | --- |
+| [Rails Patterns](rails-patterns/SKILL.md) | Ruby on Rails framework patterns for Rails 7.1+ and 8.x apps. Covers the directory contract, skinny controllers with service objects, form objects, query objects, idiomatic ActiveRecord, background jobs, ViewComponent, Hotwire, and the Rails 8 Solid stack. Use when building or reviewing Rails apps, controllers, models, services, jobs, or views. |

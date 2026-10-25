@@ -2,7 +2,18 @@ import { createHash } from "node:crypto";
 import { lstat, mkdir, readFile, rename, unlink, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import path from "node:path";
+import type { SkillRegistry } from "./skill-registry.js";
 
+/**
+ * Installation mode: copy selected skills into an agent platform's skills
+ * directory. Routing never installs anything; this runs only on request.
+ *
+ * Restored from Fehm's earlier integration layer (git 15a4f01,
+ * src/integrations.ts): the platform table, symlink refusal, the managed
+ * marker that distinguishes Fehm-written files from customized ones, backup
+ * with --force, and temp-file + rename writes. Generalized from the single
+ * built-in Fehm skill to any registry skill.
+ */
 export const integrationPlatforms = {
   claude: { user: ".claude/skills", project: ".claude/skills", label: "Claude Code" },
   cursor: { user: ".cursor/skills", project: ".cursor/skills", label: "Cursor" },
@@ -13,22 +24,36 @@ export const integrationPlatforms = {
   generic: { user: ".agents/skills", project: ".agents/skills", label: "Agent Skills compatible clients" },
 } as const;
 
-type Platform = keyof typeof integrationPlatforms;
+export type Platform = keyof typeof integrationPlatforms;
 const marker = /\n<!-- fehm-managed sha256:([a-f0-9]{64}) -->\n$/;
 const digest = (body: string): string => createHash("sha256").update(body).digest("hex");
 
-export interface IntegrationOptions {
+export interface InstallOptions {
   platform: string;
   project?: boolean;
   dryRun?: boolean;
   force?: boolean;
+  /** Allow installing skills whose license is unknown (redistribution risk). */
+  allowUnknownLicense?: boolean;
   cwd?: string;
   home?: string;
 }
 
+export interface InstallResult {
+  skillId: string;
+  platform: Platform;
+  label: string;
+  scope: "user" | "project";
+  path: string;
+  state: "missing" | "current" | "outdated" | "customized";
+  action: "install" | "uninstall" | "status";
+  dryRun: boolean;
+}
+
 async function optionalRead(file: string): Promise<string | undefined> {
-  try { return await readFile(file, "utf8"); }
-  catch (error) {
+  try {
+    return await readFile(file, "utf8");
+  } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") return undefined;
     throw error;
   }
@@ -48,22 +73,32 @@ async function checkDestination(root: string, target: string): Promise<void> {
   }
 }
 
-export async function manageIntegration(action: "install" | "uninstall" | "status", options: IntegrationOptions) {
-  if (!(options.platform in integrationPlatforms) || !Object.hasOwn(integrationPlatforms, options.platform)) {
+/** Directory name for an installed skill: `fehm-` + id with separators flattened. */
+export function installedSkillName(skillId: string): string {
+  return `fehm-${skillId.replace(/[/:]+/g, "-").replace(/[^A-Za-z0-9._-]/g, "")}`;
+}
+
+export async function manageSkill(registry: SkillRegistry, skillId: string, action: "install" | "uninstall" | "status", options: InstallOptions): Promise<InstallResult> {
+  if (!Object.hasOwn(integrationPlatforms, options.platform)) {
     throw new Error(`Unknown platform ${options.platform}. Choose: ${Object.keys(integrationPlatforms).join(", ")}`);
+  }
+  const record = registry.get(skillId);
+  if (!record) throw new Error(`unknown skill ${skillId}`);
+  if (action === "install" && record.license === "unknown" && !options.allowUnknownLicense) {
+    throw new Error(`Refusing to install ${skillId}: license unknown. Check ${record.sourceRepository} and pass --allow-unknown-license to proceed.`);
   }
   const platform = options.platform as Platform;
   const scope = options.project ? "project" : "user";
   const root = path.resolve(options.project ? (options.cwd ?? process.cwd()) : (options.home ?? homedir()));
-  const target = path.join(root, integrationPlatforms[platform][scope], "fehm", "SKILL.md");
+  const target = path.join(root, integrationPlatforms[platform][scope], installedSkillName(skillId), "SKILL.md");
   await checkDestination(root, target);
-  const template = await readFile(new URL("../integrations/fehm/SKILL.md", import.meta.url), "utf8");
+  const template = registry.source(skillId);
   const content = `${template}\n<!-- fehm-managed sha256:${digest(template)} -->\n`;
   const existing = await optionalRead(target);
   const match = existing?.match(marker);
   const unmodified = !!match && digest(existing!.slice(0, match.index)) === match[1];
   const state = existing === undefined ? "missing" : existing === content ? "current" : unmodified ? "outdated" : "customized";
-  const result = { platform, label: integrationPlatforms[platform].label, scope, path: target, state, action, dryRun: !!options.dryRun };
+  const result: InstallResult = { skillId, platform, label: integrationPlatforms[platform].label, scope, path: target, state, action, dryRun: !!options.dryRun };
   if (action === "status") return result;
   if (existing !== undefined && !unmodified && !options.force) {
     throw new Error(`Preserving customized skill at ${target}. Move it aside, or use --force to back it up and ${action}.`);
@@ -80,7 +115,9 @@ export async function manageIntegration(action: "install" | "uninstall" | "statu
       await writeFile(temporary, content, { flag: "wx" });
       await rename(temporary, target);
     } finally {
-      await unlink(temporary).catch((error: NodeJS.ErrnoException) => { if (error.code !== "ENOENT") throw error; });
+      await unlink(temporary).catch((error: NodeJS.ErrnoException) => {
+        if (error.code !== "ENOENT") throw error;
+      });
     }
   }
   return { ...result, state: action === "install" ? "current" : "missing" };

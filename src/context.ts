@@ -1,595 +1,413 @@
-import { fileFirstRoundRobin } from "./context-selection.js";
-import { splitCodeIdentifier, rankContextMemory } from "./upstream-adaptations.js";
-import { readFile } from "node:fs/promises";
-import path from "node:path";
-import { mapConcurrent } from "./concurrency.js";
-import { inferArchitecture, readArchitectureState } from "./architecture.js";
-import { buildEngineeringIntelligence } from "./intelligence.js";
-import type {
-  CodeGraph,
-  ContextExcerpt,
-  ContextPacket,
-  ContextQuality,
-  GraphEdge,
-  GraphNode,
-  RetrievalHit,
-  RetrievalIntent,
-  RetrievalScores,
+import { compressSource, estimateTokens, fitToBudget, focusedExcerpt, TOKEN_ESTIMATOR } from "./compression.js";
+import { diversifyHits } from "./context-selection.js";
+import type { CodeGraph } from "./graph.js";
+import type { LexicalIndex } from "./lexical-index.js";
+import { rankMemory, stackKeywords } from "./memory.js";
+import {
+  GRAPH_SCHEMA_VERSION,
+  type ContextItem,
+  type ContextPacket,
+  type ContextRelationship,
+  type DetailLevel,
+  type GraphNode,
+  type Language,
+  type MemoryEntry,
+  type RetrievalHit,
+  type RetrievalIntent,
 } from "./model.js";
+import { detectIntent, retrieve, type RetrievalWeights } from "./retrieval.js";
+import { freshSemanticSummary, type SemanticSummary } from "./semantic-summary.js";
+import type { SourceReader } from "./source.js";
+import { deterministicSummary } from "./summary.js";
+import { queryTerms, tokenize } from "./text.js";
+import { entryPoints, languageCounts, topDirectories } from "./system-map.js";
 
-export interface RetrievalOptions {
+/** Everything context building reads. Supplied by the engine; never re-parses the repo. */
+export interface ContextSources {
+  graph: CodeGraph;
+  index: LexicalIndex;
+  source: SourceReader;
+  summaries: Record<string, SemanticSummary>;
+  hashes: ReadonlyMap<string, string>;
+  memory: readonly MemoryEntry[];
+  fresh: boolean;
+}
+
+export interface ContextOptions {
+  /** Token budget for the rendered packet. Default 4000. */
+  budget?: number;
+  intent?: RetrievalIntent;
   depth?: number;
-  limit?: number;
+  /** Candidate pool size from retrieval. Default 40. */
+  candidates?: number;
+  weights?: Partial<RetrievalWeights>;
 }
 
-export interface ContextOptions extends RetrievalOptions {
-  budgetTokens?: number;
-  excerptRadius?: number;
-}
+const LEVELS: DetailLevel[] = ["relationship", "summary", "signature", "section", "source"];
+const LEVEL_RANK: Record<DetailLevel, number> = { relationship: 0, summary: 1, signature: 2, section: 3, source: 4 };
+const MAX_SOURCE_LINES = 150;
+const FENCE: Partial<Record<Language, string>> = { typescript: "ts", javascript: "js", python: "python", go: "go", rust: "rust", java: "java" };
 
-interface FileSearchData {
-  content: string;
-  lines: string[];
-  normalized: string;
-}
-
-interface MutableHit {
+interface Candidate {
+  hit: RetrievalHit;
   node: GraphNode;
-  lexical: number;
-  symbol: number;
-  semantic: number;
-  graph: number;
-  intent: number;
-  reasons: Set<string>;
-  graphDistance?: number;
-  matchedLines?: number[];
+  anchor: boolean;
+  max: DetailLevel;
+  level?: DetailLevel;
+  texts: Partial<Record<DetailLevel, string>>;
+  costs: Partial<Record<DetailLevel, number>>;
+  summarySource: "deterministic" | "semantic";
 }
 
-const CONTEXT_SCHEMA_VERSION = "0.1.0";
-const SYMBOL_KINDS = new Set(["class", "interface", "function", "method", "variable", "type"]);
-
-function clamp(value: number, minimum = 0, maximum = 1): number {
-  return Math.min(maximum, Math.max(minimum, value));
-}
-
-function round(value: number): number {
-  return Math.round(value * 1000) / 1000;
-}
-
-const SEMANTIC_CONCEPTS: string[][] = [
-  ["auth", "authentication", "authorize", "authorization", "login", "signin", "identity", "session", "credential"],
-  ["payment", "billing", "charge", "refund", "invoice", "checkout", "stripe"],
-  ["database", "db", "storage", "persistence", "repository", "query", "sql"],
-  ["api", "route", "endpoint", "controller", "handler", "request", "response"],
-  ["test", "spec", "verify", "verification", "assert", "coverage", "quality"],
-  ["security", "vulnerability", "secret", "permission", "injection", "leakage", "unsafe"],
-  ["architecture", "design", "layer", "module", "boundary", "dependency", "coupling"],
-  ["prompt", "instruction", "agent", "model", "evaluation", "behavior"],
-  ["performance", "latency", "slow", "bottleneck", "runtime", "trace"],
-  ["history", "git", "commit", "change", "author", "ownership", "archaeology"],
-];
-
-function semanticTokens(value: string): Set<string> {
-  const base = new Set(tokenize(value));
-  for (const concept of SEMANTIC_CONCEPTS) {
-    if (!concept.some((token) => base.has(token))) continue;
-    for (const token of concept) base.add(token);
-  }
-  return base;
-}
-
-function semanticScore(value: string, queryTokens: Set<string>): number {
-  const valueTokens = semanticTokens(value);
-  const intersection = [...queryTokens].filter((token) => valueTokens.has(token)).length;
-  if (!intersection) return 0;
-  const cosine = intersection / Math.sqrt(Math.max(1, queryTokens.size * valueTokens.size));
-  return clamp(cosine * 1.8);
-}
-
-export function tokenize(value: string): string[] {
-  return splitCodeIdentifier(value)
-    .toLowerCase()
-    .split(/[^a-z0-9_$@.-]+/)
-    .map((token) => token.trim())
-    .filter((token) => token.length > 1);
-}
-
-export function classifyIntent(query: string): RetrievalIntent {
-  const normalized = query.toLowerCase();
-  if (/\b(tests?|specs?|coverage|assert(?:ion)?s?|verify|verification)\b/.test(normalized)) return "test";
-  if (/\b(debug|bug|error|fail|broken|crash|fix)\b/.test(normalized)) return "debug";
-  if (/\b(architecture|module|layer|dependency|circular|design)\b/.test(normalized)) return "architecture";
-  if (/\b(add|change|remove|update|implement|refactor|rename|migrate)\b/.test(normalized)) return "change";
-  if (/\b(find|locate|where|which file|search)\b/.test(normalized)) return "locate";
-  return "explain";
-}
-
-function symbolScore(node: GraphNode, query: string, queryTokens: string[]): { score: number; reasons: string[] } {
-  const name = node.name.toLowerCase();
-  const qualifiedName = node.qualifiedName.toLowerCase();
-  const normalizedQuery = query.toLowerCase().trim();
-  const reasons: string[] = [];
-  let score = 0;
-  if (node.id === query || name === normalizedQuery || qualifiedName === normalizedQuery) {
-    score = 1;
-    reasons.push("exact symbol match");
-  } else if (name.includes(normalizedQuery) || qualifiedName.includes(normalizedQuery)) {
-    score = 0.82;
-    reasons.push("partial symbol match");
-  }
-  const nodeTokens = new Set(tokenize(`${node.name} ${node.qualifiedName} ${node.summary ?? ""}`));
-  const overlap = queryTokens.filter((token) => nodeTokens.has(token)).length / Math.max(1, queryTokens.length);
-  if (overlap > 0) {
-    score = Math.max(score, 0.25 + overlap * 0.65);
-    reasons.push(`symbol token overlap ${Math.round(overlap * 100)}%`);
-  }
-  return { score: clamp(score), reasons };
-}
-
-function lexicalScore(content: string, query: string, queryTokens: string[]): { score: number; lines: number[] } {
-  const normalized = content.toLowerCase();
-  const exact = normalized.includes(query.toLowerCase().trim());
-  let matched = 0;
-  for (const token of queryTokens) if (normalized.includes(token)) matched += 1;
-  const coverage = matched / Math.max(1, queryTokens.length);
-  const score = clamp(coverage * 0.72 + (exact ? 0.28 : 0));
-  const lines = content.split(/\r?\n/);
-  const matchedLines: number[] = [];
-  for (let index = 0; index < lines.length; index += 1) {
-    const line = lines[index]?.toLowerCase() ?? "";
-    if (queryTokens.some((token) => line.includes(token))) matchedLines.push(index + 1);
-  }
-  return { score, lines: matchedLines.slice(0, 20) };
-}
-
-function intentScore(node: GraphNode, intent: RetrievalIntent): { score: number; reason?: string } {
-  if (intent === "test" && node.test) return { score: 1, reason: "test intent" };
-  if (intent === "architecture" && (node.kind === "directory" || node.kind === "file" || node.kind === "package")) {
-    return { score: 0.8, reason: "architecture-level node" };
-  }
-  if ((intent === "change" || intent === "debug") && SYMBOL_KINDS.has(node.kind)) {
-    return { score: 0.55, reason: `${intent} intent favors executable symbols` };
-  }
-  if (intent === "locate" && (node.kind === "file" || SYMBOL_KINDS.has(node.kind))) {
-    return { score: 0.5, reason: "locate intent" };
-  }
-  return { score: 0 };
-}
-
-async function loadFiles(graph: CodeGraph): Promise<Map<string, FileSearchData>> {
-  const result = new Map<string, FileSearchData>();
-  const root = path.resolve(graph.repository.root);
-  const nodes = graph.nodes.filter(node => node.kind === "file" && node.path);
-  const entries = await mapConcurrent(nodes, 8, async node => {
-    const absolute = path.resolve(root, node.path!);
-    if (absolute !== root && !absolute.startsWith(`${root}${path.sep}`)) return undefined;
-    try {
-      const content = await readFile(absolute, "utf8");
-      return [node.path!, { content, lines: content.split(/\r?\n/), normalized: content.toLowerCase() }] as const;
-    } catch {
-      // Preserve stale/deleted file handling without changing result order.
-      return undefined;
-    }
+export function buildContextPacket(src: ContextSources, query: string, options: ContextOptions = {}): ContextPacket {
+  const maximumTokens = Math.max(0, Math.floor(options.budget ?? 4000));
+  const intent = options.intent ?? detectIntent(query);
+  const hits = retrieve(src.graph, src.index, query, {
+    intent,
+    limit: options.candidates ?? 40,
+    ...(options.depth !== undefined ? { depth: options.depth } : {}),
+    ...(options.weights ? { weights: options.weights } : {}),
   });
-  for (const entry of entries) if (entry) result.set(entry[0], entry[1]);
-  return result;
-}
+  const { ordered, anchors } = diversifyHits(hits);
+  const terms = queryTerms(query);
+  const identifiers = query.match(/[A-Za-z_$][\w$]*/g) ?? [];
 
-function edgeWeight(edge: GraphEdge): number {
-  if (edge.kind === "calls") return 1;
-  if (edge.kind === "references" || edge.kind === "uses") return 0.82;
-  if (edge.kind === "imports" || edge.kind === "extends" || edge.kind === "implements") return 0.88;
-  if (edge.kind === "defines") return 0.72;
-  return 0.58;
-}
-
-function toRetrievalHit(hit: MutableHit): RetrievalHit {
-  const final = clamp(hit.symbol * 0.32 + hit.lexical * 0.24 + hit.semantic * 0.22 + hit.graph * 0.16 + hit.intent * 0.06);
-  const scores: RetrievalScores = {
-    lexical: round(hit.lexical),
-    symbol: round(hit.symbol),
-    semantic: round(hit.semantic),
-    graph: round(hit.graph),
-    intent: round(hit.intent),
-    final: round(final),
-  };
-  const result: RetrievalHit = { node: hit.node, scores, reasons: [...hit.reasons].sort() };
-  if (hit.graphDistance !== undefined) result.graphDistance = hit.graphDistance;
-  if (hit.matchedLines?.length) result.matchedLines = hit.matchedLines;
-  return result;
-}
-
-export async function retrieveContext(
-  graph: CodeGraph,
-  query: string,
-  options: RetrievalOptions = {},
-): Promise<RetrievalHit[]> {
-  if (!query.trim()) return [];
-  return retrieveFromFiles(graph, query, options, await loadFiles(graph));
-}
-
-function retrieveFromFiles(graph: CodeGraph, query: string, options: RetrievalOptions, files: Map<string, FileSearchData>): RetrievalHit[] {
-  if (!query.trim()) return [];
-  const depth = Math.max(0, options.depth ?? 2);
-  const limit = Math.max(1, options.limit ?? 50);
-  const intent = classifyIntent(query);
-  const queryTokens = [...new Set(tokenize(query))];
-  const concepts = semanticTokens(query);
-  const hits = new Map<string, MutableHit>();
-
-  for (const node of graph.nodes) {
-    const symbol = symbolScore(node, query, queryTokens);
-    const file = node.path ? files.get(node.path) : undefined;
-    let lexical = { score: 0, lines: [] as number[] };
-    if (file) {
-      if (node.location) {
-        const start = Math.max(0, node.location.line - 1);
-        const end = Math.min(file.lines.length, node.location.endLine ?? node.location.line + 20);
-        lexical = lexicalScore(file.lines.slice(start, end).join("\n"), query, queryTokens);
-        lexical.lines = lexical.lines.map((line) => line + start);
-      } else if (node.kind === "file") {
-        lexical = lexicalScore(file.content, query, queryTokens);
-      }
-    }
-    const intentMatch = intentScore(node, intent);
-    const semantic = semanticScore(`${node.name} ${node.qualifiedName} ${node.summary ?? ""} ${file?.content.slice(0, 4_000) ?? ""}`, concepts);
-    if (symbol.score === 0 && lexical.score === 0 && semantic === 0) continue;
-    const reasons = new Set([...symbol.reasons]);
-    if (lexical.score > 0) reasons.add(`lexical query coverage ${Math.round(lexical.score * 100)}%`);
-    if (semantic > 0) reasons.add(`semantic concept similarity ${Math.round(semantic * 100)}%`);
-    if (intentMatch.reason) reasons.add(intentMatch.reason);
-    hits.set(node.id, {
-      node,
-      lexical: lexical.score,
-      symbol: symbol.score,
-      semantic,
-      graph: 0,
-      intent: intentMatch.score,
-      reasons,
-      matchedLines: lexical.lines,
-    });
-  }
-
-  const seeds = [...hits.values()]
-    .sort((a, b) => Math.max(b.symbol, b.lexical, b.semantic) - Math.max(a.symbol, a.lexical, a.semantic))
-    .slice(0, 20);
-  let frontier = new Map(seeds.map((hit) => [hit.node.id, Math.max(hit.symbol, hit.lexical, hit.semantic)]));
-  const nodesById = new Map(graph.nodes.map((node) => [node.id, node]));
-
-  for (let distance = 1; distance <= depth && frontier.size; distance += 1) {
-    const next = new Map<string, number>();
-    for (const edge of graph.edges) {
-      for (const [from, to] of [[edge.source, edge.target], [edge.target, edge.source]] as const) {
-        const sourceScore = frontier.get(from);
-        if (sourceScore === undefined) continue;
-        const propagated = sourceScore * edgeWeight(edge) * edge.evidence.confidence * 0.72;
-        if (propagated < 0.08 || propagated <= (next.get(to) ?? 0)) continue;
-        next.set(to, propagated);
-      }
-    }
-    frontier = next;
-    for (const [id, propagated] of next) {
-      const node = nodesById.get(id);
-      if (!node) continue;
-      const existing = hits.get(id);
-      const intentMatch = intentScore(node, intent);
-      const hit: MutableHit = existing ?? {
-        node,
-        lexical: 0,
-        symbol: 0,
-        semantic: 0,
-        graph: 0,
-        intent: intentMatch.score,
-        reasons: new Set<string>(),
-      };
-      if (propagated > hit.graph) {
-        hit.graph = propagated;
-        hit.graphDistance = distance;
-        hit.reasons.add(`graph neighbor at distance ${distance}`);
-      }
-      if (intentMatch.reason) hit.reasons.add(intentMatch.reason);
-      hits.set(id, hit);
-    }
-  }
-
-  return [...hits.values()]
-    .map(toRetrievalHit)
-    .filter((hit) => hit.scores.final > 0)
-    .sort((a, b) => b.scores.final - a.scores.final || a.node.id.localeCompare(b.node.id))
-    .slice(0, limit);
-}
-
-export function estimateTokens(value: string): number {
-  return Math.max(1, Math.ceil(value.length / 4));
-}
-
-function formatHitLine(hit: RetrievalHit): string {
-  return `- ${hit.node.kind} ${hit.node.qualifiedName} — ${hit.scores.final.toFixed(3)} (${hit.reasons.join(", ")})`;
-}
-
-function formatRelationshipLine(edge: GraphEdge): string {
-  return `- ${edge.source} --${edge.kind}--> ${edge.target} [${edge.evidence.provenance}, ${edge.evidence.confidence}]`;
-}
-
-function formatExcerptBlock(excerpt: Pick<ContextExcerpt, "path" | "startLine" | "content">): string {
-  return `### ${excerpt.path}:${excerpt.startLine}\n\`\`\`\n${excerpt.content}\n\`\`\``;
-}
-
-function excerptFor(hit: RetrievalHit, file: FileSearchData, radius: number): Omit<ContextExcerpt, "estimatedTokens"> {
-  const anchor = hit.node.location?.line ?? hit.matchedLines?.[0] ?? 1;
-  const startLine = Math.max(1, anchor - radius);
-  const endHint = hit.node.location?.endLine ?? anchor;
-  const endLine = Math.min(file.lines.length, Math.max(endHint, anchor + radius));
-  return {
-    path: hit.node.path ?? "",
-    startLine,
-    endLine,
-    content: file.lines.slice(startLine - 1, endLine).join("\n"),
-    nodeIds: [hit.node.id],
-    score: hit.scores.final,
-  };
-}
-
-function qualityFor(query: string, hits: RetrievalHit[], excerpts: ContextExcerpt[], relationships: GraphEdge[], packetEvidence: { architecture: number; tests: number; history: number }): ContextQuality {
-  const queryTokens = [...new Set(tokenize(query))];
-  const selectedText = `${hits.map((hit) => `${hit.node.name} ${hit.node.qualifiedName}`).join(" ")} ${excerpts.map((item) => item.content).join(" ")}`.toLowerCase();
-  const covered = queryTokens.filter((token) => selectedText.includes(token)).length;
-  const queryCoverage = covered / Math.max(1, queryTokens.length);
-  const exactSymbolMatch = hits.some((hit) => hit.reasons.includes("exact symbol match"));
-  const evidenceConfidence = relationships.length
-    ? relationships.reduce((sum, edge) => sum + edge.evidence.confidence, 0) / relationships.length
-    : 0;
-  const graphConnectivity = hits.length > 1 ? clamp(relationships.length / (hits.length - 1)) : hits.length === 1 ? 1 : 0;
-  const architectureCoverage = clamp(packetEvidence.architecture / 2);
-  const dependencyCoverage = clamp(relationships.length / Math.max(1, Math.min(8, hits.length)));
-  const testCoverage = clamp(packetEvidence.tests / 2);
-  const historyCoverage = clamp(packetEvidence.history / 2);
-  const score = queryCoverage * 28 + (exactSymbolMatch ? 12 : 0) + evidenceConfidence * 12 + graphConnectivity * 10
-    + architectureCoverage * 10 + dependencyCoverage * 10 + testCoverage * 9 + historyCoverage * 9;
-  return {
-    score: Math.round(clamp(score / 100) * 100),
-    queryCoverage: round(queryCoverage),
-    exactSymbolMatch,
-    evidenceConfidence: round(evidenceConfidence),
-    graphConnectivity: round(graphConnectivity),
-    architectureCoverage: round(architectureCoverage),
-    dependencyCoverage: round(dependencyCoverage),
-    testCoverage: round(testCoverage),
-    historyCoverage: round(historyCoverage),
-  };
-}
-
-export async function buildContextPacket(
-  graph: CodeGraph,
-  query: string,
-  options: ContextOptions = {},
-): Promise<ContextPacket> {
-  const maximumTokens = Number.isFinite(options.budgetTokens ?? 4_000) ? Math.max(128, Math.floor(options.budgetTokens ?? 4_000)) : 4_000;
-  const radius = Math.max(1, options.excerptRadius ?? 5);
-  const retrievalOptions: RetrievalOptions = { limit: options.limit ?? 50 };
-  if (options.depth !== undefined) retrievalOptions.depth = options.depth;
-  const files = await loadFiles(graph);
-  const hits = retrieveFromFiles(graph, query, retrievalOptions, files);
-  const [architectureProposal, architectureState, intelligence] = await Promise.all([
-    inferArchitecture(graph),
-    readArchitectureState(graph),
-    buildEngineeringIntelligence(graph),
-  ]);
-  const rankedMemory = rankContextMemory(intelligence.memory, query, architectureProposal.detectedTechnologies);
-  const architecture = {
-    layers: architectureProposal.config.layers.map((layer) => layer.name),
-    technologies: architectureProposal.detectedTechnologies,
-    constraints: rankedMemory.filter((item) => item.kind === "decision" || item.kind === "warning").slice(0, 8).map((item) => `${item.path}:${item.line} ${item.content}`),
-    approved: Boolean(architectureState.contract),
-  };
-  const history = {
-    commitsAnalyzed: intelligence.history.commits,
-    recentChanges: intelligence.history.recentCommits.slice(0, 6).map((item) => `${item.hash.slice(0, 8)} ${item.subject}`),
-    memory: rankedMemory.slice(0, 8).map((item) => `${item.kind}: ${item.title}`),
-  };
-  const seedIds = new Set(hits.slice(0, 20).map((hit) => hit.node.id));
-  const relatedTestIds = new Set(graph.edges.filter((edge) => edge.kind === "calls" && seedIds.has(edge.target)).map((edge) => edge.source));
-  const relatedTests = graph.nodes.filter((node) => node.test && node.path && (relatedTestIds.has(node.id) || seedIds.has(node.id))).map((node) => node.path as string);
-  const tests = [...new Set((relatedTests.length ? relatedTests : graph.nodes.filter((node) => node.test && node.path).map((node) => node.path as string)).slice(0, 12))];
-  const baseText = [
-    "# fehm Context Packet",
-    "",
-    `Query: ${displayQuery(query, maximumTokens)}`,
-    `Intent: ${classifyIntent(query)}`,
-    "Quality: 100/100",
-    `Budget: ${maximumTokens}/${maximumTokens} estimated tokens (truncated)`,
-    "",
-    "## Architecture",
-    `Layers: ${architecture.layers.join(", ") || "unknown"}`,
-    `Technologies: ${architecture.technologies.join(", ") || "unknown"}`,
-    `Approval: ${architecture.approved ? "developer-approved" : "inferred"}`,
-    ...architecture.constraints.map((item) => `- ${item}`),
-    "",
-    "## History and memory",
-    `Commits analyzed: ${history.commitsAnalyzed}`,
-    ...history.recentChanges.map((item) => `- ${item}`),
-    ...history.memory.map((item) => `- ${item}`),
-    "",
-    "## Relevant tests",
-    ...tests.map((item) => `- ${item}`),
-    "",
-    "## Recommended nodes",
-    "",
-    "## Relationships",
-    "",
-    "## Source excerpts",
-  ].join("\n");
-  let usedTokens = Math.min(maximumTokens, estimateTokens(baseText));
-
-  const recommendedNodes: RetrievalHit[] = [];
-  const nodeAllowance = Math.max(1, Math.floor(maximumTokens * 0.25));
-  let nodeTokens = 0;
-  // Keep the strongest three anchors, then diversify the remaining budget by file.
-  const packetHits = [...hits.slice(0, 3), ...fileFirstRoundRobin(hits.slice(3).map(hit => ({
-    group: hit.node.path ? `file:${hit.node.path}` : `node:${hit.node.id}`,
-    value: hit,
-  })), 22)];
-  for (const hit of packetHits) {
-    const cost = estimateTokens(formatHitLine(hit));
-    if (nodeTokens + cost > nodeAllowance || usedTokens + cost > maximumTokens) break;
-    recommendedNodes.push(hit);
-    nodeTokens += cost;
-    usedTokens += cost;
-  }
-  if (recommendedNodes.length === 0 && hits[0]) {
-    const cost = estimateTokens(formatHitLine(hits[0]));
-    if (usedTokens + cost <= maximumTokens) {
-      recommendedNodes.push(hits[0]);
-      nodeTokens += cost;
-      usedTokens += cost;
-    }
-  }
-
-  const selectedNodeIds = new Set(recommendedNodes.map((hit) => hit.node.id));
-  const relationshipCandidates = graph.edges.filter(
-    (edge) => selectedNodeIds.has(edge.source) && selectedNodeIds.has(edge.target),
-  );
-  const relationships: GraphEdge[] = [];
-  const relationshipAllowance = Math.max(1, Math.floor(maximumTokens * 0.2));
-  let relationshipTokens = 0;
-  for (const edge of relationshipCandidates.slice(0, 30)) {
-    const cost = estimateTokens(formatRelationshipLine(edge));
-    if (relationshipTokens + cost > relationshipAllowance || usedTokens + cost > maximumTokens) break;
-    relationships.push(edge);
-    relationshipTokens += cost;
-    usedTokens += cost;
-  }
-
-  const excerpts: ContextExcerpt[] = [];
-  const coveredPaths = new Set<string>();
-  let truncated = query.length > maximumTokens || recommendedNodes.length < hits.length || relationships.length < relationshipCandidates.length;
-
-  for (const hit of recommendedNodes) {
-    const file = hit.node.path ? files.get(hit.node.path) : undefined;
-    if (!file || !hit.node.path || coveredPaths.has(hit.node.path)) continue;
-    const candidate = excerptFor(hit, file, radius);
-    const remaining = maximumTokens - usedTokens;
-    if (remaining <= 0) {
-      truncated = true;
-      break;
-    }
-    const wrapperTokens = estimateTokens(formatExcerptBlock({ ...candidate, content: "" }));
-    if (wrapperTokens >= remaining) {
-      truncated = true;
-      break;
-    }
-    let content = candidate.content;
-    let tokens = estimateTokens(formatExcerptBlock({ ...candidate, content }));
-    if (tokens > remaining) {
-      const maximumCharacters = Math.max(0, (remaining - wrapperTokens) * 4);
-      content = content.slice(0, maximumCharacters);
-      tokens = estimateTokens(formatExcerptBlock({ ...candidate, content }));
-      truncated = true;
-    }
-    if (!content) continue;
-    excerpts.push({ ...candidate, content, estimatedTokens: tokens });
-    coveredPaths.add(hit.node.path);
-    usedTokens += tokens;
-  }
-
-  if (excerpts.length < new Set(recommendedNodes.map((hit) => hit.node.path).filter(Boolean)).size) truncated = true;
   const packet: ContextPacket = {
-    schemaVersion: CONTEXT_SCHEMA_VERSION,
-    generatedAt: new Date().toISOString(),
+    schemaVersion: GRAPH_SCHEMA_VERSION,
     query,
-    intent: classifyIntent(query),
-    budget: {
-      maximumTokens,
-      usedTokens,
-      remainingTokens: maximumTokens - usedTokens,
-      truncated,
+    intent,
+    budget: { maximumTokens, usedTokens: 0, remainingTokens: maximumTokens, truncated: false, dropped: 0, downgraded: 0, estimator: TOKEN_ESTIMATOR },
+    quality: { queryTermCoverage: 0, exactSymbolMatch: false, meanConfidence: 0, heuristicShare: 0, filesCovered: 0, testsIncluded: 0, relationshipsIncluded: 0, unresolvedNearby: 0 },
+    architecture: { languages: languageCounts(src.graph), topDirectories: topDirectories(src.graph, 5), entryPoints: entryPoints(src.graph).slice(0, 5) },
+    memory: [],
+    tests: [],
+    recommendedNodes: [],
+    relationships: [],
+    unknowns: [],
+    index: {
+      root: src.graph.root,
+      files: src.graph.stats().files,
+      symbols: src.graph.nodes().filter((n) => !["repository", "directory", "file", "package"].includes(n.kind)).length,
+      relationships: src.graph.edgeCount,
+      fresh: src.fresh,
     },
-    quality: qualityFor(query, recommendedNodes, excerpts, relationships, {
-      architecture: architecture.layers.length + architecture.constraints.length,
-      tests: tests.length,
-      history: history.recentChanges.length + history.memory.length,
-    }),
-    architecture,
-    history,
-    tests,
-    recommendedNodes,
-    relationships,
-    excerpts,
   };
-  const removable: Array<() => boolean> = [
-    () => Boolean(packet.excerpts.pop()),
-    () => Boolean(packet.relationships.pop()),
-    () => Boolean(packet.recommendedNodes.pop()),
-    () => Boolean(packet.history.memory.pop()),
-    () => Boolean(packet.history.recentChanges.pop()),
-    () => Boolean(packet.architecture.constraints.pop()),
-    () => Boolean(packet.tests.pop()),
-    () => Boolean(packet.architecture.technologies.pop()),
-    () => Boolean(packet.architecture.layers.pop()),
-  ];
-  let formattedTokens = estimateTokens(formatContextPacket(packet));
-  for (const remove of removable) {
-    while (formattedTokens > maximumTokens && remove()) {
-      packet.budget.truncated = true;
-      formattedTokens = estimateTokens(formatContextPacket(packet));
-    }
-  }
-  packet.quality = qualityFor(query, packet.recommendedNodes, packet.excerpts, packet.relationships, {
-    architecture: packet.architecture.layers.length + packet.architecture.constraints.length,
-    tests: packet.tests.length,
-    history: packet.history.recentChanges.length + packet.history.memory.length,
+
+  // ── Candidates with lazily-rendered detail levels ─────────────────────────
+  const maxItems = Math.max(1, Math.min(40, Math.floor(maximumTokens / 100)));
+  const floor = (hits[0]?.score ?? 0) * 0.2;
+  const eligible = ordered.filter((h) => anchors.has(h.nodeId) || h.score >= floor);
+  const chosen = eligible.slice(0, maxItems);
+  const pathsWithSymbols = new Set(chosen.filter((h) => h.kind !== "file" && h.path).map((h) => h.path!));
+  const candidates: Candidate[] = chosen.map((hit) => {
+    const node = src.graph.node(hit.nodeId)!;
+    const anchor = anchors.has(hit.nodeId);
+    const semantic = freshSemanticSummary(src.summaries, node.id, node.path ? src.hashes.get(node.path) : undefined);
+    // A file whose symbols are selected would only repeat their source: keep it structural.
+    const max: DetailLevel =
+      node.kind === "package" ? "summary"
+      : node.kind === "file" && node.path && pathsWithSymbols.has(node.path) ? "signature"
+      : anchor ? "source"
+      : hit.depth === 0 ? "section"
+      : "signature";
+    return { hit, node, anchor, max, texts: {}, costs: {}, summarySource: semantic ? "semantic" : "deterministic" };
   });
-  // Account for the final quality score and the budget line's own digit count.
-  for (let iteration = 0; iteration < 8; iteration += 1) {
-    formattedTokens = estimateTokens(formatContextPacket(packet));
-    if (packet.budget.usedTokens === formattedTokens) break;
-    packet.budget.usedTokens = formattedTokens;
+  const focus = [...new Set([...identifiers, ...terms])];
+  const textFor = (c: Candidate, level: DetailLevel): string | undefined => {
+    if (!(level in c.texts)) {
+      const t = renderItem(src, c, level, focus);
+      if (t !== undefined) {
+        c.texts[level] = t;
+        c.costs[level] = estimateTokens(t) + 1;
+      }
+    }
+    return c.texts[level];
+  };
+
+  // ── Small sections first, each capped to a share of the budget ───────────
+  const header = renderHeader(packet);
+  let reserved = estimateTokens(header);
+  const within = (text: string, share: number): boolean => estimateTokens(text) <= maximumTokens * share && reserved + estimateTokens(text) <= maximumTokens;
+
+  const selectedPreview = new Set(candidates.flatMap((c) => [c.node.id, c.node.path ?? ""]));
+  for (const ranked of rankMemory(src.memory, query, selectedPreview, stackKeywords(src.graph))) {
+    const next = [...packet.memory, ranked.entry];
+    if (!within(renderMemory(next), 0.1)) break;
+    packet.memory = next;
   }
-  packet.budget.remainingTokens = maximumTokens - packet.budget.usedTokens;
+  if (packet.memory.length) reserved += estimateTokens(renderMemory(packet.memory));
+  const archText = renderArchitecture(packet);
+  if (within(archText, 0.08)) reserved += estimateTokens(archText);
+  else packet.architecture = { languages: {}, topDirectories: [], entryPoints: [] };
+
+  // ── Progressive packing ───────────────────────────────────────────────────
+  // 1. every candidate as a one-line relationship (breadth, cheap)
+  // 2. anchors get real detail first, capped so they cannot starve the rest
+  // 3. remaining candidates get summaries, then signatures, then sections
+  // 4. anchors may take full source with whatever is left
+  const relationshipReserve = Math.min(Math.floor(maximumTokens * 0.12), 400);
+  const itemBudget = Math.max(0, maximumTokens - reserved - relationshipReserve - 40);
+  let used = 0;
+  let anchorSpend = 0;
+  /** `anchorCap` bounds what anchors alone may spend; the total never exceeds itemBudget. */
+  const raise = (c: Candidate, level: DetailLevel, anchorCap: number): void => {
+    if (LEVEL_RANK[level] > LEVEL_RANK[c.max]) return;
+    if (c.level && LEVEL_RANK[level] <= LEVEL_RANK[c.level]) return;
+    if (level !== "relationship" && !c.level) return;
+    const text = textFor(c, level);
+    if (text === undefined) return;
+    const delta = c.costs[level]! - (c.level ? c.costs[c.level]! : 0);
+    if (used + delta > itemBudget) return;
+    if (c.anchor && anchorSpend + delta > anchorCap) return;
+    used += delta;
+    if (c.anchor) anchorSpend += delta;
+    c.level = level;
+  };
+  const anchorsFirst = candidates.filter((c) => c.anchor);
+  const others = candidates.filter((c) => !c.anchor);
+  const steps: [Candidate[], DetailLevel, number][] = [
+    [candidates, "relationship", 1],
+    [anchorsFirst, "summary", 1],
+    [anchorsFirst, "signature", 0.55],
+    [anchorsFirst, "section", 0.55],
+    [anchorsFirst, "source", 0.55],
+    [others, "summary", 1],
+    [others, "signature", 1],
+    [others, "section", 1],
+    [anchorsFirst, "signature", 1],
+    [anchorsFirst, "section", 1],
+    [anchorsFirst, "source", 1],
+  ];
+  for (const [group, level, share] of steps) for (const c of group) raise(c, level, itemBudget * share);
+  const included = candidates.filter((c) => c.level);
+  packet.budget.dropped = eligible.length - included.length;
+  // Downgraded = a richer level existed within the item's cap but did not fit.
+  packet.budget.downgraded = included.filter((c) =>
+    LEVELS.slice(LEVEL_RANK[c.level!] + 1, LEVEL_RANK[c.max] + 1).some((l) => textFor(c, l) !== undefined),
+  ).length;
+  packet.recommendedNodes = included.map((c) => toItem(c));
+
+  // ── Relationships, tests, unknowns ────────────────────────────────────────
+  const selectedIds = new Set(included.map((c) => c.node.id));
+  const selectedPaths = new Set(included.map((c) => c.node.path).filter((p): p is string => !!p));
+  packet.relationships = relationshipsFor(src.graph, selectedIds, new Set(included.filter((c) => c.anchor).map((c) => c.node.id)));
+  packet.tests = relatedTests(src.graph, selectedIds, included);
+  const unresolved = src.graph.unresolved.filter((u) => selectedIds.has(u.fromNode) || selectedPaths.has(u.location.path));
+  packet.unknowns = unresolved.slice(0, 5).map((u) => `${u.location.path}:${u.location.line} ${u.kind} \`${u.text.slice(0, 60)}\` unresolved (${u.reason})`);
+  if (unresolved.length > 5) packet.unknowns.push(`…and ${unresolved.length - 5} more unresolved references near the selection`);
+  const heuristicLanguages = [...new Set(included.filter((c) => c.node.evidence.provenance === "heuristic").map((c) => c.node.language))];
+  if (heuristicLanguages.length) packet.unknowns.push(`${heuristicLanguages.join(", ")} relationships are pattern-based (heuristic), not compiler-resolved`);
+  if (!src.fresh) packet.unknowns.push("index may be stale: repository changed since last scan");
+  if (hits.length === 0) packet.unknowns.push("no repository nodes matched the query");
+
+  // ── Enforce the budget on the final rendering ─────────────────────────────
+  // Measure with usedTokens at its widest value so the header can only shrink.
+  const fit = (): number => {
+    packet.budget.usedTokens = maximumTokens;
+    return estimateTokens(renderUnbounded(packet));
+  };
+  let total = fit();
+  while (total > maximumTokens && packet.relationships.length > 0) {
+    packet.relationships.pop();
+    packet.budget.truncated = true;
+    total = fit();
+  }
+  for (const drop of [() => packet.unknowns.pop(), () => packet.tests.pop(), () => packet.memory.pop()]) {
+    while (total > maximumTokens && drop() !== undefined) total = fit();
+  }
+  while (total > maximumTokens && packet.recommendedNodes.length > 0) {
+    // Lose detail from the lowest-ranked item first; drop it once it is a single line.
+    const last = included[packet.recommendedNodes.length - 1]!;
+    const lower = LEVELS[LEVEL_RANK[last.level!] - 1];
+    if (lower && textFor(last, lower) !== undefined) {
+      last.level = lower;
+      packet.budget.downgraded += 1;
+      packet.recommendedNodes[packet.recommendedNodes.length - 1] = toItem(last);
+    } else {
+      packet.recommendedNodes.pop();
+      packet.budget.dropped += 1;
+    }
+    total = fit();
+  }
+  if (total > maximumTokens) {
+    packet.architecture = { languages: {}, topDirectories: [], entryPoints: [] };
+    total = fit();
+  }
+  packet.budget.truncated ||= packet.budget.dropped > 0 || packet.budget.downgraded > 0;
+
+  // ── Quality metrics (observable evidence, not "understanding") ────────────
+  const finalIds = new Set(packet.recommendedNodes.map((n) => n.nodeId));
+  const covered = new Set(packet.recommendedNodes.flatMap((n) => tokenize(`${n.name} ${n.path ?? ""} ${n.text}`)));
+  const confidences = [
+    ...packet.recommendedNodes.map((n) => src.graph.node(n.nodeId)!.evidence.confidence),
+    ...packet.relationships.map((r) => r.confidence),
+  ];
+  packet.quality = {
+    queryTermCoverage: terms.length ? round(terms.filter((t) => covered.has(t)).length / terms.length) : 0,
+    exactSymbolMatch: hits.some((h) => finalIds.has(h.nodeId) && h.signals.symbol >= 0.9),
+    meanConfidence: confidences.length ? round(confidences.reduce((a, b) => a + b, 0) / confidences.length) : 0,
+    heuristicShare: packet.relationships.length ? round(packet.relationships.filter((r) => r.provenance === "heuristic").length / packet.relationships.length) : 0,
+    filesCovered: new Set(packet.recommendedNodes.map((n) => n.path).filter(Boolean)).size,
+    testsIncluded: packet.tests.length,
+    relationshipsIncluded: packet.relationships.length,
+    unresolvedNearby: unresolved.length,
+  };
+  // Report the estimate of the final rendering (stable after at most a few passes).
+  if (total > maximumTokens) packet.budget.truncated = true; // header itself is hard-cut
+  let reported = Math.min(total, maximumTokens);
+  for (let i = 0; i < 3; i += 1) {
+    packet.budget.usedTokens = reported;
+    const measured = estimateTokens(renderContextPacket(packet));
+    if (measured === reported) break;
+    reported = measured;
+  }
+  packet.budget.usedTokens = reported;
+  packet.budget.remainingTokens = maximumTokens - reported;
   return packet;
 }
 
-function displayQuery(query: string, maximumTokens: number): string {
-  // Preserve the full query in JSON while reserving at most a quarter of the
-  // rendered packet's character budget for its query heading.
-  return query.length > maximumTokens ? `${query.slice(0, maximumTokens - 1)}…` : query;
+function toItem(c: Candidate): ContextItem {
+  const item: ContextItem = {
+    nodeId: c.node.id,
+    kind: c.node.kind,
+    name: c.node.name,
+    score: c.hit.score,
+    detail: c.level!,
+    text: c.texts[c.level!]!,
+    tokens: c.costs[c.level!]!,
+    summarySource: c.summarySource,
+  };
+  if (c.node.path) item.path = c.node.path;
+  if (c.node.location) item.location = c.node.location;
+  return item;
 }
 
-export function formatContextPacket(packet: ContextPacket): string {
-  const lines = [
-    `# fehm Context Packet`,
-    "",
-    `Query: ${displayQuery(packet.query, packet.budget.maximumTokens)}`,
-    `Intent: ${packet.intent}`,
-    `Quality: ${packet.quality.score}/100`,
-    `Budget: ${packet.budget.usedTokens}/${packet.budget.maximumTokens} estimated tokens${packet.budget.truncated ? " (truncated)" : ""}`,
-    "",
-    "## Architecture",
-    `Layers: ${packet.architecture.layers.join(", ") || "unknown"}`,
-    `Technologies: ${packet.architecture.technologies.join(", ") || "unknown"}`,
-    `Approval: ${packet.architecture.approved ? "developer-approved" : "inferred"}`,
-    ...packet.architecture.constraints.map((item) => `- ${item}`),
-    "",
-    "## History and memory",
-    `Commits analyzed: ${packet.history.commitsAnalyzed}`,
-    ...packet.history.recentChanges.map((item) => `- ${item}`),
-    ...packet.history.memory.map((item) => `- ${item}`),
-    "",
-    "## Relevant tests",
-    ...packet.tests.map((item) => `- ${item}`),
-    "",
-    "## Recommended nodes",
-  ];
-  for (const hit of packet.recommendedNodes) {
-    lines.push(formatHitLine(hit));
+function renderItem(src: ContextSources, c: Candidate, level: DetailLevel, focus: readonly string[]): string | undefined {
+  const node = c.node;
+  const where = node.path ? `${node.path}${node.location ? `:${node.location.line}${node.location.endLine && node.location.endLine !== node.location.line ? `-${node.location.endLine}` : ""}` : ""}` : "";
+  const title = `${node.kind} ${node.name}${where ? ` — ${where}` : ""}`;
+  if (level === "relationship") return `- ${title}${c.hit.reasons[0] ? ` (${c.hit.reasons[0]})` : ""}`;
+  const semantic = c.summarySource === "semantic" ? src.summaries[node.id] : undefined;
+  const summary = semantic ? `${semantic.text} [semantic: ${semantic.model}]` : deterministicSummary(src.graph, node);
+  if (level === "summary") return `### ${title}\n${summary}`;
+  if (level === "signature") {
+    const sig =
+      node.kind === "file"
+        ? src.graph.edgesOf(node.id, "out", ["defines"]).map((e) => src.graph.node(e.target)?.signature).filter(Boolean).slice(0, 8).join("\n")
+        : node.signature;
+    if (!sig) return undefined;
+    return `### ${title}\n${summary}\n\`\`\`${FENCE[node.language ?? "other"] ?? ""}\n${sig}\n\`\`\``;
   }
-  lines.push("", "## Relationships");
-  for (const edge of packet.relationships.slice(0, 30)) {
-    lines.push(formatRelationshipLine(edge));
+  if (!node.path) return undefined;
+  const raw = node.kind === "file" ? src.source.lines(node.path) : node.location?.endLine ? src.source.slice(node.path, node.location.line, node.location.endLine) : undefined;
+  if (!raw || raw.length === 0) return undefined;
+  const lines = compressSource(raw, node.language);
+  let body: string[];
+  if (level === "section") body = focusedExcerpt(lines, [...focus, ...calleeNames(src.graph, node)]);
+  else {
+    if (lines.length > MAX_SOURCE_LINES) return undefined;
+    body = lines;
   }
-  lines.push("", "## Source excerpts");
-  for (const excerpt of packet.excerpts) {
-    lines.push("", formatExcerptBlock(excerpt));
+  const label = level === "section" && body.length < lines.length ? " (excerpt)" : "";
+  return `### ${title}${label}\n${summary}\n\`\`\`${FENCE[node.language ?? "other"] ?? ""}\n${body.join("\n")}\n\`\`\``;
+}
+
+function calleeNames(graph: CodeGraph, node: GraphNode): string[] {
+  return graph.edgesOf(node.id, "out", ["calls"]).map((e) => graph.node(e.target)?.name.split(".").at(-1) ?? "");
+}
+
+function relationshipsFor(graph: CodeGraph, selected: ReadonlySet<string>, anchors: ReadonlySet<string>): ContextRelationship[] {
+  const out = new Map<string, ContextRelationship>();
+  for (const id of [...selected].sort()) {
+    for (const edge of graph.edgesOf(id, "both")) {
+      if (edge.kind === "contains" || edge.kind === "defines") continue;
+      const both = selected.has(edge.source) && selected.has(edge.target);
+      if (!both && !anchors.has(id)) continue;
+      const s = graph.node(edge.source);
+      const t = graph.node(edge.target);
+      if (!s || !t) continue;
+      out.set(edge.id, {
+        kind: edge.kind,
+        source: edge.source,
+        target: edge.target,
+        sourceName: s.name,
+        targetName: t.name,
+        provenance: edge.evidence.provenance,
+        confidence: edge.evidence.confidence,
+      });
+    }
   }
-  return `${lines.join("\n")}\n`;
+  return [...out.values()]
+    .sort((a, b) => Number(selected.has(b.source) && selected.has(b.target)) - Number(selected.has(a.source) && selected.has(a.target)) || b.confidence - a.confidence || cmp(`${a.kind}|${a.source}|${a.target}`, `${b.kind}|${b.source}|${b.target}`))
+    .slice(0, 30);
+}
+
+function relatedTests(graph: CodeGraph, selected: ReadonlySet<string>, included: readonly Candidate[]): string[] {
+  const counts = new Map<string, number>();
+  for (const c of included) if (c.node.isTest && c.node.path) counts.set(c.node.path, (counts.get(c.node.path) ?? 0) + 2);
+  for (const id of selected) {
+    const node = graph.node(id);
+    const targets = [id, ...(node?.path && node.kind !== "file" ? [`file:${node.path}`] : [])];
+    for (const t of targets) {
+      for (const edge of graph.edgesOf(t, "in", ["imports", "calls", "references", "uses"])) {
+        const from = graph.node(edge.source);
+        if (from?.isTest && from.path) counts.set(from.path, (counts.get(from.path) ?? 0) + 1);
+      }
+    }
+  }
+  return [...counts.entries()].sort((a, b) => b[1] - a[1] || cmp(a[0], b[0])).slice(0, 5).map(([p]) => p);
+}
+
+// ── Rendering (a view of the JSON packet, never the store) ──────────────────
+
+function renderHeader(p: ContextPacket): string {
+  return `# fehm context: ${p.query}\nintent: ${p.intent} · budget: ${p.budget.usedTokens}/${p.budget.maximumTokens} tokens (${p.budget.estimator}) · index: ${p.index.files} files, ${p.index.symbols} symbols${p.index.fresh ? "" : " (stale)"}`;
+}
+
+function renderArchitecture(p: ContextPacket): string {
+  const langs = Object.entries(p.architecture.languages).sort((a, b) => b[1] - a[1] || cmp(a[0], b[0])).slice(0, 5).map(([l, n]) => `${l} ${n}`);
+  if (!langs.length && !p.architecture.topDirectories.length) return "";
+  const parts = [`languages: ${langs.join(", ")}`];
+  if (p.architecture.topDirectories.length) parts.push(`main dirs: ${p.architecture.topDirectories.join(", ")}`);
+  if (p.architecture.entryPoints.length) parts.push(`entry points: ${p.architecture.entryPoints.join(", ")}`);
+  return `## Project\n${parts.join("\n")}`;
+}
+
+function renderMemory(entries: readonly MemoryEntry[]): string {
+  if (!entries.length) return "";
+  return `## Project memory\n${entries.map((e) => `- ${e.text}${e.links.length ? ` (re: ${e.links.join(", ")})` : ""}`).join("\n")}`;
+}
+
+/**
+ * Markdown rendering of a packet. The budget is enforced against this text;
+ * if even the header cannot fit (tiny budgets) the text is hard-cut.
+ */
+export function renderContextPacket(p: ContextPacket): string {
+  return fitToBudget(renderUnbounded(p), p.budget.maximumTokens);
+}
+
+function renderUnbounded(p: ContextPacket): string {
+  const sections = [renderHeader(p)];
+  const arch = renderArchitecture(p);
+  if (arch) sections.push(arch);
+  const mem = renderMemory(p.memory);
+  if (mem) sections.push(mem);
+  const full = p.recommendedNodes.filter((n) => n.detail !== "relationship");
+  const brief = p.recommendedNodes.filter((n) => n.detail === "relationship");
+  if (full.length) sections.push(`## Relevant code\n${full.map((n) => n.text).join("\n\n")}`);
+  if (brief.length) sections.push(`## Also relevant\n${brief.map((n) => n.text).join("\n")}`);
+  if (p.relationships.length) {
+    sections.push(`## Relationships\n${p.relationships.map((r) => `- ${r.sourceName} ${r.kind} ${r.targetName} [${r.provenance} ${r.confidence.toFixed(2)}]`).join("\n")}`);
+  }
+  if (p.tests.length) sections.push(`## Tests\n${p.tests.map((t) => `- ${t}`).join("\n")}`);
+  if (p.unknowns.length) sections.push(`## Unknowns\n${p.unknowns.map((u) => `- ${u}`).join("\n")}`);
+  return sections.join("\n\n");
+}
+
+function round(n: number): number {
+  return Math.round(n * 1000) / 1000;
+}
+
+function cmp(a: string, b: string): number {
+  return a < b ? -1 : a > b ? 1 : 0;
 }

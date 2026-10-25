@@ -1,0 +1,5834 @@
+{
+  "units_checked": 1165,
+  "instruction_lines_checked": 187393,
+  "missing_instruction_lines": 0,
+  "exact_supporting_files_checked": 193,
+  "altered_supporting_files": [],
+  "checks": [
+    {
+      "unit": "accessibility/a11y-architect",
+      "instruction_lines_checked": 97,
+      "missing_lines": []
+    },
+    {
+      "unit": "accessibility/accessibility",
+      "instruction_lines_checked": 98,
+      "missing_lines": []
+    },
+    {
+      "unit": "accessibility/frontend-a11y",
+      "instruction_lines_checked": 354,
+      "missing_lines": []
+    },
+    {
+      "unit": "accessibility/section-508-specialist",
+      "instruction_lines_checked": 258,
+      "missing_lines": []
+    },
+    {
+      "unit": "ai/ai-data-remediation-engineer",
+      "instruction_lines_checked": 156,
+      "missing_lines": []
+    },
+    {
+      "unit": "ai/ai-engineer",
+      "instruction_lines_checked": 110,
+      "missing_lines": []
+    },
+    {
+      "unit": "ai/ai-first-engineering",
+      "instruction_lines_checked": 32,
+      "missing_lines": []
+    },
+    {
+      "unit": "ai/cost-aware-llm-pipeline",
+      "instruction_lines_checked": 141,
+      "missing_lines": []
+    },
+    {
+      "unit": "ai/cost-report",
+      "instruction_lines_checked": 62,
+      "missing_lines": []
+    },
+    {
+      "unit": "ai/cost-tracking",
+      "instruction_lines_checked": 78,
+      "missing_lines": []
+    },
+    {
+      "unit": "ai/foundation-models-on-device",
+      "instruction_lines_checked": 189,
+      "missing_lines": []
+    },
+    {
+      "unit": "ai/ito-compute",
+      "instruction_lines_checked": 131,
+      "missing_lines": []
+    },
+    {
+      "unit": "ai/ito-inference",
+      "instruction_lines_checked": 87,
+      "missing_lines": []
+    },
+    {
+      "unit": "ai/ito-training",
+      "instruction_lines_checked": 91,
+      "missing_lines": []
+    },
+    {
+      "unit": "ai/llm-post-training-engineer",
+      "instruction_lines_checked": 102,
+      "missing_lines": []
+    },
+    {
+      "unit": "ai/ml-adoption-playbook",
+      "instruction_lines_checked": 36,
+      "missing_lines": []
+    },
+    {
+      "unit": "ai/ml/pytorch-build-resolver",
+      "instruction_lines_checked": 93,
+      "missing_lines": []
+    },
+    {
+      "unit": "ai/ml/pytorch-patterns",
+      "instruction_lines_checked": 311,
+      "missing_lines": []
+    },
+    {
+      "unit": "ai/mle-reviewer",
+      "instruction_lines_checked": 118,
+      "missing_lines": []
+    },
+    {
+      "unit": "ai/mle-workflow",
+      "instruction_lines_checked": 262,
+      "missing_lines": []
+    },
+    {
+      "unit": "ai/model-qa",
+      "instruction_lines_checked": 396,
+      "missing_lines": []
+    },
+    {
+      "unit": "ai/prompt-engineer",
+      "instruction_lines_checked": 159,
+      "missing_lines": []
+    },
+    {
+      "unit": "ai/prompt-optimizer",
+      "instruction_lines_checked": 287,
+      "missing_lines": []
+    },
+    {
+      "unit": "ai/rag/iterative-retrieval",
+      "instruction_lines_checked": 155,
+      "missing_lines": []
+    },
+    {
+      "unit": "ai/rag/knowledge-graph-engineer",
+      "instruction_lines_checked": 285,
+      "missing_lines": []
+    },
+    {
+      "unit": "ai/rag/rag-pipeline-engineer",
+      "instruction_lines_checked": 345,
+      "missing_lines": []
+    },
+    {
+      "unit": "ai/rag/rag-pipeline-reviewer",
+      "instruction_lines_checked": 44,
+      "missing_lines": []
+    },
+    {
+      "unit": "ai/recsys-pipeline-architect",
+      "instruction_lines_checked": 76,
+      "missing_lines": []
+    },
+    {
+      "unit": "ai/regex-vs-llm-structured-text",
+      "instruction_lines_checked": 176,
+      "missing_lines": []
+    },
+    {
+      "unit": "ai/token-budget-advisor",
+      "instruction_lines_checked": 75,
+      "missing_lines": []
+    },
+    {
+      "unit": "architecture/architect",
+      "instruction_lines_checked": 169,
+      "missing_lines": []
+    },
+    {
+      "unit": "architecture/architecture-decision-records",
+      "instruction_lines_checked": 119,
+      "missing_lines": []
+    },
+    {
+      "unit": "architecture/ats-validator-architect",
+      "instruction_lines_checked": 293,
+      "missing_lines": []
+    },
+    {
+      "unit": "architecture/automation-governance-architect",
+      "instruction_lines_checked": 149,
+      "missing_lines": []
+    },
+    {
+      "unit": "architecture/backend-architect",
+      "instruction_lines_checked": 191,
+      "missing_lines": []
+    },
+    {
+      "unit": "architecture/blueprint",
+      "instruction_lines_checked": 57,
+      "missing_lines": []
+    },
+    {
+      "unit": "architecture/code-architect",
+      "instruction_lines_checked": 52,
+      "missing_lines": []
+    },
+    {
+      "unit": "architecture/contract-first",
+      "instruction_lines_checked": 209,
+      "missing_lines": []
+    },
+    {
+      "unit": "architecture/hexagonal-architecture",
+      "instruction_lines_checked": 209,
+      "missing_lines": []
+    },
+    {
+      "unit": "architecture/master-plan-architect",
+      "instruction_lines_checked": 104,
+      "missing_lines": []
+    },
+    {
+      "unit": "architecture/pdf-engine-architect",
+      "instruction_lines_checked": 557,
+      "missing_lines": []
+    },
+    {
+      "unit": "architecture/salesforce-architect",
+      "instruction_lines_checked": 134,
+      "missing_lines": []
+    },
+    {
+      "unit": "architecture/software-architect",
+      "instruction_lines_checked": 80,
+      "missing_lines": []
+    },
+    {
+      "unit": "architecture/workflow-architect",
+      "instruction_lines_checked": 428,
+      "missing_lines": []
+    },
+    {
+      "unit": "backend/api-connector-builder",
+      "instruction_lines_checked": 83,
+      "missing_lines": []
+    },
+    {
+      "unit": "backend/api-design",
+      "instruction_lines_checked": 411,
+      "missing_lines": []
+    },
+    {
+      "unit": "backend/api-platform-engineer",
+      "instruction_lines_checked": 126,
+      "missing_lines": []
+    },
+    {
+      "unit": "backend/backend-patterns",
+      "instruction_lines_checked": 436,
+      "missing_lines": []
+    },
+    {
+      "unit": "backend/mailtrap-email-integration",
+      "instruction_lines_checked": 54,
+      "missing_lines": []
+    },
+    {
+      "unit": "code-intelligence/code-explorer",
+      "instruction_lines_checked": 49,
+      "missing_lines": []
+    },
+    {
+      "unit": "code-intelligence/code-tour",
+      "instruction_lines_checked": 183,
+      "missing_lines": []
+    },
+    {
+      "unit": "code-intelligence/codebase-archaeologist",
+      "instruction_lines_checked": 225,
+      "missing_lines": []
+    },
+    {
+      "unit": "code-intelligence/codebase-onboarding",
+      "instruction_lines_checked": 164,
+      "missing_lines": []
+    },
+    {
+      "unit": "code-intelligence/codebase-onboarding-engineer",
+      "instruction_lines_checked": 133,
+      "missing_lines": []
+    },
+    {
+      "unit": "code-intelligence/codehealth-mcp",
+      "instruction_lines_checked": 101,
+      "missing_lines": []
+    },
+    {
+      "unit": "code-intelligence/lsp-index-engineer",
+      "instruction_lines_checked": 253,
+      "missing_lines": []
+    },
+    {
+      "unit": "code-intelligence/repo-scan",
+      "instruction_lines_checked": 139,
+      "missing_lines": []
+    },
+    {
+      "unit": "code-intelligence/spec-miner",
+      "instruction_lines_checked": 127,
+      "missing_lines": []
+    },
+    {
+      "unit": "code-intelligence/update-codemaps",
+      "instruction_lines_checked": 45,
+      "missing_lines": []
+    },
+    {
+      "unit": "core/common-agents-standard",
+      "instruction_lines_checked": 51,
+      "missing_lines": []
+    },
+    {
+      "unit": "core/common-code-review-standard",
+      "instruction_lines_checked": 87,
+      "missing_lines": []
+    },
+    {
+      "unit": "core/common-coding-style-standard",
+      "instruction_lines_checked": 67,
+      "missing_lines": []
+    },
+    {
+      "unit": "core/common-development-workflow-standard",
+      "instruction_lines_checked": 33,
+      "missing_lines": []
+    },
+    {
+      "unit": "core/common-git-workflow-standard",
+      "instruction_lines_checked": 16,
+      "missing_lines": []
+    },
+    {
+      "unit": "core/common-hooks-standard",
+      "instruction_lines_checked": 23,
+      "missing_lines": []
+    },
+    {
+      "unit": "core/common-patterns-standard",
+      "instruction_lines_checked": 24,
+      "missing_lines": []
+    },
+    {
+      "unit": "core/common-performance-standard",
+      "instruction_lines_checked": 42,
+      "missing_lines": []
+    },
+    {
+      "unit": "core/common-security-standard",
+      "instruction_lines_checked": 23,
+      "missing_lines": []
+    },
+    {
+      "unit": "core/common-testing-standard",
+      "instruction_lines_checked": 41,
+      "missing_lines": []
+    },
+    {
+      "unit": "core/ethos",
+      "instruction_lines_checked": 127,
+      "missing_lines": []
+    },
+    {
+      "unit": "data/data-consolidation-agent",
+      "instruction_lines_checked": 38,
+      "missing_lines": []
+    },
+    {
+      "unit": "data/data-engineer",
+      "instruction_lines_checked": 252,
+      "missing_lines": []
+    },
+    {
+      "unit": "data/data-scraper-agent",
+      "instruction_lines_checked": 609,
+      "missing_lines": []
+    },
+    {
+      "unit": "data/data-throughput-accelerator",
+      "instruction_lines_checked": 51,
+      "missing_lines": []
+    },
+    {
+      "unit": "data/data-visualization-engineer",
+      "instruction_lines_checked": 113,
+      "missing_lines": []
+    },
+    {
+      "unit": "databases/clickhouse-io",
+      "instruction_lines_checked": 370,
+      "missing_lines": []
+    },
+    {
+      "unit": "databases/database-migrations",
+      "instruction_lines_checked": 322,
+      "missing_lines": []
+    },
+    {
+      "unit": "databases/database-optimizer",
+      "instruction_lines_checked": 140,
+      "missing_lines": []
+    },
+    {
+      "unit": "databases/database-reliability-engineer",
+      "instruction_lines_checked": 122,
+      "missing_lines": []
+    },
+    {
+      "unit": "databases/database-reviewer",
+      "instruction_lines_checked": 71,
+      "missing_lines": []
+    },
+    {
+      "unit": "databases/gaussdb-expert",
+      "instruction_lines_checked": 268,
+      "missing_lines": []
+    },
+    {
+      "unit": "databases/mysql-patterns",
+      "instruction_lines_checked": 309,
+      "missing_lines": []
+    },
+    {
+      "unit": "databases/postgres-patterns",
+      "instruction_lines_checked": 111,
+      "missing_lines": []
+    },
+    {
+      "unit": "databases/prisma-patterns",
+      "instruction_lines_checked": 296,
+      "missing_lines": []
+    },
+    {
+      "unit": "databases/redis-patterns",
+      "instruction_lines_checked": 308,
+      "missing_lines": []
+    },
+    {
+      "unit": "debugging/build-error-resolver",
+      "instruction_lines_checked": 89,
+      "missing_lines": []
+    },
+    {
+      "unit": "debugging/build-fix",
+      "instruction_lines_checked": 46,
+      "missing_lines": []
+    },
+    {
+      "unit": "debugging/investigate",
+      "instruction_lines_checked": 204,
+      "missing_lines": []
+    },
+    {
+      "unit": "design/blender-motion-state-inspection",
+      "instruction_lines_checked": 116,
+      "missing_lines": []
+    },
+    {
+      "unit": "design/brand-discovery",
+      "instruction_lines_checked": 98,
+      "missing_lines": []
+    },
+    {
+      "unit": "design/brand-guardian",
+      "instruction_lines_checked": 247,
+      "missing_lines": []
+    },
+    {
+      "unit": "design/brand-voice",
+      "instruction_lines_checked": 64,
+      "missing_lines": []
+    },
+    {
+      "unit": "design/design-consultation",
+      "instruction_lines_checked": 406,
+      "missing_lines": []
+    },
+    {
+      "unit": "design/design-html",
+      "instruction_lines_checked": 351,
+      "missing_lines": []
+    },
+    {
+      "unit": "design/design-shotgun",
+      "instruction_lines_checked": 383,
+      "missing_lines": []
+    },
+    {
+      "unit": "design/design-system",
+      "instruction_lines_checked": 57,
+      "missing_lines": []
+    },
+    {
+      "unit": "design/fal-ai-media",
+      "instruction_lines_checked": 229,
+      "missing_lines": []
+    },
+    {
+      "unit": "design/image-prompt-engineer",
+      "instruction_lines_checked": 188,
+      "missing_lines": []
+    },
+    {
+      "unit": "design/inclusive-visuals-specialist",
+      "instruction_lines_checked": 53,
+      "missing_lines": []
+    },
+    {
+      "unit": "design/live-design-review",
+      "instruction_lines_checked": 1171,
+      "missing_lines": []
+    },
+    {
+      "unit": "design/make-interfaces-feel-better",
+      "instruction_lines_checked": 106,
+      "missing_lines": []
+    },
+    {
+      "unit": "design/manim-video",
+      "instruction_lines_checked": 57,
+      "missing_lines": []
+    },
+    {
+      "unit": "design/motion-advanced",
+      "instruction_lines_checked": 491,
+      "missing_lines": []
+    },
+    {
+      "unit": "design/motion-foundations",
+      "instruction_lines_checked": 230,
+      "missing_lines": []
+    },
+    {
+      "unit": "design/motion-patterns",
+      "instruction_lines_checked": 352,
+      "missing_lines": []
+    },
+    {
+      "unit": "design/persona-walkthrough",
+      "instruction_lines_checked": 197,
+      "missing_lines": []
+    },
+    {
+      "unit": "design/plan-design-review",
+      "instruction_lines_checked": 881,
+      "missing_lines": []
+    },
+    {
+      "unit": "design/remotion-video-creation",
+      "instruction_lines_checked": 4,
+      "missing_lines": []
+    },
+    {
+      "unit": "design/taste",
+      "instruction_lines_checked": 204,
+      "missing_lines": []
+    },
+    {
+      "unit": "design/taste-application",
+      "instruction_lines_checked": 279,
+      "missing_lines": []
+    },
+    {
+      "unit": "design/taste-distillation",
+      "instruction_lines_checked": 145,
+      "missing_lines": []
+    },
+    {
+      "unit": "design/tasteforge-video",
+      "instruction_lines_checked": 212,
+      "missing_lines": []
+    },
+    {
+      "unit": "design/ui-demo",
+      "instruction_lines_checked": 373,
+      "missing_lines": []
+    },
+    {
+      "unit": "design/ui-designer",
+      "instruction_lines_checked": 307,
+      "missing_lines": []
+    },
+    {
+      "unit": "design/ui-finish-gate-reviewer",
+      "instruction_lines_checked": 151,
+      "missing_lines": []
+    },
+    {
+      "unit": "design/ux-architect",
+      "instruction_lines_checked": 384,
+      "missing_lines": []
+    },
+    {
+      "unit": "design/ux-researcher",
+      "instruction_lines_checked": 253,
+      "missing_lines": []
+    },
+    {
+      "unit": "design/video-editing",
+      "instruction_lines_checked": 243,
+      "missing_lines": []
+    },
+    {
+      "unit": "design/video-streaming-engineer",
+      "instruction_lines_checked": 114,
+      "missing_lines": []
+    },
+    {
+      "unit": "design/videodb",
+      "instruction_lines_checked": 267,
+      "missing_lines": []
+    },
+    {
+      "unit": "design/visual-storyteller",
+      "instruction_lines_checked": 112,
+      "missing_lines": []
+    },
+    {
+      "unit": "design/whimsy-injector",
+      "instruction_lines_checked": 358,
+      "missing_lines": []
+    },
+    {
+      "unit": "desktop/desktop-app-engineer",
+      "instruction_lines_checked": 164,
+      "missing_lines": []
+    },
+    {
+      "unit": "desktop/windows-desktop-e2e",
+      "instruction_lines_checked": 687,
+      "missing_lines": []
+    },
+    {
+      "unit": "developer-experience/aside",
+      "instruction_lines_checked": 112,
+      "missing_lines": []
+    },
+    {
+      "unit": "developer-experience/browse",
+      "instruction_lines_checked": 231,
+      "missing_lines": []
+    },
+    {
+      "unit": "developer-experience/browser",
+      "instruction_lines_checked": 1337,
+      "missing_lines": []
+    },
+    {
+      "unit": "developer-experience/bun-runtime",
+      "instruction_lines_checked": 55,
+      "missing_lines": []
+    },
+    {
+      "unit": "developer-experience/capability-surface-selection",
+      "instruction_lines_checked": 97,
+      "missing_lines": []
+    },
+    {
+      "unit": "developer-experience/config-gc",
+      "instruction_lines_checked": 81,
+      "missing_lines": []
+    },
+    {
+      "unit": "developer-experience/developer-advocate",
+      "instruction_lines_checked": 226,
+      "missing_lines": []
+    },
+    {
+      "unit": "developer-experience/developer-tooling-engineer",
+      "instruction_lines_checked": 115,
+      "missing_lines": []
+    },
+    {
+      "unit": "developer-experience/devex-review",
+      "instruction_lines_checked": 520,
+      "missing_lines": []
+    },
+    {
+      "unit": "developer-experience/domain-skills",
+      "instruction_lines_checked": 92,
+      "missing_lines": []
+    },
+    {
+      "unit": "developer-experience/ecc-guide",
+      "instruction_lines_checked": 124,
+      "missing_lines": []
+    },
+    {
+      "unit": "developer-experience/ecc-recipes",
+      "instruction_lines_checked": 104,
+      "missing_lines": []
+    },
+    {
+      "unit": "developer-experience/ecc-tools-cost-audit",
+      "instruction_lines_checked": 107,
+      "missing_lines": []
+    },
+    {
+      "unit": "developer-experience/hermes-imports",
+      "instruction_lines_checked": 58,
+      "missing_lines": []
+    },
+    {
+      "unit": "developer-experience/hook-bug-workarounds",
+      "instruction_lines_checked": 44,
+      "missing_lines": []
+    },
+    {
+      "unit": "developer-experience/hook-lifecycle",
+      "instruction_lines_checked": 220,
+      "missing_lines": []
+    },
+    {
+      "unit": "developer-experience/hookify",
+      "instruction_lines_checked": 31,
+      "missing_lines": []
+    },
+    {
+      "unit": "developer-experience/hookify-configure",
+      "instruction_lines_checked": 7,
+      "missing_lines": []
+    },
+    {
+      "unit": "developer-experience/hookify-help",
+      "instruction_lines_checked": 30,
+      "missing_lines": []
+    },
+    {
+      "unit": "developer-experience/hookify-list",
+      "instruction_lines_checked": 12,
+      "missing_lines": []
+    },
+    {
+      "unit": "developer-experience/hookify-rules",
+      "instruction_lines_checked": 91,
+      "missing_lines": []
+    },
+    {
+      "unit": "developer-experience/mcp-builder",
+      "instruction_lines_checked": 198,
+      "missing_lines": []
+    },
+    {
+      "unit": "developer-experience/mcp-connector-policy",
+      "instruction_lines_checked": 28,
+      "missing_lines": []
+    },
+    {
+      "unit": "developer-experience/mcp-server-patterns",
+      "instruction_lines_checked": 37,
+      "missing_lines": []
+    },
+    {
+      "unit": "developer-experience/model-route",
+      "instruction_lines_checked": 17,
+      "missing_lines": []
+    },
+    {
+      "unit": "developer-experience/open-gstack-browser",
+      "instruction_lines_checked": 190,
+      "missing_lines": []
+    },
+    {
+      "unit": "developer-experience/plan-devex-review",
+      "instruction_lines_checked": 555,
+      "missing_lines": []
+    },
+    {
+      "unit": "developer-experience/plan-tune",
+      "instruction_lines_checked": 513,
+      "missing_lines": []
+    },
+    {
+      "unit": "developer-experience/rules-distill",
+      "instruction_lines_checked": 189,
+      "missing_lines": []
+    },
+    {
+      "unit": "developer-experience/scrape",
+      "instruction_lines_checked": 206,
+      "missing_lines": []
+    },
+    {
+      "unit": "developer-experience/setup-browser-cookies",
+      "instruction_lines_checked": 87,
+      "missing_lines": []
+    },
+    {
+      "unit": "developer-experience/skill-adaptation-policy",
+      "instruction_lines_checked": 47,
+      "missing_lines": []
+    },
+    {
+      "unit": "developer-experience/skill-comply",
+      "instruction_lines_checked": 33,
+      "missing_lines": []
+    },
+    {
+      "unit": "developer-experience/skill-create",
+      "instruction_lines_checked": 124,
+      "missing_lines": []
+    },
+    {
+      "unit": "developer-experience/skill-development-guide",
+      "instruction_lines_checked": 616,
+      "missing_lines": []
+    },
+    {
+      "unit": "developer-experience/skill-scout",
+      "instruction_lines_checked": 94,
+      "missing_lines": []
+    },
+    {
+      "unit": "developer-experience/skill-stocktake",
+      "instruction_lines_checked": 140,
+      "missing_lines": []
+    },
+    {
+      "unit": "developer-experience/skillify",
+      "instruction_lines_checked": 348,
+      "missing_lines": []
+    },
+    {
+      "unit": "developer-experience/terminal-opener",
+      "instruction_lines_checked": 38,
+      "missing_lines": []
+    },
+    {
+      "unit": "developer-experience/terminal-ops",
+      "instruction_lines_checked": 72,
+      "missing_lines": []
+    },
+    {
+      "unit": "developer-experience/the-longform-guide",
+      "instruction_lines_checked": 203,
+      "missing_lines": []
+    },
+    {
+      "unit": "developer-experience/the-shortform-guide",
+      "instruction_lines_checked": 287,
+      "missing_lines": []
+    },
+    {
+      "unit": "developer-experience/workspace-surface-audit",
+      "instruction_lines_checked": 86,
+      "missing_lines": []
+    },
+    {
+      "unit": "devops/dashboard-builder",
+      "instruction_lines_checked": 71,
+      "missing_lines": []
+    },
+    {
+      "unit": "devops/devops-automator",
+      "instruction_lines_checked": 299,
+      "missing_lines": []
+    },
+    {
+      "unit": "devops/docker-patterns",
+      "instruction_lines_checked": 411,
+      "missing_lines": []
+    },
+    {
+      "unit": "devops/finops-engineer",
+      "instruction_lines_checked": 119,
+      "missing_lines": []
+    },
+    {
+      "unit": "devops/flox-environments",
+      "instruction_lines_checked": 372,
+      "missing_lines": []
+    },
+    {
+      "unit": "devops/incident-response-commander",
+      "instruction_lines_checked": 356,
+      "missing_lines": []
+    },
+    {
+      "unit": "devops/kubernetes-patterns",
+      "instruction_lines_checked": 617,
+      "missing_lines": []
+    },
+    {
+      "unit": "devops/platform-engineer",
+      "instruction_lines_checked": 220,
+      "missing_lines": []
+    },
+    {
+      "unit": "devops/pm2",
+      "instruction_lines_checked": 214,
+      "missing_lines": []
+    },
+    {
+      "unit": "devops/sre",
+      "instruction_lines_checked": 67,
+      "missing_lines": []
+    },
+    {
+      "unit": "devops/uncloud",
+      "instruction_lines_checked": 256,
+      "missing_lines": []
+    },
+    {
+      "unit": "documentation/article-writing",
+      "instruction_lines_checked": 52,
+      "missing_lines": []
+    },
+    {
+      "unit": "documentation/changelog-style",
+      "instruction_lines_checked": 45,
+      "missing_lines": []
+    },
+    {
+      "unit": "documentation/diagram",
+      "instruction_lines_checked": 126,
+      "missing_lines": []
+    },
+    {
+      "unit": "documentation/doc-updater",
+      "instruction_lines_checked": 78,
+      "missing_lines": []
+    },
+    {
+      "unit": "documentation/docs-lookup",
+      "instruction_lines_checked": 42,
+      "missing_lines": []
+    },
+    {
+      "unit": "documentation/document-generate",
+      "instruction_lines_checked": 331,
+      "missing_lines": []
+    },
+    {
+      "unit": "documentation/document-generator",
+      "instruction_lines_checked": 36,
+      "missing_lines": []
+    },
+    {
+      "unit": "documentation/documentation-lookup",
+      "instruction_lines_checked": 54,
+      "missing_lines": []
+    },
+    {
+      "unit": "documentation/explanation-diataxis-in-gstack",
+      "instruction_lines_checked": 46,
+      "missing_lines": []
+    },
+    {
+      "unit": "documentation/grant-writer",
+      "instruction_lines_checked": 411,
+      "missing_lines": []
+    },
+    {
+      "unit": "documentation/living-docs-governance",
+      "instruction_lines_checked": 79,
+      "missing_lines": []
+    },
+    {
+      "unit": "documentation/make-pdf",
+      "instruction_lines_checked": 178,
+      "missing_lines": []
+    },
+    {
+      "unit": "documentation/nutrient-document-processing",
+      "instruction_lines_checked": 120,
+      "missing_lines": []
+    },
+    {
+      "unit": "documentation/technical-writer",
+      "instruction_lines_checked": 281,
+      "missing_lines": []
+    },
+    {
+      "unit": "documentation/universal-document-compiler",
+      "instruction_lines_checked": 264,
+      "missing_lines": []
+    },
+    {
+      "unit": "documentation/update-docs",
+      "instruction_lines_checked": 62,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/academic/anthropologist",
+      "instruction_lines_checked": 97,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/academic/geographer",
+      "instruction_lines_checked": 99,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/academic/historian",
+      "instruction_lines_checked": 95,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/academic/narratologist",
+      "instruction_lines_checked": 91,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/academic/psychologist",
+      "instruction_lines_checked": 90,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/academic/statistician",
+      "instruction_lines_checked": 106,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/blockchain/evm-token-decimals",
+      "instruction_lines_checked": 95,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/communications/email-ops",
+      "instruction_lines_checked": 87,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/communications/google-workspace-ops",
+      "instruction_lines_checked": 59,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/communications/messages-ops",
+      "instruction_lines_checked": 68,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/communications/report-distribution-agent",
+      "instruction_lines_checked": 42,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/communications/unified-notifications-ops",
+      "instruction_lines_checked": 138,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/finance/accounts-payable-agent",
+      "instruction_lines_checked": 140,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/finance/agent-payment-x402",
+      "instruction_lines_checked": 160,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/finance/bookkeeper-controller",
+      "instruction_lines_checked": 203,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/finance/chief-financial-officer",
+      "instruction_lines_checked": 291,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/finance/customer-billing-ops",
+      "instruction_lines_checked": 95,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/finance/finance-billing-ops",
+      "instruction_lines_checked": 86,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/finance/financial-analyst",
+      "instruction_lines_checked": 177,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/finance/fpa-analyst",
+      "instruction_lines_checked": 204,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/finance/investment-researcher",
+      "instruction_lines_checked": 207,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/finance/investor-materials",
+      "instruction_lines_checked": 71,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/finance/investor-outreach",
+      "instruction_lines_checked": 62,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/finance/ito-baskets",
+      "instruction_lines_checked": 216,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/finance/loan-officer-assistant",
+      "instruction_lines_checked": 446,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/finance/payments-billing-engineer",
+      "instruction_lines_checked": 152,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/finance/prediction-market-risk-review",
+      "instruction_lines_checked": 38,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/finance/pricing-analyst",
+      "instruction_lines_checked": 185,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/finance/tax-strategist",
+      "instruction_lines_checked": 181,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/game-development/blender-addon-engineer",
+      "instruction_lines_checked": 181,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/game-development/economy-designer",
+      "instruction_lines_checked": 118,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/game-development/game-audio-engineer",
+      "instruction_lines_checked": 208,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/game-development/game-designer",
+      "instruction_lines_checked": 128,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/game-development/godot-gameplay-scripter",
+      "instruction_lines_checked": 258,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/game-development/godot-multiplayer-engineer",
+      "instruction_lines_checked": 231,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/game-development/godot-shader-developer",
+      "instruction_lines_checked": 204,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/game-development/level-designer",
+      "instruction_lines_checked": 159,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/game-development/narrative-designer",
+      "instruction_lines_checked": 189,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/game-development/roblox-avatar-creator",
+      "instruction_lines_checked": 234,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/game-development/roblox-experience-designer",
+      "instruction_lines_checked": 237,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/game-development/roblox-systems-scripter",
+      "instruction_lines_checked": 255,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/game-development/technical-artist",
+      "instruction_lines_checked": 182,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/game-development/unity-architect",
+      "instruction_lines_checked": 214,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/game-development/unity-editor-tool-developer",
+      "instruction_lines_checked": 249,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/game-development/unity-multiplayer-engineer",
+      "instruction_lines_checked": 259,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/game-development/unity-shader-graph-artist",
+      "instruction_lines_checked": 211,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/game-development/unreal-multiplayer-architect",
+      "instruction_lines_checked": 251,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/game-development/unreal-systems-engineer",
+      "instruction_lines_checked": 246,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/game-development/unreal-technical-artist",
+      "instruction_lines_checked": 193,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/game-development/unreal-world-builder",
+      "instruction_lines_checked": 209,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/gis/3d-scene-developer",
+      "instruction_lines_checked": 84,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/gis/bim-specialist",
+      "instruction_lines_checked": 81,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/gis/cartography-designer",
+      "instruction_lines_checked": 120,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/gis/drone-reality-mapping",
+      "instruction_lines_checked": 93,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/gis/geoai-ml-engineer",
+      "instruction_lines_checked": 79,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/gis/geoprocessing-specialist",
+      "instruction_lines_checked": 72,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/gis/gis-analyst",
+      "instruction_lines_checked": 66,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/gis/qa-engineer",
+      "instruction_lines_checked": 100,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/gis/solution-engineer",
+      "instruction_lines_checked": 75,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/gis/spatial-data-engineer",
+      "instruction_lines_checked": 72,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/gis/spatial-data-scientist",
+      "instruction_lines_checked": 85,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/gis/technical-consultant",
+      "instruction_lines_checked": 63,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/gis/web-gis-developer",
+      "instruction_lines_checked": 82,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/healthcare/clinical-evidence-agent",
+      "instruction_lines_checked": 163,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/healthcare/healthcare-aging-parent-care-companion",
+      "instruction_lines_checked": 315,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/healthcare/healthcare-cdss-patterns",
+      "instruction_lines_checked": 199,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/healthcare/healthcare-customer-service",
+      "instruction_lines_checked": 297,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/healthcare/healthcare-emr-patterns",
+      "instruction_lines_checked": 119,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/healthcare/healthcare-eval-harness",
+      "instruction_lines_checked": 155,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/healthcare/healthcare-marketing-compliance",
+      "instruction_lines_checked": 325,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/healthcare/healthcare-phi-compliance",
+      "instruction_lines_checked": 101,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/healthcare/healthcare-reviewer",
+      "instruction_lines_checked": 62,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/healthcare/hipaa-compliance",
+      "instruction_lines_checked": 49,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/healthcare/innovation-strategist",
+      "instruction_lines_checked": 325,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/healthcare/medical-billing-coding-specialist",
+      "instruction_lines_checked": 389,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/healthcare/sovereign-health-systems-agent",
+      "instruction_lines_checked": 229,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/legal/esign-field-placement",
+      "instruction_lines_checked": 155,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/legal/legal-billing-time-tracking",
+      "instruction_lines_checked": 445,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/legal/legal-client-intake",
+      "instruction_lines_checked": 387,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/legal/legal-document-review",
+      "instruction_lines_checked": 360,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/legal/master-agreement-generator",
+      "instruction_lines_checked": 180,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/legal/visa-doc-translate",
+      "instruction_lines_checked": 87,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/operations/carrier-relationship-management",
+      "instruction_lines_checked": 129,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/operations/customs-trade-compliance",
+      "instruction_lines_checked": 158,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/operations/energy-procurement",
+      "instruction_lines_checked": 139,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/operations/inventory-demand-planning",
+      "instruction_lines_checked": 148,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/operations/logistics-exception-management",
+      "instruction_lines_checked": 141,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/operations/operations-manager",
+      "instruction_lines_checked": 305,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/operations/production-scheduling",
+      "instruction_lines_checked": 136,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/operations/quality-nonconformance",
+      "instruction_lines_checked": 168,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/operations/retail-customer-returns",
+      "instruction_lines_checked": 454,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/operations/returns-reverse-logistics",
+      "instruction_lines_checked": 153,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/operations/supply-chain-strategist",
+      "instruction_lines_checked": 463,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/spatial-computing/macos-spatial-metal-engineer",
+      "instruction_lines_checked": 269,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/spatial-computing/terminal-integration-specialist",
+      "instruction_lines_checked": 45,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/spatial-computing/visionos-spatial-engineer",
+      "instruction_lines_checked": 31,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/spatial-computing/xr-cockpit-interaction-specialist",
+      "instruction_lines_checked": 19,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/spatial-computing/xr-immersive-developer",
+      "instruction_lines_checked": 19,
+      "missing_lines": []
+    },
+    {
+      "unit": "domain/spatial-computing/xr-interface-architect",
+      "instruction_lines_checked": 19,
+      "missing_lines": []
+    },
+    {
+      "unit": "engineering/claude-code",
+      "instruction_lines_checked": 254,
+      "missing_lines": []
+    },
+    {
+      "unit": "engineering/cms-developer",
+      "instruction_lines_checked": 440,
+      "missing_lines": []
+    },
+    {
+      "unit": "engineering/code-reviewer",
+      "instruction_lines_checked": 52,
+      "missing_lines": []
+    },
+    {
+      "unit": "engineering/code-reviewer-ecc",
+      "instruction_lines_checked": 245,
+      "missing_lines": []
+    },
+    {
+      "unit": "engineering/code-simplifier",
+      "instruction_lines_checked": 35,
+      "missing_lines": []
+    },
+    {
+      "unit": "engineering/codex",
+      "instruction_lines_checked": 376,
+      "missing_lines": []
+    },
+    {
+      "unit": "engineering/coding-standards",
+      "instruction_lines_checked": 432,
+      "missing_lines": []
+    },
+    {
+      "unit": "engineering/comment-analyzer",
+      "instruction_lines_checked": 32,
+      "missing_lines": []
+    },
+    {
+      "unit": "engineering/content-hash-cache-pattern",
+      "instruction_lines_checked": 119,
+      "missing_lines": []
+    },
+    {
+      "unit": "engineering/deslop-shared-libs",
+      "instruction_lines_checked": 182,
+      "missing_lines": []
+    },
+    {
+      "unit": "engineering/email-intelligence-engineer",
+      "instruction_lines_checked": 275,
+      "missing_lines": []
+    },
+    {
+      "unit": "engineering/embedded-firmware-engineer",
+      "instruction_lines_checked": 120,
+      "missing_lines": []
+    },
+    {
+      "unit": "engineering/error-handling",
+      "instruction_lines_checked": 304,
+      "missing_lines": []
+    },
+    {
+      "unit": "engineering/feishu-integration-developer",
+      "instruction_lines_checked": 493,
+      "missing_lines": []
+    },
+    {
+      "unit": "engineering/i18n-engineer",
+      "instruction_lines_checked": 139,
+      "missing_lines": []
+    },
+    {
+      "unit": "engineering/identity-access-engineer",
+      "instruction_lines_checked": 150,
+      "missing_lines": []
+    },
+    {
+      "unit": "engineering/inherit-legacy-style",
+      "instruction_lines_checked": 85,
+      "missing_lines": []
+    },
+    {
+      "unit": "engineering/iot-fleet-engineer",
+      "instruction_lines_checked": 112,
+      "missing_lines": []
+    },
+    {
+      "unit": "engineering/it-service-manager",
+      "instruction_lines_checked": 444,
+      "missing_lines": []
+    },
+    {
+      "unit": "engineering/local-and-pr-code-review",
+      "instruction_lines_checked": 203,
+      "missing_lines": []
+    },
+    {
+      "unit": "engineering/minimal-change-engineer",
+      "instruction_lines_checked": 145,
+      "missing_lines": []
+    },
+    {
+      "unit": "engineering/orgscript-engineer",
+      "instruction_lines_checked": 77,
+      "missing_lines": []
+    },
+    {
+      "unit": "engineering/plan-eng-review",
+      "instruction_lines_checked": 506,
+      "missing_lines": []
+    },
+    {
+      "unit": "engineering/plankton-code-quality",
+      "instruction_lines_checked": 171,
+      "missing_lines": []
+    },
+    {
+      "unit": "engineering/rapid-prototyper",
+      "instruction_lines_checked": 380,
+      "missing_lines": []
+    },
+    {
+      "unit": "engineering/realtime-collaboration-engineer",
+      "instruction_lines_checked": 146,
+      "missing_lines": []
+    },
+    {
+      "unit": "engineering/refactor-clean",
+      "instruction_lines_checked": 60,
+      "missing_lines": []
+    },
+    {
+      "unit": "engineering/refactor-cleaner",
+      "instruction_lines_checked": 66,
+      "missing_lines": []
+    },
+    {
+      "unit": "engineering/review",
+      "instruction_lines_checked": 482,
+      "missing_lines": []
+    },
+    {
+      "unit": "engineering/review-pr",
+      "instruction_lines_checked": 24,
+      "missing_lines": []
+    },
+    {
+      "unit": "engineering/search-relevance-engineer",
+      "instruction_lines_checked": 197,
+      "missing_lines": []
+    },
+    {
+      "unit": "engineering/senior-developer",
+      "instruction_lines_checked": 129,
+      "missing_lines": []
+    },
+    {
+      "unit": "engineering/silent-failure-hunter",
+      "instruction_lines_checked": 35,
+      "missing_lines": []
+    },
+    {
+      "unit": "engineering/slop-scan",
+      "instruction_lines_checked": 37,
+      "missing_lines": []
+    },
+    {
+      "unit": "engineering/solidity-smart-contract-engineer",
+      "instruction_lines_checked": 415,
+      "missing_lines": []
+    },
+    {
+      "unit": "engineering/type-design-analyzer",
+      "instruction_lines_checked": 28,
+      "missing_lines": []
+    },
+    {
+      "unit": "engineering/voice-ai-integration-engineer",
+      "instruction_lines_checked": 446,
+      "missing_lines": []
+    },
+    {
+      "unit": "engineering/wechat-mini-program-developer",
+      "instruction_lines_checked": 294,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/angular/angular-coding-style-standard",
+      "instruction_lines_checked": 121,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/angular/angular-developer",
+      "instruction_lines_checked": 62,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/angular/angular-hooks-standard",
+      "instruction_lines_checked": 9,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/angular/angular-patterns-standard",
+      "instruction_lines_checked": 174,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/angular/angular-security-standard",
+      "instruction_lines_checked": 53,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/angular/angular-testing-standard",
+      "instruction_lines_checked": 113,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/django/django-build-resolver",
+      "instruction_lines_checked": 183,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/django/django-celery",
+      "instruction_lines_checked": 355,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/django/django-patterns",
+      "instruction_lines_checked": 586,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/django/django-reviewer",
+      "instruction_lines_checked": 124,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/django/django-security",
+      "instruction_lines_checked": 502,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/django/django-tdd",
+      "instruction_lines_checked": 558,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/django/django-verification",
+      "instruction_lines_checked": 360,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/dotnet/dotnet-patterns",
+      "instruction_lines_checked": 253,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/drupal/drupal-performance",
+      "instruction_lines_checked": 264,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/drupal/drupal-shopping-cart",
+      "instruction_lines_checked": 276,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/fastapi/fastapi-patterns",
+      "instruction_lines_checked": 390,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/fastapi/fastapi-review",
+      "instruction_lines_checked": 26,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/fastapi/fastapi-reviewer",
+      "instruction_lines_checked": 53,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/flutter/dart-build-resolver",
+      "instruction_lines_checked": 151,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/flutter/dart-flutter-patterns",
+      "instruction_lines_checked": 451,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/flutter/flutter-build",
+      "instruction_lines_checked": 118,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/flutter/flutter-dart-code-review",
+      "instruction_lines_checked": 330,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/flutter/flutter-review",
+      "instruction_lines_checked": 81,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/flutter/flutter-reviewer",
+      "instruction_lines_checked": 185,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/flutter/flutter-test",
+      "instruction_lines_checked": 99,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/laravel/filament-optimization-specialist",
+      "instruction_lines_checked": 233,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/laravel/laravel-patterns",
+      "instruction_lines_checked": 315,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/laravel/laravel-plugin-discovery",
+      "instruction_lines_checked": 158,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/laravel/laravel-security",
+      "instruction_lines_checked": 770,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/laravel/laravel-tdd",
+      "instruction_lines_checked": 524,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/laravel/laravel-verification",
+      "instruction_lines_checked": 128,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/nestjs/nestjs-patterns",
+      "instruction_lines_checked": 179,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/nextjs/nextjs-turbopack",
+      "instruction_lines_checked": 31,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/nuxt/nuxt-coding-style-standard",
+      "instruction_lines_checked": 20,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/nuxt/nuxt-hooks-standard",
+      "instruction_lines_checked": 15,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/nuxt/nuxt-patterns-standard",
+      "instruction_lines_checked": 26,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/nuxt/nuxt-security-standard",
+      "instruction_lines_checked": 25,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/nuxt/nuxt-testing-standard",
+      "instruction_lines_checked": 23,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/nuxt/nuxt4-patterns",
+      "instruction_lines_checked": 73,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/quarkus/quarkus-patterns",
+      "instruction_lines_checked": 591,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/quarkus/quarkus-security",
+      "instruction_lines_checked": 367,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/quarkus/quarkus-tdd",
+      "instruction_lines_checked": 657,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/quarkus/quarkus-verification",
+      "instruction_lines_checked": 360,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/rails/rails-patterns",
+      "instruction_lines_checked": 352,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/react-native/react-native-accessibility-standard",
+      "instruction_lines_checked": 36,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/react-native/react-native-coding-style-standard",
+      "instruction_lines_checked": 46,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/react-native/react-native-hooks-standard",
+      "instruction_lines_checked": 14,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/react-native/react-native-patterns",
+      "instruction_lines_checked": 251,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/react-native/react-native-patterns-standard",
+      "instruction_lines_checked": 61,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/react-native/react-native-performance-standard",
+      "instruction_lines_checked": 26,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/react-native/react-native-production-readiness-standard",
+      "instruction_lines_checked": 32,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/react-native/react-native-security-standard",
+      "instruction_lines_checked": 23,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/react-native/react-native-testing-standard",
+      "instruction_lines_checked": 31,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/react/react-build",
+      "instruction_lines_checked": 132,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/react/react-build-resolver",
+      "instruction_lines_checked": 155,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/react/react-coding-style-standard",
+      "instruction_lines_checked": 71,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/react/react-hooks-standard",
+      "instruction_lines_checked": 131,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/react/react-patterns",
+      "instruction_lines_checked": 247,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/react/react-patterns-standard",
+      "instruction_lines_checked": 132,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/react/react-performance",
+      "instruction_lines_checked": 398,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/react/react-review",
+      "instruction_lines_checked": 125,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/react/react-reviewer",
+      "instruction_lines_checked": 118,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/react/react-security-standard",
+      "instruction_lines_checked": 123,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/react/react-test",
+      "instruction_lines_checked": 189,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/react/react-testing",
+      "instruction_lines_checked": 307,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/react/react-testing-standard",
+      "instruction_lines_checked": 137,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/springboot/springboot-patterns",
+      "instruction_lines_checked": 254,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/springboot/springboot-security",
+      "instruction_lines_checked": 209,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/springboot/springboot-tdd",
+      "instruction_lines_checked": 119,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/springboot/springboot-verification",
+      "instruction_lines_checked": 168,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/swiftui/swiftui-patterns",
+      "instruction_lines_checked": 193,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/tinystruct/tinystruct-patterns",
+      "instruction_lines_checked": 214,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/vite/vite-patterns",
+      "instruction_lines_checked": 330,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/vue/ui-to-vue",
+      "instruction_lines_checked": 94,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/vue/vue-coding-style-standard",
+      "instruction_lines_checked": 34,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/vue/vue-hooks-standard",
+      "instruction_lines_checked": 23,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/vue/vue-patterns",
+      "instruction_lines_checked": 346,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/vue/vue-patterns-standard",
+      "instruction_lines_checked": 34,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/vue/vue-review",
+      "instruction_lines_checked": 129,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/vue/vue-reviewer",
+      "instruction_lines_checked": 147,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/vue/vue-security-standard",
+      "instruction_lines_checked": 24,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/vue/vue-testing-standard",
+      "instruction_lines_checked": 31,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/wordpress/wordpress-performance",
+      "instruction_lines_checked": 264,
+      "missing_lines": []
+    },
+    {
+      "unit": "frameworks/wordpress/wordpress-shopping-cart",
+      "instruction_lines_checked": 266,
+      "missing_lines": []
+    },
+    {
+      "unit": "frontend/frontend-design-direction",
+      "instruction_lines_checked": 71,
+      "missing_lines": []
+    },
+    {
+      "unit": "frontend/frontend-developer",
+      "instruction_lines_checked": 177,
+      "missing_lines": []
+    },
+    {
+      "unit": "frontend/frontend-patterns",
+      "instruction_lines_checked": 537,
+      "missing_lines": []
+    },
+    {
+      "unit": "frontend/frontend-slides",
+      "instruction_lines_checked": 123,
+      "missing_lines": []
+    },
+    {
+      "unit": "frontend/uswds-developer",
+      "instruction_lines_checked": 258,
+      "missing_lines": []
+    },
+    {
+      "unit": "frontend/web-coding-style-standard",
+      "instruction_lines_checked": 77,
+      "missing_lines": []
+    },
+    {
+      "unit": "frontend/web-design-quality-standard",
+      "instruction_lines_checked": 47,
+      "missing_lines": []
+    },
+    {
+      "unit": "frontend/web-hooks-standard",
+      "instruction_lines_checked": 103,
+      "missing_lines": []
+    },
+    {
+      "unit": "frontend/web-patterns-standard",
+      "instruction_lines_checked": 55,
+      "missing_lines": []
+    },
+    {
+      "unit": "frontend/web-performance-standard",
+      "instruction_lines_checked": 47,
+      "missing_lines": []
+    },
+    {
+      "unit": "frontend/web-security-standard",
+      "instruction_lines_checked": 41,
+      "missing_lines": []
+    },
+    {
+      "unit": "frontend/web-testing-standard",
+      "instruction_lines_checked": 35,
+      "missing_lines": []
+    },
+    {
+      "unit": "frontend/webassembly-engineer",
+      "instruction_lines_checked": 119,
+      "missing_lines": []
+    },
+    {
+      "unit": "git/checkpoint",
+      "instruction_lines_checked": 55,
+      "missing_lines": []
+    },
+    {
+      "unit": "git/git-workflow",
+      "instruction_lines_checked": 521,
+      "missing_lines": []
+    },
+    {
+      "unit": "git/git-workflow-master",
+      "instruction_lines_checked": 61,
+      "missing_lines": []
+    },
+    {
+      "unit": "git/github-ops",
+      "instruction_lines_checked": 110,
+      "missing_lines": []
+    },
+    {
+      "unit": "git/pr",
+      "instruction_lines_checked": 116,
+      "missing_lines": []
+    },
+    {
+      "unit": "git/prp-commit",
+      "instruction_lines_checked": 77,
+      "missing_lines": []
+    },
+    {
+      "unit": "git/prp-pr",
+      "instruction_lines_checked": 115,
+      "missing_lines": []
+    },
+    {
+      "unit": "infrastructure/china-network-engineer",
+      "instruction_lines_checked": 204,
+      "missing_lines": []
+    },
+    {
+      "unit": "infrastructure/cisco-ios-patterns",
+      "instruction_lines_checked": 123,
+      "missing_lines": []
+    },
+    {
+      "unit": "infrastructure/homelab-architect",
+      "instruction_lines_checked": 77,
+      "missing_lines": []
+    },
+    {
+      "unit": "infrastructure/homelab-network-readiness",
+      "instruction_lines_checked": 130,
+      "missing_lines": []
+    },
+    {
+      "unit": "infrastructure/homelab-network-setup",
+      "instruction_lines_checked": 93,
+      "missing_lines": []
+    },
+    {
+      "unit": "infrastructure/homelab-pihole-dns",
+      "instruction_lines_checked": 207,
+      "missing_lines": []
+    },
+    {
+      "unit": "infrastructure/homelab-vlan-segmentation",
+      "instruction_lines_checked": 234,
+      "missing_lines": []
+    },
+    {
+      "unit": "infrastructure/netmiko-ssh-automation",
+      "instruction_lines_checked": 135,
+      "missing_lines": []
+    },
+    {
+      "unit": "infrastructure/network-architect",
+      "instruction_lines_checked": 77,
+      "missing_lines": []
+    },
+    {
+      "unit": "infrastructure/network-bgp-diagnostics",
+      "instruction_lines_checked": 129,
+      "missing_lines": []
+    },
+    {
+      "unit": "infrastructure/network-config-reviewer",
+      "instruction_lines_checked": 75,
+      "missing_lines": []
+    },
+    {
+      "unit": "infrastructure/network-config-validation",
+      "instruction_lines_checked": 168,
+      "missing_lines": []
+    },
+    {
+      "unit": "infrastructure/network-engineer",
+      "instruction_lines_checked": 196,
+      "missing_lines": []
+    },
+    {
+      "unit": "infrastructure/network-interface-health",
+      "instruction_lines_checked": 114,
+      "missing_lines": []
+    },
+    {
+      "unit": "infrastructure/network-troubleshooter",
+      "instruction_lines_checked": 88,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/arkts/arkts-coding-style-standard",
+      "instruction_lines_checked": 113,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/arkts/arkts-hooks-standard",
+      "instruction_lines_checked": 100,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/arkts/arkts-patterns-standard",
+      "instruction_lines_checked": 181,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/arkts/arkts-security-standard",
+      "instruction_lines_checked": 105,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/arkts/arkts-testing-standard",
+      "instruction_lines_checked": 92,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/cpp/cpp-build",
+      "instruction_lines_checked": 126,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/cpp/cpp-build-resolver",
+      "instruction_lines_checked": 70,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/cpp/cpp-coding-standards",
+      "instruction_lines_checked": 564,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/cpp/cpp-coding-style-standard",
+      "instruction_lines_checked": 22,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/cpp/cpp-hooks-standard",
+      "instruction_lines_checked": 19,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/cpp/cpp-patterns-standard",
+      "instruction_lines_checked": 28,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/cpp/cpp-review",
+      "instruction_lines_checked": 98,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/cpp/cpp-reviewer",
+      "instruction_lines_checked": 59,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/cpp/cpp-security-standard",
+      "instruction_lines_checked": 29,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/cpp/cpp-test",
+      "instruction_lines_checked": 186,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/cpp/cpp-testing",
+      "instruction_lines_checked": 244,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/cpp/cpp-testing-standard",
+      "instruction_lines_checked": 21,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/csharp/csharp-coding-style-standard",
+      "instruction_lines_checked": 50,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/csharp/csharp-hooks-standard",
+      "instruction_lines_checked": 9,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/csharp/csharp-patterns-standard",
+      "instruction_lines_checked": 34,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/csharp/csharp-reviewer",
+      "instruction_lines_checked": 80,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/csharp/csharp-security-standard",
+      "instruction_lines_checked": 34,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/csharp/csharp-testing",
+      "instruction_lines_checked": 255,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/csharp/csharp-testing-standard",
+      "instruction_lines_checked": 29,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/dart/dart-coding-style-standard",
+      "instruction_lines_checked": 116,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/dart/dart-hooks-standard",
+      "instruction_lines_checked": 43,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/dart/dart-patterns-standard",
+      "instruction_lines_checked": 211,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/dart/dart-security-standard",
+      "instruction_lines_checked": 97,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/dart/dart-testing-standard",
+      "instruction_lines_checked": 165,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/fsharp/fsharp-coding-style-standard",
+      "instruction_lines_checked": 80,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/fsharp/fsharp-hooks-standard",
+      "instruction_lines_checked": 9,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/fsharp/fsharp-patterns-standard",
+      "instruction_lines_checked": 82,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/fsharp/fsharp-reviewer",
+      "instruction_lines_checked": 79,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/fsharp/fsharp-security-standard",
+      "instruction_lines_checked": 49,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/fsharp/fsharp-testing",
+      "instruction_lines_checked": 211,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/fsharp/fsharp-testing-standard",
+      "instruction_lines_checked": 40,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/go/go-build",
+      "instruction_lines_checked": 133,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/go/go-build-resolver",
+      "instruction_lines_checked": 74,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/go/go-review",
+      "instruction_lines_checked": 111,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/go/go-reviewer",
+      "instruction_lines_checked": 63,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/go/go-test",
+      "instruction_lines_checked": 205,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/go/golang-coding-style-standard",
+      "instruction_lines_checked": 15,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/go/golang-hooks-standard",
+      "instruction_lines_checked": 6,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/go/golang-patterns",
+      "instruction_lines_checked": 538,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/go/golang-patterns-standard",
+      "instruction_lines_checked": 26,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/go/golang-security-standard",
+      "instruction_lines_checked": 19,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/go/golang-testing",
+      "instruction_lines_checked": 572,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/go/golang-testing-standard",
+      "instruction_lines_checked": 14,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/java/java-build-resolver",
+      "instruction_lines_checked": 199,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/java/java-coding-standards",
+      "instruction_lines_checked": 297,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/java/java-coding-style-standard",
+      "instruction_lines_checked": 83,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/java/java-hooks-standard",
+      "instruction_lines_checked": 6,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/java/java-patterns-standard",
+      "instruction_lines_checked": 110,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/java/java-reviewer",
+      "instruction_lines_checked": 153,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/java/java-security-standard",
+      "instruction_lines_checked": 74,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/java/java-testing-standard",
+      "instruction_lines_checked": 96,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/java/jpa-patterns",
+      "instruction_lines_checked": 109,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/kotlin/gradle-build",
+      "instruction_lines_checked": 50,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/kotlin/kotlin-build",
+      "instruction_lines_checked": 125,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/kotlin/kotlin-build-resolver",
+      "instruction_lines_checked": 91,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/kotlin/kotlin-coding-style-standard",
+      "instruction_lines_checked": 57,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/kotlin/kotlin-coroutines-flows",
+      "instruction_lines_checked": 216,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/kotlin/kotlin-exposed-patterns",
+      "instruction_lines_checked": 598,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/kotlin/kotlin-hooks-standard",
+      "instruction_lines_checked": 6,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/kotlin/kotlin-ktor-patterns",
+      "instruction_lines_checked": 571,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/kotlin/kotlin-patterns",
+      "instruction_lines_checked": 562,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/kotlin/kotlin-patterns-standard",
+      "instruction_lines_checked": 109,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/kotlin/kotlin-review",
+      "instruction_lines_checked": 105,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/kotlin/kotlin-reviewer",
+      "instruction_lines_checked": 114,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/kotlin/kotlin-security-standard",
+      "instruction_lines_checked": 54,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/kotlin/kotlin-test",
+      "instruction_lines_checked": 230,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/kotlin/kotlin-testing",
+      "instruction_lines_checked": 635,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/kotlin/kotlin-testing-standard",
+      "instruction_lines_checked": 93,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/perl/perl-coding-style-standard",
+      "instruction_lines_checked": 24,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/perl/perl-hooks-standard",
+      "instruction_lines_checked": 7,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/perl/perl-patterns",
+      "instruction_lines_checked": 382,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/perl/perl-patterns-standard",
+      "instruction_lines_checked": 45,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/perl/perl-security",
+      "instruction_lines_checked": 381,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/perl/perl-security-standard",
+      "instruction_lines_checked": 40,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/perl/perl-testing",
+      "instruction_lines_checked": 355,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/perl/perl-testing-standard",
+      "instruction_lines_checked": 27,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/php/php-coding-style-standard",
+      "instruction_lines_checked": 21,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/php/php-hooks-standard",
+      "instruction_lines_checked": 9,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/php/php-patterns-standard",
+      "instruction_lines_checked": 16,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/php/php-reviewer",
+      "instruction_lines_checked": 80,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/php/php-security-standard",
+      "instruction_lines_checked": 19,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/php/php-testing-standard",
+      "instruction_lines_checked": 19,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/python/generating-python-installer",
+      "instruction_lines_checked": 643,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/python/python-coding-style-standard",
+      "instruction_lines_checked": 23,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/python/python-fastapi-standard",
+      "instruction_lines_checked": 37,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/python/python-hooks-standard",
+      "instruction_lines_checked": 7,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/python/python-patterns",
+      "instruction_lines_checked": 577,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/python/python-patterns-standard",
+      "instruction_lines_checked": 22,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/python/python-review",
+      "instruction_lines_checked": 236,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/python/python-reviewer",
+      "instruction_lines_checked": 77,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/python/python-security-standard",
+      "instruction_lines_checked": 15,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/python/python-testing",
+      "instruction_lines_checked": 627,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/python/python-testing-standard",
+      "instruction_lines_checked": 20,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/ruby/ruby-coding-style-standard",
+      "instruction_lines_checked": 24,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/ruby/ruby-hooks-standard",
+      "instruction_lines_checked": 19,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/ruby/ruby-patterns-standard",
+      "instruction_lines_checked": 22,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/ruby/ruby-security-standard",
+      "instruction_lines_checked": 26,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/ruby/ruby-testing-standard",
+      "instruction_lines_checked": 27,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/rust/rust-build",
+      "instruction_lines_checked": 136,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/rust/rust-build-resolver",
+      "instruction_lines_checked": 117,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/rust/rust-coding-style-standard",
+      "instruction_lines_checked": 114,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/rust/rust-hooks-standard",
+      "instruction_lines_checked": 6,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/rust/rust-patterns",
+      "instruction_lines_checked": 388,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/rust/rust-patterns-standard",
+      "instruction_lines_checked": 127,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/rust/rust-refactoring-specialist",
+      "instruction_lines_checked": 221,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/rust/rust-review",
+      "instruction_lines_checked": 106,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/rust/rust-reviewer",
+      "instruction_lines_checked": 73,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/rust/rust-security-standard",
+      "instruction_lines_checked": 108,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/rust/rust-test",
+      "instruction_lines_checked": 240,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/rust/rust-testing",
+      "instruction_lines_checked": 395,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/rust/rust-testing-standard",
+      "instruction_lines_checked": 118,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/swift/swift-actor-persistence",
+      "instruction_lines_checked": 103,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/swift/swift-build-resolver",
+      "instruction_lines_checked": 124,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/swift/swift-coding-style-standard",
+      "instruction_lines_checked": 26,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/swift/swift-concurrency-6-2",
+      "instruction_lines_checked": 162,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/swift/swift-hooks-standard",
+      "instruction_lines_checked": 8,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/swift/swift-patterns-standard",
+      "instruction_lines_checked": 43,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/swift/swift-protocol-di-testing",
+      "instruction_lines_checked": 141,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/swift/swift-reviewer",
+      "instruction_lines_checked": 83,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/swift/swift-security-standard",
+      "instruction_lines_checked": 19,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/swift/swift-testing-standard",
+      "instruction_lines_checked": 27,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/typescript/nodejs-keccak256",
+      "instruction_lines_checked": 67,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/typescript/typescript-coding-style-standard",
+      "instruction_lines_checked": 145,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/typescript/typescript-hooks-standard",
+      "instruction_lines_checked": 8,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/typescript/typescript-patterns-standard",
+      "instruction_lines_checked": 35,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/typescript/typescript-reviewer",
+      "instruction_lines_checked": 92,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/typescript/typescript-security-standard",
+      "instruction_lines_checked": 13,
+      "missing_lines": []
+    },
+    {
+      "unit": "languages/typescript/typescript-testing-standard",
+      "instruction_lines_checked": 5,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/aeo-foundations",
+      "instruction_lines_checked": 192,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/agentic-search-optimizer",
+      "instruction_lines_checked": 250,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/ai-citation-strategist",
+      "instruction_lines_checked": 127,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/app-store-optimizer",
+      "instruction_lines_checked": 248,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/baidu-seo-specialist",
+      "instruction_lines_checked": 177,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/bilibili-content-strategist",
+      "instruction_lines_checked": 153,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/book-co-author",
+      "instruction_lines_checked": 78,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/carousel-growth-engine",
+      "instruction_lines_checked": 150,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/china-ecommerce-operator",
+      "instruction_lines_checked": 226,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/china-market-localization-strategist",
+      "instruction_lines_checked": 222,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/connections-optimizer",
+      "instruction_lines_checked": 135,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/content-creator",
+      "instruction_lines_checked": 40,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/content-engine",
+      "instruction_lines_checked": 91,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/creative-strategist",
+      "instruction_lines_checked": 46,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/cross-border-ecommerce",
+      "instruction_lines_checked": 192,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/crosspost",
+      "instruction_lines_checked": 81,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/douyin-strategist",
+      "instruction_lines_checked": 110,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/email-strategist",
+      "instruction_lines_checked": 189,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/french-consulting-market",
+      "instruction_lines_checked": 145,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/global-podcast-strategist",
+      "instruction_lines_checked": 144,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/growth-hacker",
+      "instruction_lines_checked": 40,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/instagram-curator",
+      "instruction_lines_checked": 84,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/kuaishou-strategist",
+      "instruction_lines_checked": 174,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/linkedin-content-creator",
+      "instruction_lines_checked": 158,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/livestream-commerce-coach",
+      "instruction_lines_checked": 233,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/marketing-agent",
+      "instruction_lines_checked": 115,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/marketing-campaign",
+      "instruction_lines_checked": 79,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/multi-platform-publisher",
+      "instruction_lines_checked": 165,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/paid-media-auditor",
+      "instruction_lines_checked": 46,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/paid-social-strategist",
+      "instruction_lines_checked": 46,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/podcast-strategist",
+      "instruction_lines_checked": 207,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/ppc-strategist",
+      "instruction_lines_checked": 46,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/pr-communications-manager",
+      "instruction_lines_checked": 359,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/private-domain-operator",
+      "instruction_lines_checked": 250,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/programmatic-buyer",
+      "instruction_lines_checked": 46,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/reddit-community-builder",
+      "instruction_lines_checked": 93,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/search-query-analyst",
+      "instruction_lines_checked": 46,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/seo",
+      "instruction_lines_checked": 109,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/seo-specialist",
+      "instruction_lines_checked": 295,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/seo-specialist-ecc",
+      "instruction_lines_checked": 47,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/short-video-editing-coach",
+      "instruction_lines_checked": 326,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/social-graph-ranker",
+      "instruction_lines_checked": 105,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/social-media-strategist",
+      "instruction_lines_checked": 99,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/social-publisher",
+      "instruction_lines_checked": 99,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/tiktok-strategist",
+      "instruction_lines_checked": 94,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/tracking-specialist",
+      "instruction_lines_checked": 46,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/twitter-engager",
+      "instruction_lines_checked": 95,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/video-optimization-specialist",
+      "instruction_lines_checked": 87,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/wechat-official-account",
+      "instruction_lines_checked": 113,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/weibo-strategist",
+      "instruction_lines_checked": 192,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/x-api",
+      "instruction_lines_checked": 188,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/x-twitter-intelligence-analyst",
+      "instruction_lines_checked": 120,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/xiaohongshu-specialist",
+      "instruction_lines_checked": 106,
+      "missing_lines": []
+    },
+    {
+      "unit": "marketing/zhihu-strategist",
+      "instruction_lines_checked": 129,
+      "missing_lines": []
+    },
+    {
+      "unit": "memory/ck",
+      "instruction_lines_checked": 110,
+      "missing_lines": []
+    },
+    {
+      "unit": "memory/context-budget",
+      "instruction_lines_checked": 94,
+      "missing_lines": []
+    },
+    {
+      "unit": "memory/context-restore",
+      "instruction_lines_checked": 134,
+      "missing_lines": []
+    },
+    {
+      "unit": "memory/context-save",
+      "instruction_lines_checked": 194,
+      "missing_lines": []
+    },
+    {
+      "unit": "memory/continuous-learning",
+      "instruction_lines_checked": 91,
+      "missing_lines": []
+    },
+    {
+      "unit": "memory/continuous-learning-v2",
+      "instruction_lines_checked": 289,
+      "missing_lines": []
+    },
+    {
+      "unit": "memory/conversation-analyzer",
+      "instruction_lines_checked": 42,
+      "missing_lines": []
+    },
+    {
+      "unit": "memory/evolve",
+      "instruction_lines_checked": 133,
+      "missing_lines": []
+    },
+    {
+      "unit": "memory/gbrain-write-surfaces",
+      "instruction_lines_checked": 166,
+      "missing_lines": []
+    },
+    {
+      "unit": "memory/growth-log",
+      "instruction_lines_checked": 79,
+      "missing_lines": []
+    },
+    {
+      "unit": "memory/instinct-export",
+      "instruction_lines_checked": 47,
+      "missing_lines": []
+    },
+    {
+      "unit": "memory/instinct-import",
+      "instruction_lines_checked": 79,
+      "missing_lines": []
+    },
+    {
+      "unit": "memory/instinct-status",
+      "instruction_lines_checked": 40,
+      "missing_lines": []
+    },
+    {
+      "unit": "memory/knowledge-ops",
+      "instruction_lines_checked": 117,
+      "missing_lines": []
+    },
+    {
+      "unit": "memory/learn",
+      "instruction_lines_checked": 132,
+      "missing_lines": []
+    },
+    {
+      "unit": "memory/learn-ecc",
+      "instruction_lines_checked": 74,
+      "missing_lines": []
+    },
+    {
+      "unit": "memory/learn-eval",
+      "instruction_lines_checked": 103,
+      "missing_lines": []
+    },
+    {
+      "unit": "memory/memorable-workflow-memory",
+      "instruction_lines_checked": 188,
+      "missing_lines": []
+    },
+    {
+      "unit": "memory/memory-persistence-hooks",
+      "instruction_lines_checked": 32,
+      "missing_lines": []
+    },
+    {
+      "unit": "memory/projects",
+      "instruction_lines_checked": 23,
+      "missing_lines": []
+    },
+    {
+      "unit": "memory/promote",
+      "instruction_lines_checked": 25,
+      "missing_lines": []
+    },
+    {
+      "unit": "memory/prune",
+      "instruction_lines_checked": 17,
+      "missing_lines": []
+    },
+    {
+      "unit": "memory/resume-session",
+      "instruction_lines_checked": 127,
+      "missing_lines": []
+    },
+    {
+      "unit": "memory/save-session",
+      "instruction_lines_checked": 172,
+      "missing_lines": []
+    },
+    {
+      "unit": "memory/sessions",
+      "instruction_lines_checked": 266,
+      "missing_lines": []
+    },
+    {
+      "unit": "memory/setup-gbrain",
+      "instruction_lines_checked": 519,
+      "missing_lines": []
+    },
+    {
+      "unit": "memory/strategic-compact",
+      "instruction_lines_checked": 114,
+      "missing_lines": []
+    },
+    {
+      "unit": "memory/sync-gbrain",
+      "instruction_lines_checked": 388,
+      "missing_lines": []
+    },
+    {
+      "unit": "memory/unified-memory",
+      "instruction_lines_checked": 148,
+      "missing_lines": []
+    },
+    {
+      "unit": "memory/using-gbrain-with-gstack",
+      "instruction_lines_checked": 240,
+      "missing_lines": []
+    },
+    {
+      "unit": "mobile/android-clean-architecture",
+      "instruction_lines_checked": 263,
+      "missing_lines": []
+    },
+    {
+      "unit": "mobile/compose-multiplatform-patterns",
+      "instruction_lines_checked": 235,
+      "missing_lines": []
+    },
+    {
+      "unit": "mobile/harmonyos-app-resolver",
+      "instruction_lines_checked": 134,
+      "missing_lines": []
+    },
+    {
+      "unit": "mobile/howto-ios-testing-with-gstack",
+      "instruction_lines_checked": 177,
+      "missing_lines": []
+    },
+    {
+      "unit": "mobile/ios-clean",
+      "instruction_lines_checked": 62,
+      "missing_lines": []
+    },
+    {
+      "unit": "mobile/ios-design-review",
+      "instruction_lines_checked": 71,
+      "missing_lines": []
+    },
+    {
+      "unit": "mobile/ios-fix",
+      "instruction_lines_checked": 61,
+      "missing_lines": []
+    },
+    {
+      "unit": "mobile/ios-icon-gen",
+      "instruction_lines_checked": 112,
+      "missing_lines": []
+    },
+    {
+      "unit": "mobile/ios-qa",
+      "instruction_lines_checked": 199,
+      "missing_lines": []
+    },
+    {
+      "unit": "mobile/ios-sync",
+      "instruction_lines_checked": 59,
+      "missing_lines": []
+    },
+    {
+      "unit": "mobile/liquid-glass-design",
+      "instruction_lines_checked": 211,
+      "missing_lines": []
+    },
+    {
+      "unit": "mobile/mobile-app-builder",
+      "instruction_lines_checked": 412,
+      "missing_lines": []
+    },
+    {
+      "unit": "mobile/mobile-release-engineer",
+      "instruction_lines_checked": 128,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/adversarial-review-orchestration",
+      "instruction_lines_checked": 45,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/agent-activation-prompts",
+      "instruction_lines_checked": 319,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/agent-architecture-audit",
+      "instruction_lines_checked": 189,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/agent-eval",
+      "instruction_lines_checked": 101,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/agent-evaluator",
+      "instruction_lines_checked": 142,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/agent-harness-construction",
+      "instruction_lines_checked": 48,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/agent-introspection-debugging",
+      "instruction_lines_checked": 111,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/agent-self-evaluation",
+      "instruction_lines_checked": 124,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/agent-sort",
+      "instruction_lines_checked": 144,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/agentic-engineering",
+      "instruction_lines_checked": 40,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/agentic-os",
+      "instruction_lines_checked": 272,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/agents-orchestrator",
+      "instruction_lines_checked": 287,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/automation-audit-ops",
+      "instruction_lines_checked": 99,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/autonomous-agent-harness",
+      "instruction_lines_checked": 194,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/autonomous-loops",
+      "instruction_lines_checked": 436,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/autonomous-optimization-architect",
+      "instruction_lines_checked": 81,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/claude-devfleet",
+      "instruction_lines_checked": 81,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/continuous-agent-loop",
+      "instruction_lines_checked": 30,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/council",
+      "instruction_lines_checked": 141,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/council-multi-model",
+      "instruction_lines_checked": 117,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/counterparty-channel-discipline",
+      "instruction_lines_checked": 125,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/dev-team",
+      "instruction_lines_checked": 132,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/enterprise-agent-ops",
+      "instruction_lines_checked": 33,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/epic-claim",
+      "instruction_lines_checked": 15,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/epic-decompose",
+      "instruction_lines_checked": 13,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/epic-publish",
+      "instruction_lines_checked": 13,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/epic-review",
+      "instruction_lines_checked": 13,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/epic-sync",
+      "instruction_lines_checked": 13,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/epic-unblock",
+      "instruction_lines_checked": 12,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/epic-validate",
+      "instruction_lines_checked": 12,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/eval-harness",
+      "instruction_lines_checked": 229,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/executive-brief",
+      "instruction_lines_checked": 65,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/gan-build",
+      "instruction_lines_checked": 76,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/gan-design",
+      "instruction_lines_checked": 25,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/gan-evaluator",
+      "instruction_lines_checked": 167,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/gan-generator",
+      "instruction_lines_checked": 100,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/gan-planner",
+      "instruction_lines_checked": 68,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/gan-style-harness",
+      "instruction_lines_checked": 194,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/handoff-templates",
+      "instruction_lines_checked": 278,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/harness-audit",
+      "instruction_lines_checked": 58,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/harness-optimizer",
+      "instruction_lines_checked": 29,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/identity-graph-operator",
+      "instruction_lines_checked": 189,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/lane-rules",
+      "instruction_lines_checked": 15,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/loop-design-check",
+      "instruction_lines_checked": 91,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/loop-operator",
+      "instruction_lines_checked": 27,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/loop-start",
+      "instruction_lines_checked": 22,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/loop-status",
+      "instruction_lines_checked": 55,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/multi-agent-systems-architect",
+      "instruction_lines_checked": 440,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/multi-backend",
+      "instruction_lines_checked": 104,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/multi-execute",
+      "instruction_lines_checked": 223,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/multi-frontend",
+      "instruction_lines_checked": 104,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/multi-plan",
+      "instruction_lines_checked": 172,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/multi-workflow",
+      "instruction_lines_checked": 128,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/nanoclaw-repl",
+      "instruction_lines_checked": 20,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/nexus-spatial-discovery",
+      "instruction_lines_checked": 612,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/nexus-strategy",
+      "instruction_lines_checked": 878,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/openclaw-persona-forge",
+      "instruction_lines_checked": 177,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/operator-approval-loop",
+      "instruction_lines_checked": 190,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/orch-add-feature",
+      "instruction_lines_checked": 27,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/orch-build-mvp",
+      "instruction_lines_checked": 29,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/orch-change-feature",
+      "instruction_lines_checked": 26,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/orch-fix-defect",
+      "instruction_lines_checked": 26,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/orch-pipeline",
+      "instruction_lines_checked": 81,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/orch-refine-code",
+      "instruction_lines_checked": 27,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/orch-review",
+      "instruction_lines_checked": 85,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/pair-agent",
+      "instruction_lines_checked": 289,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/parallel-execution-optimizer",
+      "instruction_lines_checked": 50,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/phase-0-discovery",
+      "instruction_lines_checked": 135,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/phase-1-strategy",
+      "instruction_lines_checked": 188,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/phase-2-foundation",
+      "instruction_lines_checked": 230,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/phase-3-build",
+      "instruction_lines_checked": 227,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/phase-4-hardening",
+      "instruction_lines_checked": 273,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/phase-5-launch",
+      "instruction_lines_checked": 219,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/phase-6-operate",
+      "instruction_lines_checked": 256,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/plan-orchestrate",
+      "instruction_lines_checked": 188,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/quickstart",
+      "instruction_lines_checked": 136,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/ralphinho-rfc-pipeline",
+      "instruction_lines_checked": 44,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/recursive-decision-ledger",
+      "instruction_lines_checked": 54,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/santa-loop",
+      "instruction_lines_checked": 121,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/santa-method",
+      "instruction_lines_checked": 230,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/scenario-enterprise-feature",
+      "instruction_lines_checked": 130,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/scenario-incident-response",
+      "instruction_lines_checked": 168,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/scenario-marketing-campaign",
+      "instruction_lines_checked": 161,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/scenario-startup-mvp",
+      "instruction_lines_checked": 125,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/strategy-duel-agent",
+      "instruction_lines_checked": 101,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/team-agent-orchestration",
+      "instruction_lines_checked": 79,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/team-builder",
+      "instruction_lines_checked": 113,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/workflow-book-chapter",
+      "instruction_lines_checked": 40,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/workflow-landing-page",
+      "instruction_lines_checked": 84,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/workflow-startup-mvp",
+      "instruction_lines_checked": 108,
+      "missing_lines": []
+    },
+    {
+      "unit": "orchestration/workflow-with-memory",
+      "instruction_lines_checked": 157,
+      "missing_lines": []
+    },
+    {
+      "unit": "performance/benchmark",
+      "instruction_lines_checked": 67,
+      "missing_lines": []
+    },
+    {
+      "unit": "performance/benchmark-gstack",
+      "instruction_lines_checked": 235,
+      "missing_lines": []
+    },
+    {
+      "unit": "performance/benchmark-methodology",
+      "instruction_lines_checked": 145,
+      "missing_lines": []
+    },
+    {
+      "unit": "performance/benchmark-models",
+      "instruction_lines_checked": 91,
+      "missing_lines": []
+    },
+    {
+      "unit": "performance/benchmark-optimization-loop",
+      "instruction_lines_checked": 45,
+      "missing_lines": []
+    },
+    {
+      "unit": "performance/latency-critical-systems",
+      "instruction_lines_checked": 50,
+      "missing_lines": []
+    },
+    {
+      "unit": "performance/overlay-benchmark-contract",
+      "instruction_lines_checked": 85,
+      "missing_lines": []
+    },
+    {
+      "unit": "performance/performance-optimizer",
+      "instruction_lines_checked": 343,
+      "missing_lines": []
+    },
+    {
+      "unit": "performance/token-optimization",
+      "instruction_lines_checked": 103,
+      "missing_lines": []
+    },
+    {
+      "unit": "product/behavioral-nudge-engine",
+      "instruction_lines_checked": 61,
+      "missing_lines": []
+    },
+    {
+      "unit": "product/business-strategist",
+      "instruction_lines_checked": 384,
+      "missing_lines": []
+    },
+    {
+      "unit": "product/feedback-synthesizer",
+      "instruction_lines_checked": 93,
+      "missing_lines": []
+    },
+    {
+      "unit": "product/office-hours",
+      "instruction_lines_checked": 598,
+      "missing_lines": []
+    },
+    {
+      "unit": "product/plan-ceo-review",
+      "instruction_lines_checked": 667,
+      "missing_lines": []
+    },
+    {
+      "unit": "product/product-capability",
+      "instruction_lines_checked": 91,
+      "missing_lines": []
+    },
+    {
+      "unit": "product/product-lens",
+      "instruction_lines_checked": 62,
+      "missing_lines": []
+    },
+    {
+      "unit": "product/product-manager",
+      "instruction_lines_checked": 342,
+      "missing_lines": []
+    },
+    {
+      "unit": "product/spec",
+      "instruction_lines_checked": 358,
+      "missing_lines": []
+    },
+    {
+      "unit": "product/sprint-prioritizer",
+      "instruction_lines_checked": 120,
+      "missing_lines": []
+    },
+    {
+      "unit": "product/trend-researcher",
+      "instruction_lines_checked": 126,
+      "missing_lines": []
+    },
+    {
+      "unit": "project-management/chief-of-staff",
+      "instruction_lines_checked": 199,
+      "missing_lines": []
+    },
+    {
+      "unit": "project-management/chief-of-staff-ecc",
+      "instruction_lines_checked": 107,
+      "missing_lines": []
+    },
+    {
+      "unit": "project-management/experiment-tracker",
+      "instruction_lines_checked": 151,
+      "missing_lines": []
+    },
+    {
+      "unit": "project-management/jira",
+      "instruction_lines_checked": 73,
+      "missing_lines": []
+    },
+    {
+      "unit": "project-management/jira-integration",
+      "instruction_lines_checked": 236,
+      "missing_lines": []
+    },
+    {
+      "unit": "project-management/jira-workflow-steward",
+      "instruction_lines_checked": 172,
+      "missing_lines": []
+    },
+    {
+      "unit": "project-management/meeting-notes-specialist",
+      "instruction_lines_checked": 52,
+      "missing_lines": []
+    },
+    {
+      "unit": "project-management/project-flow-ops",
+      "instruction_lines_checked": 73,
+      "missing_lines": []
+    },
+    {
+      "unit": "project-management/project-manager-senior",
+      "instruction_lines_checked": 94,
+      "missing_lines": []
+    },
+    {
+      "unit": "project-management/project-shepherd",
+      "instruction_lines_checked": 147,
+      "missing_lines": []
+    },
+    {
+      "unit": "project-management/retro",
+      "instruction_lines_checked": 620,
+      "missing_lines": []
+    },
+    {
+      "unit": "project-management/studio-operations",
+      "instruction_lines_checked": 152,
+      "missing_lines": []
+    },
+    {
+      "unit": "project-management/studio-producer",
+      "instruction_lines_checked": 154,
+      "missing_lines": []
+    },
+    {
+      "unit": "release/canary",
+      "instruction_lines_checked": 263,
+      "missing_lines": []
+    },
+    {
+      "unit": "release/canary-watch",
+      "instruction_lines_checked": 78,
+      "missing_lines": []
+    },
+    {
+      "unit": "release/deployment-patterns",
+      "instruction_lines_checked": 331,
+      "missing_lines": []
+    },
+    {
+      "unit": "release/document-release",
+      "instruction_lines_checked": 161,
+      "missing_lines": []
+    },
+    {
+      "unit": "release/land-and-deploy",
+      "instruction_lines_checked": 447,
+      "missing_lines": []
+    },
+    {
+      "unit": "release/landing-report",
+      "instruction_lines_checked": 109,
+      "missing_lines": []
+    },
+    {
+      "unit": "release/opensource-forker",
+      "instruction_lines_checked": 143,
+      "missing_lines": []
+    },
+    {
+      "unit": "release/opensource-packager",
+      "instruction_lines_checked": 166,
+      "missing_lines": []
+    },
+    {
+      "unit": "release/opensource-pipeline",
+      "instruction_lines_checked": 182,
+      "missing_lines": []
+    },
+    {
+      "unit": "release/opensource-sanitizer",
+      "instruction_lines_checked": 137,
+      "missing_lines": []
+    },
+    {
+      "unit": "release/setup-deploy",
+      "instruction_lines_checked": 174,
+      "missing_lines": []
+    },
+    {
+      "unit": "release/ship",
+      "instruction_lines_checked": 475,
+      "missing_lines": []
+    },
+    {
+      "unit": "research/competitive-platform-analysis",
+      "instruction_lines_checked": 165,
+      "missing_lines": []
+    },
+    {
+      "unit": "research/competitive-report-structure",
+      "instruction_lines_checked": 123,
+      "missing_lines": []
+    },
+    {
+      "unit": "research/deep-research",
+      "instruction_lines_checked": 114,
+      "missing_lines": []
+    },
+    {
+      "unit": "research/exa-search",
+      "instruction_lines_checked": 80,
+      "missing_lines": []
+    },
+    {
+      "unit": "research/hackernews-frontpage",
+      "instruction_lines_checked": 29,
+      "missing_lines": []
+    },
+    {
+      "unit": "research/market-research",
+      "instruction_lines_checked": 63,
+      "missing_lines": []
+    },
+    {
+      "unit": "research/prediction-market-oracle-research",
+      "instruction_lines_checked": 45,
+      "missing_lines": []
+    },
+    {
+      "unit": "research/research-ops",
+      "instruction_lines_checked": 72,
+      "missing_lines": []
+    },
+    {
+      "unit": "research/research-synthesist",
+      "instruction_lines_checked": 102,
+      "missing_lines": []
+    },
+    {
+      "unit": "research/scientific-db-pubmed-database",
+      "instruction_lines_checked": 123,
+      "missing_lines": []
+    },
+    {
+      "unit": "research/scientific-db-uspto-database",
+      "instruction_lines_checked": 123,
+      "missing_lines": []
+    },
+    {
+      "unit": "research/scientific-pkg-gget",
+      "instruction_lines_checked": 113,
+      "missing_lines": []
+    },
+    {
+      "unit": "research/scientific-thinking-literature-review",
+      "instruction_lines_checked": 129,
+      "missing_lines": []
+    },
+    {
+      "unit": "research/scientific-thinking-scholar-evaluation",
+      "instruction_lines_checked": 111,
+      "missing_lines": []
+    },
+    {
+      "unit": "research/search-first",
+      "instruction_lines_checked": 142,
+      "missing_lines": []
+    },
+    {
+      "unit": "sales/account-strategist",
+      "instruction_lines_checked": 176,
+      "missing_lines": []
+    },
+    {
+      "unit": "sales/deal-strategist",
+      "instruction_lines_checked": 125,
+      "missing_lines": []
+    },
+    {
+      "unit": "sales/discovery-coach",
+      "instruction_lines_checked": 154,
+      "missing_lines": []
+    },
+    {
+      "unit": "sales/government-digital-presales-consultant",
+      "instruction_lines_checked": 288,
+      "missing_lines": []
+    },
+    {
+      "unit": "sales/lead-intelligence",
+      "instruction_lines_checked": 235,
+      "missing_lines": []
+    },
+    {
+      "unit": "sales/offer-lead-gen-strategist",
+      "instruction_lines_checked": 177,
+      "missing_lines": []
+    },
+    {
+      "unit": "sales/outbound-strategist",
+      "instruction_lines_checked": 146,
+      "missing_lines": []
+    },
+    {
+      "unit": "sales/pipeline-analyst",
+      "instruction_lines_checked": 202,
+      "missing_lines": []
+    },
+    {
+      "unit": "sales/proposal-strategist",
+      "instruction_lines_checked": 159,
+      "missing_lines": []
+    },
+    {
+      "unit": "sales/sales-coach",
+      "instruction_lines_checked": 213,
+      "missing_lines": []
+    },
+    {
+      "unit": "sales/sales-data-extraction-agent",
+      "instruction_lines_checked": 44,
+      "missing_lines": []
+    },
+    {
+      "unit": "sales/sales-engineer",
+      "instruction_lines_checked": 128,
+      "missing_lines": []
+    },
+    {
+      "unit": "sales/sales-outreach",
+      "instruction_lines_checked": 328,
+      "missing_lines": []
+    },
+    {
+      "unit": "security/agentic-identity-trust",
+      "instruction_lines_checked": 307,
+      "missing_lines": []
+    },
+    {
+      "unit": "security/ai-generated-code-auditor",
+      "instruction_lines_checked": 153,
+      "missing_lines": []
+    },
+    {
+      "unit": "security/application-security-review",
+      "instruction_lines_checked": 408,
+      "missing_lines": []
+    },
+    {
+      "unit": "security/appsec-engineer",
+      "instruction_lines_checked": 396,
+      "missing_lines": []
+    },
+    {
+      "unit": "security/blockchain-security-auditor",
+      "instruction_lines_checked": 356,
+      "missing_lines": []
+    },
+    {
+      "unit": "security/careful",
+      "instruction_lines_checked": 49,
+      "missing_lines": []
+    },
+    {
+      "unit": "security/cloud-security-architect",
+      "instruction_lines_checked": 446,
+      "missing_lines": []
+    },
+    {
+      "unit": "security/compliance-auditor",
+      "instruction_lines_checked": 118,
+      "missing_lines": []
+    },
+    {
+      "unit": "security/cso",
+      "instruction_lines_checked": 101,
+      "missing_lines": []
+    },
+    {
+      "unit": "security/cso-release-qualification",
+      "instruction_lines_checked": 171,
+      "missing_lines": []
+    },
+    {
+      "unit": "security/cso-scanners",
+      "instruction_lines_checked": 88,
+      "missing_lines": []
+    },
+    {
+      "unit": "security/data-privacy-officer",
+      "instruction_lines_checked": 312,
+      "missing_lines": []
+    },
+    {
+      "unit": "security/defi-amm-security",
+      "instruction_lines_checked": 114,
+      "missing_lines": []
+    },
+    {
+      "unit": "security/fedramp-rmf-compliance",
+      "instruction_lines_checked": 291,
+      "missing_lines": []
+    },
+    {
+      "unit": "security/freeze",
+      "instruction_lines_checked": 55,
+      "missing_lines": []
+    },
+    {
+      "unit": "security/gateguard",
+      "instruction_lines_checked": 141,
+      "missing_lines": []
+    },
+    {
+      "unit": "security/guard",
+      "instruction_lines_checked": 42,
+      "missing_lines": []
+    },
+    {
+      "unit": "security/homelab-wireguard-vpn",
+      "instruction_lines_checked": 235,
+      "missing_lines": []
+    },
+    {
+      "unit": "security/incident-responder",
+      "instruction_lines_checked": 350,
+      "missing_lines": []
+    },
+    {
+      "unit": "security/llm-trading-agent-security",
+      "instruction_lines_checked": 100,
+      "missing_lines": []
+    },
+    {
+      "unit": "security/penetration-tester",
+      "instruction_lines_checked": 321,
+      "missing_lines": []
+    },
+    {
+      "unit": "security/privacy-engineer",
+      "instruction_lines_checked": 115,
+      "missing_lines": []
+    },
+    {
+      "unit": "security/safety-guard",
+      "instruction_lines_checked": 47,
+      "missing_lines": []
+    },
+    {
+      "unit": "security/secrets-credential-engineer",
+      "instruction_lines_checked": 128,
+      "missing_lines": []
+    },
+    {
+      "unit": "security/security-architect",
+      "instruction_lines_checked": 251,
+      "missing_lines": []
+    },
+    {
+      "unit": "security/security-bounty-hunter",
+      "instruction_lines_checked": 66,
+      "missing_lines": []
+    },
+    {
+      "unit": "security/security-reviewer",
+      "instruction_lines_checked": 82,
+      "missing_lines": []
+    },
+    {
+      "unit": "security/security-scan",
+      "instruction_lines_checked": 107,
+      "missing_lines": []
+    },
+    {
+      "unit": "security/senior-secops",
+      "instruction_lines_checked": 577,
+      "missing_lines": []
+    },
+    {
+      "unit": "security/the-security-guide",
+      "instruction_lines_checked": 266,
+      "missing_lines": []
+    },
+    {
+      "unit": "security/threat-detection-engineer",
+      "instruction_lines_checked": 452,
+      "missing_lines": []
+    },
+    {
+      "unit": "security/threat-intelligence-analyst",
+      "instruction_lines_checked": 534,
+      "missing_lines": []
+    },
+    {
+      "unit": "security/unfreeze",
+      "instruction_lines_checked": 25,
+      "missing_lines": []
+    },
+    {
+      "unit": "specialized/change-management-consultant",
+      "instruction_lines_checked": 397,
+      "missing_lines": []
+    },
+    {
+      "unit": "specialized/civil-engineer",
+      "instruction_lines_checked": 257,
+      "missing_lines": []
+    },
+    {
+      "unit": "specialized/corporate-training-designer",
+      "instruction_lines_checked": 134,
+      "missing_lines": []
+    },
+    {
+      "unit": "specialized/cultural-intelligence-strategist",
+      "instruction_lines_checked": 67,
+      "missing_lines": []
+    },
+    {
+      "unit": "specialized/esg-sustainability-officer",
+      "instruction_lines_checked": 310,
+      "missing_lines": []
+    },
+    {
+      "unit": "specialized/focus-music-architect",
+      "instruction_lines_checked": 117,
+      "missing_lines": []
+    },
+    {
+      "unit": "specialized/hospitality-guest-services",
+      "instruction_lines_checked": 469,
+      "missing_lines": []
+    },
+    {
+      "unit": "specialized/hr-onboarding",
+      "instruction_lines_checked": 361,
+      "missing_lines": []
+    },
+    {
+      "unit": "specialized/korean-business-navigator",
+      "instruction_lines_checked": 164,
+      "missing_lines": []
+    },
+    {
+      "unit": "specialized/language-translator",
+      "instruction_lines_checked": 190,
+      "missing_lines": []
+    },
+    {
+      "unit": "specialized/ma-integration-manager",
+      "instruction_lines_checked": 336,
+      "missing_lines": []
+    },
+    {
+      "unit": "specialized/organizational-psychologist",
+      "instruction_lines_checked": 290,
+      "missing_lines": []
+    },
+    {
+      "unit": "specialized/personal-growth-mentor",
+      "instruction_lines_checked": 108,
+      "missing_lines": []
+    },
+    {
+      "unit": "specialized/real-estate-buyer-seller",
+      "instruction_lines_checked": 485,
+      "missing_lines": []
+    },
+    {
+      "unit": "specialized/recruitment-specialist",
+      "instruction_lines_checked": 383,
+      "missing_lines": []
+    },
+    {
+      "unit": "specialized/resume-tailor",
+      "instruction_lines_checked": 146,
+      "missing_lines": []
+    },
+    {
+      "unit": "specialized/study-abroad-advisor",
+      "instruction_lines_checked": 223,
+      "missing_lines": []
+    },
+    {
+      "unit": "specialized/zk-steward",
+      "instruction_lines_checked": 146,
+      "missing_lines": []
+    },
+    {
+      "unit": "support/analytics-reporter",
+      "instruction_lines_checked": 304,
+      "missing_lines": []
+    },
+    {
+      "unit": "support/customer-service",
+      "instruction_lines_checked": 303,
+      "missing_lines": []
+    },
+    {
+      "unit": "support/customer-success-manager",
+      "instruction_lines_checked": 360,
+      "missing_lines": []
+    },
+    {
+      "unit": "support/executive-summary-generator",
+      "instruction_lines_checked": 149,
+      "missing_lines": []
+    },
+    {
+      "unit": "support/finance-tracker",
+      "instruction_lines_checked": 359,
+      "missing_lines": []
+    },
+    {
+      "unit": "support/infrastructure-maintainer",
+      "instruction_lines_checked": 488,
+      "missing_lines": []
+    },
+    {
+      "unit": "support/legal-compliance-checker",
+      "instruction_lines_checked": 483,
+      "missing_lines": []
+    },
+    {
+      "unit": "support/support-responder",
+      "instruction_lines_checked": 482,
+      "missing_lines": []
+    },
+    {
+      "unit": "testing/accessibility-auditor",
+      "instruction_lines_checked": 244,
+      "missing_lines": []
+    },
+    {
+      "unit": "testing/ai-regression-testing",
+      "instruction_lines_checked": 298,
+      "missing_lines": []
+    },
+    {
+      "unit": "testing/api-tester",
+      "instruction_lines_checked": 243,
+      "missing_lines": []
+    },
+    {
+      "unit": "testing/browser-qa",
+      "instruction_lines_checked": 77,
+      "missing_lines": []
+    },
+    {
+      "unit": "testing/click-path-audit",
+      "instruction_lines_checked": 187,
+      "missing_lines": []
+    },
+    {
+      "unit": "testing/e2e-runner",
+      "instruction_lines_checked": 81,
+      "missing_lines": []
+    },
+    {
+      "unit": "testing/e2e-testing",
+      "instruction_lines_checked": 259,
+      "missing_lines": []
+    },
+    {
+      "unit": "testing/evidence-collector",
+      "instruction_lines_checked": 158,
+      "missing_lines": []
+    },
+    {
+      "unit": "testing/health",
+      "instruction_lines_checked": 283,
+      "missing_lines": []
+    },
+    {
+      "unit": "testing/performance-benchmarker",
+      "instruction_lines_checked": 211,
+      "missing_lines": []
+    },
+    {
+      "unit": "testing/pr-test-analyzer",
+      "instruction_lines_checked": 32,
+      "missing_lines": []
+    },
+    {
+      "unit": "testing/qa",
+      "instruction_lines_checked": 368,
+      "missing_lines": []
+    },
+    {
+      "unit": "testing/qa-only",
+      "instruction_lines_checked": 422,
+      "missing_lines": []
+    },
+    {
+      "unit": "testing/reality-checker",
+      "instruction_lines_checked": 190,
+      "missing_lines": []
+    },
+    {
+      "unit": "testing/skill-health",
+      "instruction_lines_checked": 34,
+      "missing_lines": []
+    },
+    {
+      "unit": "testing/tdd-guide",
+      "instruction_lines_checked": 69,
+      "missing_lines": []
+    },
+    {
+      "unit": "testing/tdd-workflow",
+      "instruction_lines_checked": 446,
+      "missing_lines": []
+    },
+    {
+      "unit": "testing/test-automation-engineer",
+      "instruction_lines_checked": 139,
+      "missing_lines": []
+    },
+    {
+      "unit": "testing/test-coverage",
+      "instruction_lines_checked": 52,
+      "missing_lines": []
+    },
+    {
+      "unit": "testing/test-results-analyzer",
+      "instruction_lines_checked": 238,
+      "missing_lines": []
+    },
+    {
+      "unit": "testing/tool-evaluator",
+      "instruction_lines_checked": 315,
+      "missing_lines": []
+    },
+    {
+      "unit": "testing/workflow-optimizer",
+      "instruction_lines_checked": 373,
+      "missing_lines": []
+    },
+    {
+      "unit": "verification/delivery-gate",
+      "instruction_lines_checked": 85,
+      "missing_lines": []
+    },
+    {
+      "unit": "verification/gstack-validation-discipline",
+      "instruction_lines_checked": 241,
+      "missing_lines": []
+    },
+    {
+      "unit": "verification/production-audit",
+      "instruction_lines_checked": 149,
+      "missing_lines": []
+    },
+    {
+      "unit": "verification/quality-gate",
+      "instruction_lines_checked": 34,
+      "missing_lines": []
+    },
+    {
+      "unit": "verification/verification-loop",
+      "instruction_lines_checked": 91,
+      "missing_lines": []
+    },
+    {
+      "unit": "workflows/autoplan",
+      "instruction_lines_checked": 466,
+      "missing_lines": []
+    },
+    {
+      "unit": "workflows/dev-context",
+      "instruction_lines_checked": 16,
+      "missing_lines": []
+    },
+    {
+      "unit": "workflows/dmux-workflows",
+      "instruction_lines_checked": 133,
+      "missing_lines": []
+    },
+    {
+      "unit": "workflows/dynamic-workflow-mode",
+      "instruction_lines_checked": 83,
+      "missing_lines": []
+    },
+    {
+      "unit": "workflows/feature-dev",
+      "instruction_lines_checked": 30,
+      "missing_lines": []
+    },
+    {
+      "unit": "workflows/gstack-workflow-router",
+      "instruction_lines_checked": 76,
+      "missing_lines": []
+    },
+    {
+      "unit": "workflows/intent-driven-development",
+      "instruction_lines_checked": 262,
+      "missing_lines": []
+    },
+    {
+      "unit": "workflows/nasiko-control-plane",
+      "instruction_lines_checked": 36,
+      "missing_lines": []
+    },
+    {
+      "unit": "workflows/plan",
+      "instruction_lines_checked": 145,
+      "missing_lines": []
+    },
+    {
+      "unit": "workflows/plan-canvas",
+      "instruction_lines_checked": 146,
+      "missing_lines": []
+    },
+    {
+      "unit": "workflows/plan-prd",
+      "instruction_lines_checked": 99,
+      "missing_lines": []
+    },
+    {
+      "unit": "workflows/plan-prd-pattern",
+      "instruction_lines_checked": 108,
+      "missing_lines": []
+    },
+    {
+      "unit": "workflows/planner",
+      "instruction_lines_checked": 167,
+      "missing_lines": []
+    },
+    {
+      "unit": "workflows/project-init",
+      "instruction_lines_checked": 56,
+      "missing_lines": []
+    },
+    {
+      "unit": "workflows/prp-implement",
+      "instruction_lines_checked": 263,
+      "missing_lines": []
+    },
+    {
+      "unit": "workflows/prp-plan",
+      "instruction_lines_checked": 348,
+      "missing_lines": []
+    },
+    {
+      "unit": "workflows/prp-prd",
+      "instruction_lines_checked": 297,
+      "missing_lines": []
+    },
+    {
+      "unit": "workflows/research-context",
+      "instruction_lines_checked": 21,
+      "missing_lines": []
+    },
+    {
+      "unit": "workflows/review-context",
+      "instruction_lines_checked": 18,
+      "missing_lines": []
+    },
+    {
+      "unit": "core/think-before-coding",
+      "instruction_lines_checked": 7,
+      "missing_lines": []
+    },
+    {
+      "unit": "core/simplicity-first",
+      "instruction_lines_checked": 8,
+      "missing_lines": []
+    },
+    {
+      "unit": "core/surgical-changes",
+      "instruction_lines_checked": 11,
+      "missing_lines": []
+    },
+    {
+      "unit": "core/goal-driven-execution",
+      "instruction_lines_checked": 13,
+      "missing_lines": []
+    },
+    {
+      "unit": "agency-agents/integrations/mcp-memory/README.md",
+      "instruction_lines_checked": 50,
+      "missing_lines": []
+    },
+    {
+      "unit": "agency-agents/integrations/mcp-memory/backend-architect-with-memory.md",
+      "instruction_lines_checked": 199,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/autoplan/sections/ceo-phase.md",
+      "instruction_lines_checked": 153,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/autoplan/sections/design-phase.md",
+      "instruction_lines_checked": 94,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/autoplan/sections/dx-phase.md",
+      "instruction_lines_checked": 116,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/autoplan/sections/eng-phase.md",
+      "instruction_lines_checked": 121,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/autoplan/sections/phase-close.md",
+      "instruction_lines_checked": 58,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/autoplan/sections/tasks-aggregator.md",
+      "instruction_lines_checked": 70,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/browse/PLAN-snapshot-dropdown-interactive.md",
+      "instruction_lines_checked": 68,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/browse/sections/command-list.md",
+      "instruction_lines_checked": 152,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/codex/sections/challenge-mode.md",
+      "instruction_lines_checked": 105,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/codex/sections/consult-mode.md",
+      "instruction_lines_checked": 183,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/codex/sections/review-mode.md",
+      "instruction_lines_checked": 174,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/cso/ACKNOWLEDGEMENTS.md",
+      "instruction_lines_checked": 2,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/cso/sections/audit-phases.md",
+      "instruction_lines_checked": 66,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/design-consultation/sections/proposal-and-preview.md",
+      "instruction_lines_checked": 350,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/design-html/sections/detector-install-offer.md",
+      "instruction_lines_checked": 31,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/design-html/sections/doctrine.md",
+      "instruction_lines_checked": 66,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/design-html/sections/pretext-patterns.md",
+      "instruction_lines_checked": 125,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/design-shotgun/sections/doctrine.md",
+      "instruction_lines_checked": 66,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/docs/REMOTE_BROWSER_ACCESS.md",
+      "instruction_lines_checked": 160,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/docs/designs/BROWSER_SKILLS_V1.md",
+      "instruction_lines_checked": 231,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/docs/gbrain-sync-errors.md",
+      "instruction_lines_checked": 168,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/docs/gbrain-sync.md",
+      "instruction_lines_checked": 153,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/docs/howto-document-a-shipped-feature.md",
+      "instruction_lines_checked": 63,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/docs/tutorial-document-generate.md",
+      "instruction_lines_checked": 86,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/document-release/sections/release-body.md",
+      "instruction_lines_checked": 460,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/ios-qa/docs/tailscale-acl-example.md",
+      "instruction_lines_checked": 126,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/land-and-deploy/sections/first-run-validation.md",
+      "instruction_lines_checked": 154,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/land-and-deploy/sections/merge-and-deploy.md",
+      "instruction_lines_checked": 187,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/land-and-deploy/sections/readiness-gate.md",
+      "instruction_lines_checked": 200,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/office-hours/sections/design-and-handoff.md",
+      "instruction_lines_checked": 480,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/office-hours/sections/phase-2a-startup-diagnostic.md",
+      "instruction_lines_checked": 98,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/office-hours/sections/phase-2b-builder-brainstorm.md",
+      "instruction_lines_checked": 25,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/plan-ceo-review/sections/review-sections.md",
+      "instruction_lines_checked": 944,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/plan-design-review/sections/review-sections.md",
+      "instruction_lines_checked": 543,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/plan-devex-review/dx-hall-of-fame.md",
+      "instruction_lines_checked": 99,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/plan-devex-review/sections/review-sections.md",
+      "instruction_lines_checked": 784,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/plan-eng-review/sections/review-sections.md",
+      "instruction_lines_checked": 1116,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/qa/references/issue-taxonomy.md",
+      "instruction_lines_checked": 72,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/qa/sections/qa-patterns.md",
+      "instruction_lines_checked": 258,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/qa/sections/test-bootstrap.md",
+      "instruction_lines_checked": 144,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/qa/templates/qa-report-template.md",
+      "instruction_lines_checked": 87,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/retro/sections/report-format.md",
+      "instruction_lines_checked": 95,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/review/TODOS-format.md",
+      "instruction_lines_checked": 38,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/review/checklist.md",
+      "instruction_lines_checked": 140,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/review/design-checklist.md",
+      "instruction_lines_checked": 106,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/review/greptile-triage.md",
+      "instruction_lines_checked": 162,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/review/sections/adversarial.md",
+      "instruction_lines_checked": 189,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/review/sections/plan-completion.md",
+      "instruction_lines_checked": 149,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/review/sections/review-army.md",
+      "instruction_lines_checked": 165,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/review/specialists/api-contract.md",
+      "instruction_lines_checked": 40,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/review/specialists/data-migration.md",
+      "instruction_lines_checked": 39,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/review/specialists/maintainability.md",
+      "instruction_lines_checked": 36,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/review/specialists/performance.md",
+      "instruction_lines_checked": 42,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/review/specialists/red-team.md",
+      "instruction_lines_checked": 35,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/review/specialists/security.md",
+      "instruction_lines_checked": 50,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/review/specialists/simplification.md",
+      "instruction_lines_checked": 34,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/review/specialists/testing.md",
+      "instruction_lines_checked": 58,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/setup-gbrain/memory.md",
+      "instruction_lines_checked": 237,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/setup-gbrain/sections/brain-init.md",
+      "instruction_lines_checked": 212,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/setup-gbrain/sections/claude-md-persist.md",
+      "instruction_lines_checked": 62,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/setup-gbrain/sections/engine-remediation.md",
+      "instruction_lines_checked": 61,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/setup-gbrain/sections/transcript-gate.md",
+      "instruction_lines_checked": 54,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/ship/sections/adversarial.md",
+      "instruction_lines_checked": 206,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/ship/sections/apple-release.md",
+      "instruction_lines_checked": 36,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/ship/sections/changelog.md",
+      "instruction_lines_checked": 41,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/ship/sections/greptile.md",
+      "instruction_lines_checked": 36,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/ship/sections/plan-completion.md",
+      "instruction_lines_checked": 241,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/ship/sections/pr-body.md",
+      "instruction_lines_checked": 180,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/ship/sections/review-army.md",
+      "instruction_lines_checked": 425,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/ship/sections/test-coverage.md",
+      "instruction_lines_checked": 209,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/ship/sections/tests.md",
+      "instruction_lines_checked": 296,
+      "missing_lines": []
+    },
+    {
+      "unit": "gstack/spec/sections/gate-and-file.md",
+      "instruction_lines_checked": 328,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/commands/ecc-guide.md",
+      "instruction_lines_checked": 59,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/commands/marketing-campaign.md",
+      "instruction_lines_checked": 92,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/commands/orch-add-feature.md",
+      "instruction_lines_checked": 22,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/commands/orch-build-mvp.md",
+      "instruction_lines_checked": 21,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/commands/orch-change-feature.md",
+      "instruction_lines_checked": 24,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/commands/orch-fix-defect.md",
+      "instruction_lines_checked": 24,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/commands/orch-refine-code.md",
+      "instruction_lines_checked": 25,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/commands/plan-canvas.md",
+      "instruction_lines_checked": 29,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/commands/security-scan.md",
+      "instruction_lines_checked": 62,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/docs/TROUBLESHOOTING.md",
+      "instruction_lines_checked": 59,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/docs/continuous-learning-v2-spec.md",
+      "instruction_lines_checked": 10,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/docs/design/plan-canvas.md",
+      "instruction_lines_checked": 89,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/docs/examples/project-guidelines-template.md",
+      "instruction_lines_checked": 270,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/agent-self-evaluation/examples/high-score-example.md",
+      "instruction_lines_checked": 65,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/agent-self-evaluation/examples/low-score-example.md",
+      "instruction_lines_checked": 66,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/agent-self-evaluation/references/evaluation-criteria.md",
+      "instruction_lines_checked": 51,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/agent-self-evaluation/references/hook-integration.md",
+      "instruction_lines_checked": 51,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/agent-self-evaluation/templates/evaluation-report.md",
+      "instruction_lines_checked": 68,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/angular-developer/references/angular-animations.md",
+      "instruction_lines_checked": 124,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/angular-developer/references/angular-aria.md",
+      "instruction_lines_checked": 321,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/angular-developer/references/cli.md",
+      "instruction_lines_checked": 61,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/angular-developer/references/component-harnesses.md",
+      "instruction_lines_checked": 40,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/angular-developer/references/component-styling.md",
+      "instruction_lines_checked": 67,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/angular-developer/references/components.md",
+      "instruction_lines_checked": 90,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/angular-developer/references/creating-services.md",
+      "instruction_lines_checked": 71,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/angular-developer/references/data-resolvers.md",
+      "instruction_lines_checked": 49,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/angular-developer/references/define-routes.md",
+      "instruction_lines_checked": 47,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/angular-developer/references/defining-providers.md",
+      "instruction_lines_checked": 51,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/angular-developer/references/di-fundamentals.md",
+      "instruction_lines_checked": 90,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/angular-developer/references/e2e-testing.md",
+      "instruction_lines_checked": 42,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/angular-developer/references/effects.md",
+      "instruction_lines_checked": 59,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/angular-developer/references/hierarchical-injectors.md",
+      "instruction_lines_checked": 29,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/angular-developer/references/host-elements.md",
+      "instruction_lines_checked": 62,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/angular-developer/references/injection-context.md",
+      "instruction_lines_checked": 47,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/angular-developer/references/inputs.md",
+      "instruction_lines_checked": 71,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/angular-developer/references/linked-signal.md",
+      "instruction_lines_checked": 43,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/angular-developer/references/loading-strategies.md",
+      "instruction_lines_checked": 43,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/angular-developer/references/mcp.md",
+      "instruction_lines_checked": 82,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/angular-developer/references/navigate-to-routes.md",
+      "instruction_lines_checked": 49,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/angular-developer/references/outputs.md",
+      "instruction_lines_checked": 61,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/angular-developer/references/reactive-forms.md",
+      "instruction_lines_checked": 92,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/angular-developer/references/rendering-strategies.md",
+      "instruction_lines_checked": 29,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/angular-developer/references/resource.md",
+      "instruction_lines_checked": 54,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/angular-developer/references/route-animations.md",
+      "instruction_lines_checked": 40,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/angular-developer/references/route-guards.md",
+      "instruction_lines_checked": 37,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/angular-developer/references/router-lifecycle.md",
+      "instruction_lines_checked": 32,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/angular-developer/references/router-testing.md",
+      "instruction_lines_checked": 63,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/angular-developer/references/show-routes-with-outlets.md",
+      "instruction_lines_checked": 44,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/angular-developer/references/signal-forms.md",
+      "instruction_lines_checked": 625,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/angular-developer/references/signals-overview.md",
+      "instruction_lines_checked": 65,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/angular-developer/references/tailwind-css.md",
+      "instruction_lines_checked": 44,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/angular-developer/references/template-driven-forms.md",
+      "instruction_lines_checked": 81,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/angular-developer/references/testing-fundamentals.md",
+      "instruction_lines_checked": 49,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/brand-discovery/references/10_purpose-why.md",
+      "instruction_lines_checked": 23,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/brand-discovery/references/20_positioning.md",
+      "instruction_lines_checked": 26,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/brand-discovery/references/30_audience-niche.md",
+      "instruction_lines_checked": 32,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/brand-discovery/references/40_personality-archetype.md",
+      "instruction_lines_checked": 37,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/brand-discovery/references/50_voice-tone.md",
+      "instruction_lines_checked": 39,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/brand-discovery/references/60_narrative-story.md",
+      "instruction_lines_checked": 31,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/brand-discovery/references/70_founder-tension.md",
+      "instruction_lines_checked": 29,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/brand-discovery/references/90_SYNTHESIS.md",
+      "instruction_lines_checked": 91,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/brand-voice/references/voice-profile-schema.md",
+      "instruction_lines_checked": 40,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/continuous-learning-v2/agents/observer.md",
+      "instruction_lines_checked": 141,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/counterparty-channel-discipline/references/strict-prompt.template.md",
+      "instruction_lines_checked": 24,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/esign-field-placement/references/placement-checklist.md",
+      "instruction_lines_checked": 68,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/frontend-slides/STYLE_PRESETS.md",
+      "instruction_lines_checked": 256,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/frontend-slides/animation-patterns.md",
+      "instruction_lines_checked": 104,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/frontend-slides/html-template.md",
+      "instruction_lines_checked": 335,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/github-ops/references/ecc-release-checklist.md",
+      "instruction_lines_checked": 162,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/lead-intelligence/agents/enrichment-agent.md",
+      "instruction_lines_checked": 67,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/lead-intelligence/agents/mutual-mapper.md",
+      "instruction_lines_checked": 57,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/lead-intelligence/agents/outreach-drafter.md",
+      "instruction_lines_checked": 71,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/lead-intelligence/agents/signal-scorer.md",
+      "instruction_lines_checked": 47,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/master-agreement-generator/references/master-template.example.md",
+      "instruction_lines_checked": 46,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/openclaw-persona-forge/references/avatar-style.md",
+      "instruction_lines_checked": 90,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/openclaw-persona-forge/references/boundary-rules.md",
+      "instruction_lines_checked": 38,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/openclaw-persona-forge/references/error-handling.md",
+      "instruction_lines_checked": 38,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/openclaw-persona-forge/references/identity-tension.md",
+      "instruction_lines_checked": 34,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/openclaw-persona-forge/references/naming-system.md",
+      "instruction_lines_checked": 29,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/openclaw-persona-forge/references/output-template.md",
+      "instruction_lines_checked": 102,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/remotion-video-creation/rules/3d.md",
+      "instruction_lines_checked": 64,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/remotion-video-creation/rules/animations.md",
+      "instruction_lines_checked": 23,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/remotion-video-creation/rules/assets.md",
+      "instruction_lines_checked": 52,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/remotion-video-creation/rules/audio.md",
+      "instruction_lines_checked": 124,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/remotion-video-creation/rules/calculate-metadata.md",
+      "instruction_lines_checked": 78,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/remotion-video-creation/rules/can-decode.md",
+      "instruction_lines_checked": 57,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/remotion-video-creation/rules/charts.md",
+      "instruction_lines_checked": 41,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/remotion-video-creation/rules/compositions.md",
+      "instruction_lines_checked": 122,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/remotion-video-creation/rules/display-captions.md",
+      "instruction_lines_checked": 101,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/remotion-video-creation/rules/extract-frames.md",
+      "instruction_lines_checked": 188,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/remotion-video-creation/rules/fonts.md",
+      "instruction_lines_checked": 114,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/remotion-video-creation/rules/get-audio-duration.md",
+      "instruction_lines_checked": 42,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/remotion-video-creation/rules/get-video-dimensions.md",
+      "instruction_lines_checked": 51,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/remotion-video-creation/rules/get-video-duration.md",
+      "instruction_lines_checked": 42,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/remotion-video-creation/rules/gifs.md",
+      "instruction_lines_checked": 101,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/remotion-video-creation/rules/images.md",
+      "instruction_lines_checked": 92,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/remotion-video-creation/rules/import-srt-captions.md",
+      "instruction_lines_checked": 51,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/remotion-video-creation/rules/lottie.md",
+      "instruction_lines_checked": 51,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/remotion-video-creation/rules/measuring-dom-nodes.md",
+      "instruction_lines_checked": 27,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/remotion-video-creation/rules/measuring-text.md",
+      "instruction_lines_checked": 111,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/remotion-video-creation/rules/sequencing.md",
+      "instruction_lines_checked": 83,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/remotion-video-creation/rules/tailwind.md",
+      "instruction_lines_checked": 8,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/remotion-video-creation/rules/text-animations.md",
+      "instruction_lines_checked": 11,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/remotion-video-creation/rules/timing.md",
+      "instruction_lines_checked": 134,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/remotion-video-creation/rules/transcribe-captions.md",
+      "instruction_lines_checked": 14,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/remotion-video-creation/rules/transitions.md",
+      "instruction_lines_checked": 85,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/remotion-video-creation/rules/trimming.md",
+      "instruction_lines_checked": 36,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/remotion-video-creation/rules/videos.md",
+      "instruction_lines_checked": 126,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/security-review/cloud-infrastructure-security.md",
+      "instruction_lines_checked": 277,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/skill-comply/prompts/classifier.md",
+      "instruction_lines_checked": 18,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/skill-comply/prompts/scenario_generator.md",
+      "instruction_lines_checked": 51,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/skill-comply/prompts/spec_generator.md",
+      "instruction_lines_checked": 33,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/taste/references/genre-taxonomy.md",
+      "instruction_lines_checked": 72,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/taste-application/SOURCE.md",
+      "instruction_lines_checked": 26,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/taste-application/scripts/HANDOFF-TEMPLATE.md",
+      "instruction_lines_checked": 152,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/taste-application/scripts/tasteforge/README.md",
+      "instruction_lines_checked": 229,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/taste-application/workflows/README.md",
+      "instruction_lines_checked": 37,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/tinystruct-patterns/references/architecture.md",
+      "instruction_lines_checked": 75,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/tinystruct-patterns/references/data-handling.md",
+      "instruction_lines_checked": 48,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/tinystruct-patterns/references/database.md",
+      "instruction_lines_checked": 78,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/tinystruct-patterns/references/routing.md",
+      "instruction_lines_checked": 49,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/tinystruct-patterns/references/system-usage.md",
+      "instruction_lines_checked": 79,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/tinystruct-patterns/references/testing.md",
+      "instruction_lines_checked": 58,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/video-editing/assets/fusion/ito-production-v1/README.md",
+      "instruction_lines_checked": 20,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/video-editing/assets/fusion/ito-v28/README.md",
+      "instruction_lines_checked": 19,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/videodb/reference/api-reference.md",
+      "instruction_lines_checked": 421,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/videodb/reference/capture-reference.md",
+      "instruction_lines_checked": 312,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/videodb/reference/capture.md",
+      "instruction_lines_checked": 62,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/videodb/reference/editor.md",
+      "instruction_lines_checked": 338,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/videodb/reference/generative.md",
+      "instruction_lines_checked": 244,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/videodb/reference/rtstream-reference.md",
+      "instruction_lines_checked": 419,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/videodb/reference/rtstream.md",
+      "instruction_lines_checked": 38,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/videodb/reference/search.md",
+      "instruction_lines_checked": 166,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/videodb/reference/streaming.md",
+      "instruction_lines_checked": 313,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/videodb/reference/use-cases.md",
+      "instruction_lines_checked": 83,
+      "missing_lines": []
+    },
+    {
+      "unit": "ecc/skills/visa-doc-translate/README.md",
+      "instruction_lines_checked": 63,
+      "missing_lines": []
+    },
+    {
+      "unit": "andrej-karpathy-skills/EXAMPLES.md",
+      "instruction_lines_checked": 392,
+      "missing_lines": []
+    }
+  ]
+}

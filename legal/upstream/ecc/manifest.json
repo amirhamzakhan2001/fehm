@@ -1,0 +1,26 @@
+{
+  "repository": "https://github.com/affaan-m/ECC",
+  "commit": "9ac593b55cba44c8b20152a5c7f28d300a67ec7e",
+  "license": "MIT",
+  "files": [
+    {
+      "path": "scripts/lib/instinct-relevance.js",
+      "sha256": "64aae588687ba3ebb9f0975488c4e55d96f512d9851cde8aaacfa2bc040b4573"
+    }
+  ],
+  "snapshotDirectory": "vendor",
+  "adaptations": [
+    {
+      "upstream": "scripts/lib/instinct-relevance.js#computeRelevanceBoost, instinctMatchesStack, tokenize, DEFAULT_* boosts",
+      "fehm": "src/memory.ts#computeRelevanceBoost, memoryMatchesStack, wholeTokens, rankMemory",
+      "purpose": "Additive relevance boost when ranking project memory for a context packet.",
+      "modifications": [
+        "'project scope' boost (0.25) becomes location relevance: the memory links a path/symbol in the current selection",
+        "stack keywords derived from the Fehm graph (languages + external packages) instead of detectProjectType/filesystem",
+        "base score is query-term relevance instead of instinct confidence; a boost never admits an otherwise unrelated entry",
+        "ECC_INSTINCT_RELEVANCE_RANKING env toggle and fs helpers removed"
+      ]
+    }
+  ],
+  "notUsed": "ECC hooks, agents, installers, session infrastructure, global memory, plugin system. Snapshot restored from Fehm's own git history (previously vendored at the same commit)."
+}

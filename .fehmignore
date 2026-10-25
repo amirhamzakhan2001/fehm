@@ -1,0 +1,16 @@
+# Paths kept in the repository but outside Fehm's own code graph.
+# Temporary upstream reference snapshot.
+github repo code/
+# Vendored upstream sources and binaries (attribution only).
+/third_party/
+# Bundled skill library; indexed separately by `fehm init` / `fehm skills index`.
+/skills/
+graphify-out/
+
+# Benchmark fixture repository (indexed by tests/bench, not part of Fehm's own graph).
+/bench/corpus/
+
+# Ontology knowledge and upstream attribution are not repository implementation.
+/assets/ontology/
+/legal/upstream/
+/exta_file/

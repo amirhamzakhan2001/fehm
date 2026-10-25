@@ -1,0 +1,303 @@
+{
+  "generatedAt": "2026-09-27T17:44:08.703Z",
+  "node": "v26.0.0",
+  "platform": "darwin-arm64",
+  "performance": [
+    {
+      "repo": "corpus (small)",
+      "files": 21,
+      "nodes": 120,
+      "edges": 230,
+      "fullMs": 59.5,
+      "incrementalMs": 13.7,
+      "cacheHitMs": 3.2,
+      "retrievalMedianMs": 1,
+      "contextMedianMs": 3.7,
+      "contextTokens": 2271,
+      "filesSelected": 4.9,
+      "symbolsSelected": 11.4
+    },
+    {
+      "repo": "synthetic-200 (medium)",
+      "files": 221,
+      "nodes": 1073,
+      "edges": 1890,
+      "fullMs": 80,
+      "incrementalMs": 43.1,
+      "cacheHitMs": 19.1,
+      "retrievalMedianMs": 4,
+      "contextMedianMs": 9.1,
+      "contextTokens": 3776,
+      "filesSelected": 26.8,
+      "symbolsSelected": 38.4
+    },
+    {
+      "repo": "synthetic-1000 (large)",
+      "files": 1101,
+      "nodes": 5313,
+      "edges": 9410,
+      "fullMs": 286.8,
+      "incrementalMs": 175.5,
+      "cacheHitMs": 92.8,
+      "retrievalMedianMs": 20.1,
+      "contextMedianMs": 28.9,
+      "contextTokens": 3660,
+      "filesSelected": 35.2,
+      "symbolsSelected": 40
+    }
+  ],
+  "quality": {
+    "summary": {
+      "questions": 14,
+      "precision@5": 0.414,
+      "recall@5": 0.923,
+      "recall@10": 0.982,
+      "mrr": 0.952,
+      "fileCoverage": 1,
+      "symbolCoverage": 1,
+      "meanPacketTokens": 2268,
+      "meanRelevantFilesFullTokens": 369,
+      "wholeRepositoryTokens": 3962
+    },
+    "perQuestion": [
+      {
+        "query": "Where is authentication implemented?",
+        "intent": "locate",
+        "p5": 0.4,
+        "r5": 1,
+        "r10": 1,
+        "mrr": 1,
+        "fileCoverage": 1,
+        "symbolCoverage": 1,
+        "packetTokens": 3135,
+        "relevantFilesFullTokens": 253,
+        "top3": [
+          "function:src/auth/authenticate.ts#authenticateUser",
+          "file:src/auth/authenticate.ts",
+          "class:src/db/connection.ts#DatabaseConnection"
+        ]
+      },
+      {
+        "query": "What calls processPayment?",
+        "intent": "explain",
+        "p5": 0.4,
+        "r5": 1,
+        "r10": 1,
+        "mrr": 0.3333333333333333,
+        "fileCoverage": 1,
+        "symbolCoverage": 1,
+        "packetTokens": 1860,
+        "relevantFilesFullTokens": 684,
+        "top3": [
+          "function:src/payments/processor.ts#processPayment",
+          "file:src/payments/processor.ts",
+          "function:src/api/routes.ts#checkoutRoute"
+        ]
+      },
+      {
+        "query": "Where is the database connection created?",
+        "intent": "locate",
+        "p5": 0.4,
+        "r5": 1,
+        "r10": 1,
+        "mrr": 1,
+        "fileCoverage": 1,
+        "symbolCoverage": 1,
+        "packetTokens": 3991,
+        "relevantFilesFullTokens": 212,
+        "top3": [
+          "class:src/db/connection.ts#DatabaseConnection",
+          "function:src/db/connection.ts#createConnection",
+          "file:src/db/connection.ts"
+        ]
+      },
+      {
+        "query": "What tests cover login?",
+        "intent": "test",
+        "p5": 0.4,
+        "r5": 1,
+        "r10": 1,
+        "mrr": 1,
+        "fileCoverage": 1,
+        "symbolCoverage": 1,
+        "packetTokens": 2062,
+        "relevantFilesFullTokens": 143,
+        "top3": [
+          "function:test/auth.test.ts#testLoginSucceeds",
+          "file:test/auth.test.ts",
+          "function:src/api/routes.ts#loginRoute"
+        ]
+      },
+      {
+        "query": "What files handle API requests?",
+        "intent": "explain",
+        "p5": 0.6,
+        "r5": 0.75,
+        "r10": 0.75,
+        "mrr": 1,
+        "fileCoverage": 1,
+        "symbolCoverage": 1,
+        "packetTokens": 3309,
+        "relevantFilesFullTokens": 834,
+        "top3": [
+          "function:src/api/server.ts#handleRequestError",
+          "function:src/util/errors.ts#handleError",
+          "file:src/api/server.ts"
+        ]
+      },
+      {
+        "query": "How are bearer tokens validated?",
+        "intent": "explain",
+        "p5": 0.4,
+        "r5": 1,
+        "r10": 1,
+        "mrr": 1,
+        "fileCoverage": 1,
+        "symbolCoverage": 1,
+        "packetTokens": 2312,
+        "relevantFilesFullTokens": 314,
+        "top3": [
+          "function:src/auth/token.ts#validateToken",
+          "file:src/auth/token.ts",
+          "function:src/auth/authenticate.ts#authenticateUser"
+        ]
+      },
+      {
+        "query": "error handling",
+        "intent": "debug",
+        "p5": 0.6,
+        "r5": 1,
+        "r10": 1,
+        "mrr": 1,
+        "fileCoverage": 1,
+        "symbolCoverage": 1,
+        "packetTokens": 1933,
+        "relevantFilesFullTokens": 437,
+        "top3": [
+          "function:src/api/server.ts#handleRequestError",
+          "function:src/util/errors.ts#handleError",
+          "file:src/util/errors.ts"
+        ]
+      },
+      {
+        "query": "refund a payment",
+        "intent": "explain",
+        "p5": 0.6,
+        "r5": 1,
+        "r10": 1,
+        "mrr": 1,
+        "fileCoverage": 1,
+        "symbolCoverage": 1,
+        "packetTokens": 3805,
+        "relevantFilesFullTokens": 1168,
+        "top3": [
+          "function:src/payments/processor.ts#refundPayment",
+          "function:src/api/routes.ts#refundRoute",
+          "method:src/payments/gateway.ts#StripeGateway.refund"
+        ]
+      },
+      {
+        "query": "HTTPServer",
+        "intent": "explain",
+        "p5": 0.2,
+        "r5": 1,
+        "r10": 1,
+        "mrr": 1,
+        "fileCoverage": 1,
+        "symbolCoverage": 1,
+        "packetTokens": 792,
+        "relevantFilesFullTokens": 93,
+        "top3": [
+          "class:src/util/xml.ts#HTTPServer",
+          "method:src/util/xml.ts#HTTPServer.start",
+          "file:src/util/xml.ts"
+        ]
+      },
+      {
+        "query": "how is the nightly revenue report built",
+        "intent": "explain",
+        "p5": 0.4,
+        "r5": 1,
+        "r10": 1,
+        "mrr": 1,
+        "fileCoverage": 1,
+        "symbolCoverage": 1,
+        "packetTokens": 1357,
+        "relevantFilesFullTokens": 277,
+        "top3": [
+          "class:scripts/report.py#ReportBuilder",
+          "function:scripts/report.py#build_report",
+          "file:scripts/report.py"
+        ]
+      },
+      {
+        "query": "which payment gateway charges cards",
+        "intent": "explain",
+        "p5": 0.4,
+        "r5": 0.6666666666666666,
+        "r10": 1,
+        "mrr": 1,
+        "fileCoverage": 1,
+        "symbolCoverage": 1,
+        "packetTokens": 2385,
+        "relevantFilesFullTokens": 188,
+        "top3": [
+          "interface:src/payments/gateway.ts#PaymentGateway",
+          "variable:src/payments/processor.ts#gateway",
+          "file:src/payments/gateway.ts"
+        ]
+      },
+      {
+        "query": "how are invoices issued in the billing service",
+        "intent": "explain",
+        "p5": 0.6,
+        "r5": 1,
+        "r10": 1,
+        "mrr": 1,
+        "fileCoverage": 1,
+        "symbolCoverage": 1,
+        "packetTokens": 1526,
+        "relevantFilesFullTokens": 220,
+        "top3": [
+          "class:services/billing/main.go#Invoice",
+          "interface:services/billing/main.go#Biller",
+          "file:services/billing/main.go"
+        ]
+      },
+      {
+        "query": "where are sessions stored",
+        "intent": "locate",
+        "p5": 0.2,
+        "r5": 0.5,
+        "r10": 1,
+        "mrr": 1,
+        "fileCoverage": 1,
+        "symbolCoverage": 1,
+        "packetTokens": 1870,
+        "relevantFilesFullTokens": 250,
+        "top3": [
+          "class:src/auth/session.ts#SessionStore",
+          "field:src/auth/session.ts#SessionStore.sessions",
+          "method:src/auth/session.ts#SessionStore.save"
+        ]
+      },
+      {
+        "query": "load plugins at runtime",
+        "intent": "explain",
+        "p5": 0.2,
+        "r5": 1,
+        "r10": 1,
+        "mrr": 1,
+        "fileCoverage": 1,
+        "symbolCoverage": 1,
+        "packetTokens": 1409,
+        "relevantFilesFullTokens": 96,
+        "top3": [
+          "function:src/plugins/loader.ts#loadPlugin",
+          "file:src/plugins/loader.ts",
+          "function:scripts/utils.py#load_rows"
+        ]
+      }
+    ]
+  }
+}

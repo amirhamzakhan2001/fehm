@@ -1,0 +1,27 @@
+{
+  "repository": "https://github.com/DeusData/codebase-memory-mcp",
+  "commit": "92abefa3f57a94591a92bcecd6a6f102da373575",
+  "license": "MIT",
+  "files": [
+    {
+      "path": "src/store/store.c",
+      "sha256": "b11ac645f6632ba1ef0a2c3a8bbe1c95f13669bd14964f02b5f2f9891dfa244c"
+    }
+  ],
+  "snapshotDirectory": "vendor",
+  "adaptations": [
+    {
+      "upstream": "src/store/store.c#camel_should_split (and the splitting loop of sqlite_camel_split)",
+      "fehm": "src/text.ts#camelShouldSplit, src/text.ts#splitIdentifier",
+      "purpose": "camelCase/acronym identifier boundaries (updateCloud \u2192 update Cloud, XMLParser \u2192 XML Parser) so identifiers match natural-language query words.",
+      "modifications": [
+        "C \u2192 TypeScript; JS string instead of NUL-terminated buffer",
+        "returns word parts instead of 'original + split' text",
+        "Fehm addition: `_ - . /` and letter/digit transitions are boundaries (upstream relies on FTS5 unicode61 for `_`)",
+        "no 2048-byte buffer limit"
+      ],
+      "fehmAdapter": "src/text.ts#tokenize keeps the whole identifier plus its stemmed parts."
+    }
+  ],
+  "notUsed": "SQLite store, FTS5, graph, MCP server, daemon, UI, parsers. store.c is kept whole only as the pinned reference."
+}

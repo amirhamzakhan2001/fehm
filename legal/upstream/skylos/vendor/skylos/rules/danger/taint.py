@@ -1,0 +1,223 @@
+import ast
+
+XSS_SANITIZERS = {
+    "html.escape",
+    "markupsafe.escape",
+    "markupsafe.Markup.escape",
+    "Markup.escape",
+    "bleach.clean",
+    "bleach.linkify",
+    "cgi.escape",
+}
+
+CMD_SANITIZERS = {
+    "shlex.quote",
+    "shlex.join",
+}
+
+URL_SANITIZERS = {
+    "urllib.parse.quote",
+    "urllib.parse.quote_plus",
+    "_safe_sync_url",
+    "_safe_whoami_url",
+    "_validate_api_request_url",
+    "_validate_artifact_upload_url",
+    "_validate_github_oidc_request_url",
+}
+
+PATH_SANITIZERS = {
+    "os.path.basename",
+    "pathlib.PurePath.name",
+    "safe_join",
+    "werkzeug.utils.safe_join",
+    "werkzeug.security.safe_join",
+    "flask.helpers.safe_join",
+    "_resolve_analysis_target",
+    "_resolve_policy_path",
+    "_resolve_repo_link_path",
+    "_resolve_github_actions_scan_path",
+    "_resolve_snippet_path",
+    "_result_path",
+}
+
+
+def _resolve_call_name(node: ast.Call):
+    func = node.func
+    parts = []
+    while isinstance(func, ast.Attribute):
+        parts.append(func.attr)
+        func = func.value
+    if isinstance(func, ast.Name):
+        parts.append(func.id)
+        parts.reverse()
+        return ".".join(parts)
+    return None
+
+
+class TaintVisitor(ast.NodeVisitor):
+    def __init__(self, file_path, findings, sanitizers=None):
+        self.file_path = file_path
+        self.findings = findings
+        self.env_stack = [{}]
+        self.sources = {"input", "request"}
+        self.request_obj = "request"
+        self._symbol_stack = ["<module>"]
+        self._function_stack: list[ast.AST] = []
+        self.sanitizers = sanitizers or set()
+
+    def _current_symbol(self):
+        if self._symbol_stack:
+            return self._symbol_stack[-1]
+        else:
+            return "<module>"
+
+    def _current_function(self):
+        stack = getattr(self, "_function_stack", None)
+        return stack[-1] if stack else None
+
+    def _push(self):
+        self.env_stack.append({})
+
+    def _pop(self):
+        if self.env_stack:
+            self.env_stack.pop()
+
+    def _set(self, name, tainted):
+        if not self.env_stack:
+            self._push()
+        self.env_stack[-1][name] = bool(tainted)
+
+    def _get(self, name):
+        for env in reversed(self.env_stack):
+            if name in env:
+                return env[name]
+        return False
+
+    def _taint_params(self, fn: ast.AST):
+        args = []
+        if hasattr(fn, "args") and fn.args:
+            args.extend(getattr(fn.args, "posonlyargs", []) or [])
+            args.extend(getattr(fn.args, "args", []) or [])
+            args.extend(getattr(fn.args, "kwonlyargs", []) or [])
+
+            if fn.args.vararg:
+                args.append(fn.args.vararg)
+            if fn.args.kwarg:
+                args.append(fn.args.kwarg)
+
+        for a in args:
+            name = getattr(a, "arg", None)
+            if not name:
+                continue
+            if name in ("self", "cls"):
+                continue
+            self._set(name, True)
+
+    def is_tainted(self, node):
+        if node is None:
+            return False
+
+        if isinstance(node, ast.Await):
+            return self.is_tainted(node.value)
+
+        if isinstance(node, ast.JoinedStr):
+            return any(
+                isinstance(v, ast.FormattedValue) and self.is_tainted(v.value)
+                for v in node.values
+            )
+        if isinstance(node, ast.BinOp) and isinstance(node.op, (ast.Add, ast.Mod)):
+            return self.is_tainted(node.left) or self.is_tainted(node.right)
+        if (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and node.func.attr == "format"
+        ):
+            return (
+                self.is_tainted(node.func.value)
+                or any(self.is_tainted(arg) for arg in node.args)
+                or any(self.is_tainted(k.value) for k in node.keywords)
+            )
+
+        if (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id in self.sources
+        ):
+            return True
+
+        if isinstance(node, (ast.Attribute, ast.Subscript)):
+            base = node.value
+            while isinstance(base, (ast.Attribute, ast.Subscript)):
+                base = base.value
+            if isinstance(base, ast.Name) and base.id == self.request_obj:
+                return True
+            return self.is_tainted(node.value)
+
+        if isinstance(node, ast.Name):
+            return self._get(node.id)
+
+        if isinstance(node, ast.Call):
+            if self.sanitizers:
+                call_name = _resolve_call_name(node)
+                if call_name and call_name in self.sanitizers:
+                    return False
+
+            if isinstance(node.func, ast.Attribute):
+                if self.is_tainted(node.func.value):
+                    return True
+
+            if any(self.is_tainted(arg) for arg in node.args):
+                return True
+
+            if any(self.is_tainted(k.value) for k in node.keywords):
+                return True
+
+        return False
+
+    def generic_visit(self, node):
+        for field, value in ast.iter_fields(node):
+            if isinstance(value, list):
+                for item in value:
+                    if isinstance(item, ast.AST):
+                        self.visit(item)
+            elif isinstance(value, ast.AST):
+                self.visit(value)
+
+    def visit_FunctionDef(self, node):
+        self._push()
+        self._symbol_stack.append(node.name)
+        self._function_stack.append(node)
+        self._taint_params(node)
+        self.generic_visit(node)
+        self._function_stack.pop()
+        self._symbol_stack.pop()
+        self._pop()
+
+    def visit_AsyncFunctionDef(self, node):
+        self._push()
+        self._symbol_stack.append(node.name)
+        self._function_stack.append(node)
+        self._taint_params(node)
+        self.generic_visit(node)
+        self._function_stack.pop()
+        self._symbol_stack.pop()
+        self._pop()
+
+    def visit_ClassDef(self, node):
+        self._symbol_stack.append(node.name)
+        self.generic_visit(node)
+        self._symbol_stack.pop()
+
+    def visit_Assign(self, node):
+        t = self.is_tainted(node.value)
+        for tgt in node.targets:
+            if isinstance(tgt, ast.Name):
+                self._set(tgt.id, t)
+        self.generic_visit(node)
+
+    def visit_AnnAssign(self, node):
+        if node.value:
+            t = self.is_tainted(node.value)
+            if isinstance(node.target, ast.Name):
+                self._set(node.target.id, t)
+        self.generic_visit(node)

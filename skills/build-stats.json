@@ -1,0 +1,25 @@
+{
+  "files_analyzed": 6859,
+  "source_units_analyzed": 964,
+  "candidate_by_repository": {
+    "agency-agents": 300,
+    "gstack": 71,
+    "ecc": 592,
+    "andrej-karpathy-skills": 1
+  },
+  "final_skills": 968,
+  "source_unit_actions": {
+    "adapted": 950,
+    "excluded": 4,
+    "merged": 9,
+    "split": 1
+  },
+  "source_file_actions": {
+    "excluded": 5402,
+    "adapted": 951,
+    "preserved": 395,
+    "merged": 110,
+    "split": 1
+  },
+  "shared_protocol_sections": 62
+}

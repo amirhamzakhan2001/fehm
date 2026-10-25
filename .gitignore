@@ -1,8 +1,12 @@
 node_modules/
+graphify-out/
+github repo code/
 dist/
 .fehm/*
 !.fehm/architecture.json
 !.fehm/architecture.proposed.json
+!.fehm/drift-decisions.json
+!.fehm/health.json
 coverage/
 *.log
 .env

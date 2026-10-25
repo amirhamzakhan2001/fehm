@@ -1,0 +1,69 @@
+{
+  "repository": "https://github.com/rohitg00/agentmemory",
+  "commit": "bcf4f0d00d1c71e9221287a4778e4122ce2d7574",
+  "license": "Apache-2.0",
+  "files": [
+    {
+      "path": "src/state/search-index.ts",
+      "sha256": "f6bbf3bc39b465f063e32aea44439702e70203de50a87329befe2e77a4e5f6c6"
+    },
+    {
+      "path": "src/state/stemmer.ts",
+      "sha256": "f770e8e27a5740b6039f4caf6347de8cf21a16196ea7484518ce4bf22bba6a6c"
+    },
+    {
+      "path": "src/state/synonyms.ts",
+      "sha256": "b0cd2acb816d2e88f105a8cd24e417072db5734eaa38a9bf1c261938c86d2e9f"
+    },
+    {
+      "path": "src/functions/lessons.ts",
+      "sha256": "cee58b3aeae49da0fae81e408b8be9267a5c0b83fef197962bba82adf5d900dd"
+    }
+  ],
+  "snapshotDirectory": "vendor",
+  "adaptations": [
+    {
+      "upstream": "src/state/search-index.ts#SearchIndex (add, remove, search, lowerBound)",
+      "fehm": "src/lexical-index.ts#LexicalIndex",
+      "purpose": "BM25 lexical retrieval with prefix (half idf) and synonym (weight 0.7) expansion.",
+      "modifications": [
+        "documents are Fehm {id, weighted fields} instead of CompressedObservation",
+        "Fehm identifier-aware tokenize replaces upstream tokenizer; CJK segmentation removed",
+        "exact+prefix scores reported as `lexical`, synonym scores separately as `semantic`",
+        "results tie-broken by id (upstream sorted by score only)",
+        "no prefix expansion for query terms shorter than 3 characters",
+        "sessionId, serialize/deserialize, restoreFrom, observationCountsBySession, clear removed"
+      ]
+    },
+    {
+      "upstream": "src/state/stemmer.ts#stem",
+      "fehm": "src/stemmer.ts#stem",
+      "purpose": "Porter-style stemming for query/document terms.",
+      "modifications": [
+        "three `!` non-null assertions for noUncheckedIndexedAccess; algorithm unchanged"
+      ]
+    },
+    {
+      "upstream": "src/state/synonyms.ts#getSynonyms (+ SYNONYM_GROUPS)",
+      "fehm": "src/synonyms.ts#getSynonyms",
+      "purpose": "Deterministic concept expansion \u2014 Fehm's LLM-free semantic signal.",
+      "modifications": [
+        "added FEHM_SYNONYM_GROUPS (login/auth, payment/billing, user/account, connection/pool, handler/controller/route, util/helper, session/token/jwt)"
+      ]
+    },
+    {
+      "upstream": "src/functions/lessons.ts#reinforceLesson + mem::lesson-search recency boost",
+      "fehm": "src/skill-feedback.ts#historicalSignals",
+      "purpose": "Feature 2 skill memory: bounded confidence per (similar task \u2192 skill) from user feedback.",
+      "modifications": [
+        "a lesson is a (similar task \u2192 skill) association built from feedback entries, not a stored record",
+        "negative feedback weakens symmetrically: c \u2212 0.1\u00b7c (upstream weakens only through time decay)",
+        "starting confidence 0.5 = no opinion; signal = (c \u2212 0.5)\u00b72 \u00d7 similarity \u00d7 recency",
+        "relevance is task similarity (term + intent Jaccard \u2265 0.3), not BM25",
+        "no persisted confidence, decay sweep, soft delete, KV store or iii SDK"
+      ]
+    }
+  ],
+  "notUsed": "AgentMemory server, iii engine, REST/MCP servers, hooks, viewer, vector index, hybrid-search, reranker, persistence, any external database.",
+  "note": "Local snapshot had no git metadata; the commit was identified by matching all three file hashes against upstream main (2026-09-26). The files differ from tag v0.9.29."
+}

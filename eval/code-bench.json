@@ -1,0 +1,29 @@
+{
+  "$comment": "FEHM-CodeIntel-Bench seed set over Fehm's own source (index this repository first). Expectations are symbol names; structural cases check the call graph. Written by the implementer, so treat as a regression suite, not a held-out measurement.",
+  "cases": [
+    { "query": "where are skills ranked and selected for a task", "expect": ["routeSkills"] },
+    { "query": "how is the skill library indexed from SKILL.md files", "expect": ["indexSkills"] },
+    { "query": "compose selected skills within a token budget", "expect": ["composeSkills"] },
+    { "query": "classify the intent of a user task", "expect": ["classifyTask"] },
+    { "query": "BM25 text index with synonym expansion", "expect": ["TextIndex"] },
+    { "query": "reciprocal rank fusion of result lists", "expect": ["fuseRankings"] },
+    { "query": "porter stemmer for search terms", "expect": ["stem"] },
+    { "query": "find callers and callees of a symbol", "expect": ["neighbors"] },
+    { "query": "which files and tests are affected if a function changes", "expect": ["blastRadius"] },
+    { "query": "read a file without following symlinks or escaping the root", "expect": ["readLocalFile"] },
+    { "query": "write JSON to disk atomically", "expect": ["atomicWriteJson"] },
+    { "query": "build the code graph index incrementally", "expect": ["buildIndex"] },
+    { "query": "scan repository files and respect ignore rules", "expect": ["scanRepository"] },
+    { "query": "dispatch MCP tool calls over JSON-RPC", "expect": ["callTool", "runMcpServer"] },
+    { "query": "install the fehm router skill for an agent platform", "expect": ["manageIntegration"] },
+    { "query": "parse TypeScript declarations into graph nodes", "expect": ["analyzeTypeScript"] },
+    { "query": "render a map of directories and exported symbols", "expect": ["renderRepositoryMap"] },
+    { "query": "prepare task context for a coding agent", "expect": ["prepareContext"] },
+    { "query": "estimate the number of tokens in text", "expect": ["tokenEstimate"] },
+    { "query": "measure skill routing precision and recall", "expect": ["evaluateSkills"] },
+    { "kind": "callers", "query": "prepareContext", "symbol": "prepareContext", "expect": ["runCoreCli", "callTool"] },
+    { "kind": "callees", "query": "prepareContext", "symbol": "prepareContext", "expect": ["routeSkills", "composeSkills", "blastRadius"] },
+    { "kind": "callers", "query": "routeSkills", "symbol": "routeSkills", "expect": ["prepareContext", "evaluateSkills"] },
+    { "kind": "callees", "query": "rankCode", "symbol": "rankCode", "expect": ["neighbors", "fuseRankings", "graphIndex"] }
+  ]
+}
