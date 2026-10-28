@@ -18,6 +18,8 @@ export interface CanvasHandlers {
   zoomed(scale: number): void;
 }
 
+export interface ViewportState { x: number; y: number; scale: number }
+
 interface Camera {
   x: number;
   y: number;
@@ -42,15 +44,61 @@ export class DiagramCanvas {
   private anim = 0;
   /** True until the user pans or zooms: resizes then keep the whole diagram in view. */
   private fitted = false;
+  private fitFloor = 0;
+  private readonly resizeObserver: ResizeObserver;
 
   constructor(
     private readonly svg: SVGSVGElement,
     private readonly handlers: CanvasHandlers,
     /** `modifier`: plain wheel scrolls the page; pinch or Ctrl/⌘+wheel zooms (diagrams embedded in a scrolling page). */
-    private readonly options: { wheel?: "zoom" | "modifier" } = {},
+    private readonly options: { wheel?: "zoom" | "modifier"; initialMinScale?: number } = {},
   ) {
     this.bindPointer();
-    new ResizeObserver(() => (this.fitted ? this.fit(false) : this.applyCamera())).observe(svg);
+    this.resizeObserver = new ResizeObserver(() => (this.fitted ? this.fit(false, this.fitFloor) : this.applyCamera()));
+    this.resizeObserver.observe(svg);
+  }
+
+  /** Hide a subset without changing validated geometry or deleting semantic relationships. */
+  filter(visible: { nodes: Set<string>; edges: Set<string> } | null): void {
+    for (const [elements, ids] of [[this.nodeEls, visible?.nodes], [this.edgeEls, visible?.edges]] as const) {
+      for (const [id, element] of elements) {
+        const hidden = !!ids && !ids.has(id);
+        element.style.display = hidden ? "none" : "";
+        if (hidden) element.dataset.filtered = "true";
+        else delete element.dataset.filtered;
+      }
+    }
+  }
+
+  viewport(): ViewportState {
+    return { x: this.cam.x + this.cam.w / 2, y: this.cam.y + this.cam.h / 2, scale: this.scale };
+  }
+
+  restoreViewport(saved: ViewportState): void {
+    if (!Number.isFinite(saved.x + saved.y + saved.scale) || saved.scale <= 0) return;
+    cancelAnimationFrame(this.anim);
+    const r = this.svg.getBoundingClientRect();
+    this.fitted = false;
+    const w = r.width / saved.scale, h = r.height / saved.scale;
+    this.cam = { x: saved.x - w / 2, y: saved.y - h / 2, w, h };
+    this.applyCamera();
+  }
+
+  /** Fit the visible neighborhood without recomputing or moving validated geometry. */
+  fitNodes(ids: Set<string>): void {
+    const nodes = this.layout?.nodes.filter(n => ids.has(n.id)) ?? [];
+    if (!nodes.length) return;
+    const x = Math.min(...nodes.map(n => n.x)) - 55, y = Math.min(...nodes.map(n => n.y)) - 65;
+    const width = Math.max(...nodes.map(n => n.x + n.width)) - x + 55;
+    const height = Math.max(...nodes.map(n => n.y + n.height)) - y + 100;
+    const r = this.svg.getBoundingClientRect();
+    const scale = Math.max(this.options.initialMinScale ?? 0.75, Math.min(1, r.width / width, r.height / height));
+    this.restoreViewport({ x: x + width / 2, y: y + height / 2, scale });
+  }
+
+  destroy(): void {
+    this.resizeObserver.disconnect();
+    cancelAnimationFrame(this.anim);
   }
 
   get scale(): number {
@@ -84,7 +132,7 @@ export class DiagramCanvas {
     for (const n of [...layout.nodes].sort((a, b) => a.layer - b.layer || a.x - b.x)) gn.append(this.node(n, nodes.get(n.id)));
     this.svg.append(gb, gl, ge, gn);
     this.fitText();
-    this.fit(false);
+    this.fit(false, this.options.initialMinScale ?? 0);
   }
 
   private edge(e: LayoutEdge, nodes: Map<string, ArchNode>): SVGGElement {
@@ -103,9 +151,15 @@ export class DiagramCanvas {
     if (e.label && Number.isFinite(e.label.x)) {
       g.append(el("g", { class: "lbl" }, el("rect", { x: e.label.x, y: e.label.y, width: e.label.width, height: e.label.height, rx: 4 }), el("text", { x: e.label.x + e.label.width / 2, y: e.label.y + 12, "text-anchor": "middle", "data-maxw": e.label.width - 8 }, e.label.text)));
     }
+    g.setAttribute("tabindex", "0");
+    g.setAttribute("role", "button");
+    g.setAttribute("aria-label", `${nodes.get(e.source)?.name ?? e.source} to ${nodes.get(e.target)?.name ?? e.target}: ${e.label?.text ?? e.type}, ${e.confidence}`);
     g.addEventListener("click", (ev) => {
       ev.stopPropagation();
       this.handlers.selectEdge(e.id);
+    });
+    g.addEventListener("keydown", (ev) => {
+      if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); ev.stopPropagation(); this.handlers.selectEdge(e.id); }
     });
     this.edgeEls.set(e.id, g);
     return g;
@@ -261,7 +315,7 @@ export class DiagramCanvas {
   }
 
   /** Fit all geometry (the validated viewBox) plus padding; never enlarge past 1:1 for small diagrams. */
-  fit(animate = true): void {
+  fit(animate = true, minimumScale = 0): void {
     if (!this.layout) return;
     const r = this.svg.getBoundingClientRect();
     const vb = this.layout.viewBox;
@@ -269,9 +323,12 @@ export class DiagramCanvas {
     let w = Math.max(vb.width, vb.height / aspect);
     const minW = r.width || vb.width;
     if (w < minW) w = minW;
+    const cropped = minimumScale > 0 && r.width > 0 && r.width / w < minimumScale;
+    if (cropped) w = r.width / minimumScale;
     const h = w * aspect;
+    this.fitFloor = minimumScale;
     this.fitted = true;
-    this.animateTo({ x: vb.x + vb.width / 2 - w / 2, y: vb.y + vb.height / 2 - h / 2, w, h }, animate);
+    this.animateTo({ x: cropped ? vb.x : vb.x + vb.width / 2 - w / 2, y: cropped ? vb.y : vb.y + vb.height / 2 - h / 2, w, h }, animate);
   }
 
   /** 1:1, anchored at the diagram's top-left. */

@@ -161,7 +161,7 @@ export function analyzeConcepts({ engine, ontology, facts = new BriefingFacts(en
     for (const route of facts.signals.routes) {
         const id = route.handler?.id ?? route.enclosing?.id ?? null;
         const supported = route.handler?.evidence.provenance === 'type-checker' || engine.graph.nodes().some(n => n.kind === 'route' && n.path === route.path && n.location?.line === route.line && n.evidence.provenance === 'ast');
-        observations.push(add('s29.routing', route.path, route.line, supported ? 'structurally_supported' : 'weakly_indicated', 'declaration', 'route-declaration', `${route.method} ${route.route}: route evidence from Feature 3.2${route.handler ? ' with a mapped handler' : ''}.`, ['Registration does not prove deployment, reachability or successful requests.'], id));
+        observations.push(add('s29.routing', route.path, route.line, supported ? 'structurally_supported' : 'weakly_indicated', 'declaration', 'route-declaration', `${route.method} ${route.route}: route evidence from Explain Codebase${route.handler ? ' with a mapped handler' : ''}.`, ['Registration does not prove deployment, reachability or successful requests.'], id));
     }
     const dependencies: Record<string, string[]> = { 'express-rate-limit': ['s29.rate-limiting'], opossum: ['s22.circuit-breaker'], 'p-retry': ['s27.retry-mechanism'], redis: ['s28.caching'], ioredis: ['s28.caching'], langchain: ['s48.retrieval-augmented-generation'], 'llama-index': ['s48.retrieval-augmented-generation'], pg: ['s19.connection-pooling'] };
     for (const dep of facts.declaredDependencies)
@@ -173,12 +173,12 @@ export function analyzeConcepts({ engine, ontology, facts = new BriefingFacts(en
         if (!concept)
             continue;
         for (const e of control.evidence)
-            observations.push(add(concept, e.path, e.line ?? 1, 'weakly_indicated', 'declaration', 'security-control-adapter', `Feature 3.6 control inventory: ${control.summary}`, ['Control inventory can include import/name clues; it does not establish enforcement on all paths.']));
+            observations.push(add(concept, e.path, e.line ?? 1, 'weakly_indicated', 'declaration', 'security-control-adapter', `Security Review control inventory: ${control.summary}`, ['Control inventory can include import/name clues; it does not establish enforcement on all paths.']));
     }
     for (const p of prompts?.prompts ?? [])
-        observations.push(add('s48.prompt-engineering', p.path, p.line, p.reconstruction === 'complete' ? 'explicitly_observed' : 'weakly_indicated', 'declaration', 'prompt-adapter', `Feature 3.7 reconstructed ${p.kind} instructions (${p.reconstruction}).`, ['Prompt presence and static scores do not prove behavioral quality or RAG.'], p.functionId ?? p.fileId));
+        observations.push(add('s48.prompt-engineering', p.path, p.line, p.reconstruction === 'complete' ? 'explicitly_observed' : 'weakly_indicated', 'declaration', 'prompt-adapter', `Prompt Intelligence reconstructed ${p.kind} instructions (${p.reconstruction}).`, ['Prompt presence and static scores do not prove behavioral quality or RAG.'], p.functionId ?? p.fileId));
     for (const d of health?.deadCode.items ?? [])
-        observations.push(add('p-quality.dead-code', d.path, d.line ?? 1, 'weakly_indicated', 'declaration', 'health-adapter', `Feature 3.5 candidate: ${d.state}.`, ['Static reference absence does not prove runtime dead code.'], d.nodeId ?? null));
+        observations.push(add('p-quality.dead-code', d.path, d.line ?? 1, 'weakly_indicated', 'declaration', 'health-adapter', `Project Health candidate: ${d.state}.`, ['Static reference absence does not prove runtime dead code.'], d.nodeId ?? null));
     const revision = optionalGit(engine.root, ['rev-parse', '--verify', 'HEAD']), status = optionalGit(engine.root, ['status', '--porcelain']);
     const valid = observations.filter(o => ontology.get(o.concept) && engine.fileHashes().has(o.path) && o.line >= 1 && o.line <= facts.lines(o.path).length);
     const findings: ConceptFinding[] = [...new Map(valid.map(o => {

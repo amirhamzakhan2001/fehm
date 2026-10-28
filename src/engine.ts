@@ -168,7 +168,7 @@ export class FehmEngine {
         summaries: this.summaries,
         hashes: this.hashes,
         memory: loadMemory(this.root, this.options.stateDirectory),
-        fresh: true, // open() always synchronizes before serving queries
+        fresh: this.freshness().fresh, // a long-lived engine may outlive the indexed contents
       },
       query,
       options,

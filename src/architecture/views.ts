@@ -78,7 +78,7 @@ export const VIEWS: Record<ViewType, Meta> = {
     title: "Dependencies",
     group: "core",
     question: "How do modules depend on each other?",
-    availability: (ctx) => (ctx.model.nodes.filter((n) => n.level === 3).length > 1 ? { available: true } : { available: false, reason: "Only one source module." }),
+    availability: (ctx) => (ctx.model.nodes.filter((n) => n.level === 3).length > 1 ? { available: true, optionLabel: "Scope", options: [{ id: "", label: "Most connected modules" }, { id: "all", label: "All modules (may be large)" }] } : { available: false, reason: "Only one source module." }),
     build: (ctx, f) => viewSpec(ctx.model, "dependencies", f),
   },
   delta: { title: "Delta", group: "operations", question: "What changed in the architecture?", availability: deltaAvailability, build: deltaView },
@@ -112,6 +112,39 @@ export function buildView(ctx: ViewContext, view: ViewType, focus?: string): Vie
 export function viewSpec(model: ArchitectureModel, view: ViewType, focus?: string): ViewResult {
   const byId = new Map(model.nodes.map((n) => [n.id, n]));
   const within = (ids: Set<string>): ArchRelationship[] => model.relationships.filter((r) => ids.has(r.source) && ids.has(r.target));
+
+  // A context lens of the existing semantic model, not a second extraction pipeline.
+  if (view === "system" && focus === "context") {
+    if (!model.components.length) return { error: "No indexed source components are available." };
+    const internal = new Set(model.components);
+    const root: ArchNode = {
+      id: "context:system", name: model.repository.name, type: "component", level: 0,
+      role: { confidence: "verified", reasons: ["Repository boundary; not a deployment boundary."] },
+      children: model.components, files: [...new Set(model.components.flatMap((id) => byId.get(id)?.files ?? []))], symbols: 0, technologies: [], evidence: [], tier: 1,
+    };
+    const grouped = new Map<string, ArchRelationship>();
+    for (const rel of model.relationships) {
+      const from = internal.has(rel.source), to = internal.has(rel.target);
+      if (from === to || (!from && byId.get(rel.source)?.tier === 1) || (!to && byId.get(rel.target)?.tier === 1)) continue;
+      const source = from ? root.id : rel.source, target = to ? root.id : rel.target;
+      const id = `context:${source}:${target}:${rel.type}`;
+      const existing = grouped.get(id);
+      if (existing) {
+        existing.weight += rel.weight;
+        existing.evidence.push(...rel.evidence);
+        if (existing.confidence !== rel.confidence) existing.confidence = "inferred";
+      } else grouped.set(id, { ...rel, id, source, target, label: rel.label ?? rel.type, evidence: [...rel.evidence] });
+    }
+    const relationships = [...grouped.values()];
+    const ids = new Set(relationships.flatMap((r) => [r.source, r.target]));
+    const nodes = [root, ...model.nodes.filter((n) => n.tier !== 1 && ids.has(n.id))];
+    return { view, focus, title: "System context", nodes, relationships,
+      input: { view, focus, nodes: nodes.map((n) => inputNode(n, n.tier === 0 ? "top" : n.tier === 3 ? "bottom" : "middle")),
+        edges: relationships.map((r) => ({ id: r.id, source: r.source, target: r.target, type: r.type, label: r.label ?? r.type, weight: r.weight, confidence: r.confidence })),
+        boundaries: [{ id: "context:boundary", title: "Repository boundary", members: [root.id] }] },
+      path: [{ id: "system", name: model.repository.name }],
+      notes: ["The repository is collapsed into one system. Connections retain their indexed relationship types; an import is not a network call. Deployment boundaries are not inferred from source modules."] };
+  }
 
   if (view === "system") {
     const nodes = [...model.components.map((id) => byId.get(id)!), ...model.nodes.filter((n) => n.tier !== 1)];
@@ -169,17 +202,18 @@ export function viewSpec(model: ArchitectureModel, view: ViewType, focus?: strin
     weight.set(r.source, (weight.get(r.source) ?? 0) + 1);
     weight.set(r.target, (weight.get(r.target) ?? 0) + 2);
   }
-  const kept = [...modules].sort((a, b) => (weight.get(b.id) ?? 0) - (weight.get(a.id) ?? 0) || b.files.length - a.files.length || (a.id < b.id ? -1 : 1)).slice(0, MAX_DEPENDENCY_MODULES);
+  const kept = [...modules].sort((a, b) => (weight.get(b.id) ?? 0) - (weight.get(a.id) ?? 0) || b.files.length - a.files.length || (a.id < b.id ? -1 : 1)).slice(0, focus === "all" ? modules.length : MAX_DEPENDENCY_MODULES);
   const keptIds = new Set(kept.map((m) => m.id));
   const shownRels = rels.filter((r) => keptIds.has(r.source) && keptIds.has(r.target));
-  const notes = modules.length > kept.length ? [`${modules.length - kept.length} of ${modules.length} modules with the fewest dependencies are hidden; drill into a component to see them.`] : [];
+  const notes = modules.length > kept.length ? [`${modules.length - kept.length} of ${modules.length} modules with the fewest dependencies and ${rels.length - shownRels.length} relationships are hidden. Choose All modules or drill into a component to see them.`] : [];
   const input: LayoutInput = {
     view: "dependencies",
+    ...(focus === "all" ? { focus } : {}),
     nodes: kept.map((m) => inputNode(m, "middle")),
     edges: shownRels.map((r) => ({ id: r.id, source: r.source, target: r.target, weight: r.weight, type: r.type, confidence: r.confidence })),
     boundaries: [],
   };
-  return { view, title: "Module dependencies", nodes: kept, relationships: shownRels, input, path: [{ id: "system", name: model.repository.name }], notes };
+  return { view, ...(focus === "all" ? { focus } : {}), title: "Module dependencies", nodes: kept, relationships: shownRels, input, path: [{ id: "system", name: model.repository.name }], notes };
 }
 
 function ancestors(n: ArchNode, byId: Map<string, ArchNode>): ArchNode[] {

@@ -21,6 +21,7 @@ export interface RuleEntry {
 const R = (id: string, title: string, category: FindingCategory, dimension: DimensionId, severity: Severity, upstream?: string): RuleEntry => ({ id, title, category, dimension, severity, ...(upstream ? { upstream } : {}) });
 
 export const RULES: readonly RuleEntry[] = [
+  ...['viewport', 'image-alt', 'title', 'description', 'noindex', 'canonical', 'duplicate-title'].map(id => R(`web/${id}`, `Web delivery: ${id}`, 'web-delivery', 'web-delivery', id === 'noindex' ? 'high' : id === 'description' ? 'low' : 'medium')),
   // quality
   R("quality/cyclomatic-complexity", "Cyclomatic complexity", "quality", "quality", "medium", "SKY-Q301"),
   R("quality/cognitive-complexity", "Cognitive complexity", "quality", "quality", "medium", "SKY-Q306"),

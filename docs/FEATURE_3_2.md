@@ -52,12 +52,25 @@ Each section declares which file roles it reads by content, which it reads by pr
 
 ## Page
 
-- **Hero:** name, declared purpose, stack tags, confirmed share, unknown count, index size and cache use.
-- **Ask about this codebase:** Feature 1 retrieval plus deterministic summaries.
-- **18 collapsible sections.** Overview, Architecture, Entry points, Features and Cheat sheet are open by default, plus the archetype's most relevant section (Data flows for a CLI, API for an HTTP service).
-- **Claim actions:** every claim has **evidence**. Entities also get **explain** (3.1's `/api/graph/node`: what it does, who uses it, what it uses, related tests), **graph** (`/graph#node=…`) and, for entry points, **flow** (a `FehmEngine.flow` call tree).
-- **Export:** markdown (three depths) or JSON.
-- **Navigation:** a table of contents with per-section state; `/` focuses Ask. Freshness is re-checked on window focus.
+The default quick briefing places the declared purpose, structural inference, technology tags, entry points, storage signals, system-context preview and first-meeting concerns together. Index counts stay in expandable analysis metadata.
+
+Five anchor-linked stages preserve all 18 analysis sections in a continuous onboarding report: Understand, Explore, Trace, Evaluate, and Change safely. `#stage-<stage>` and `#sec-<section>` scroll to content; legacy `#report-<group>` links resolve to the corresponding topic. Navigation does not hide report sections. Technical inventories remain expandable, and long lists render in batches.
+
+- **Requirements:** existing capability claims and operational signals retain their source basis. Missing SLOs, reliability guarantees, privacy obligations and accessibility evidence remain unknown. Static test reach is never labelled as executed coverage.
+- **Meeting preparation:** “Before Your First Project Meeting” brings together key facts, engineering concerns, questions derived from actual evidence gaps, and a reading order drawn from documented purpose, entry points and important components.
+- **API reference:** search by route, handler or source; filter by HTTP method; inspect resolved handlers, relationships and related tests; open the corresponding static request sequence. Pagination replaces the former server-side group/item truncation. Request/response schemas, status codes and per-route authentication enforcement remain explicitly unestablished.
+- **Evidence:** contextual filename/line references open the existing claim panel. Labels distinguish documentation, declared configuration, source verification, static patterns, inference and unknowns. No static result is called an observed execution.
+- **Ask and export:** indexed retrieval, Markdown at three depths, and briefing JSON remain available. The browser's onboarding organization does not change the CLI/JSON contract. `/` focuses Ask; refresh failures preserve the prior briefing and expose a retry action.
+
+### Diagram workspace
+
+`ui/workspace.ts` uses Feature 3.3's cached architecture APIs, semantic IR, validated layout IR, shared `DiagramCanvas` and diagram styles. It adds no renderer dependency or extraction pipeline. `system&focus=context` projects the existing model into one repository boundary with evidence-preserving external relationships; a repository boundary is not a deployment boundary.
+
+Views cover system context, system components, component drill-down, static runtime sequences, data flow, workflows/failure paths, discovered containers/deployment and dependencies. Controls provide pan, zoom, fit, full screen, keyboard node/edge selection, relationship/role highlighting, source navigation and standalone SVG export. Empty evidence and failed layout validation produce explanations rather than fabricated diagrams. The renderer is disposed when a refreshed briefing replaces it.
+
+Runtime sequences are reconstructed from static calls. Evidence-free returns are illustrative, not traced execution. SQL references may come from examples or fixtures; neither table usage nor an SDK import establishes a live production integration. Verified ER diagrams are unavailable because the index does not extract column types, keys or cardinalities. The Data section preserves the available table/model usage without inventing schema relationships.
+
+`ui/onboarding.ts` contains the pure grouping, provenance-label, reading-order and meeting-question projections. Regression tests cover those projections, API completeness and context relationship provenance. Browser verification covers FEHM, an API fixture and an empty repository.
 
 ## API
 
@@ -81,5 +94,19 @@ CLI: `fehm brief [--depth minimal|standard|deep] [--sections overview,api] [--bu
 - **Deferred:**
   - Optional LLM synthesis (Mode B) and deep subsystem explanation (Mode C), beyond flow, explain and ask.
   - An MCP `get_codebase_brief` tool: the rebuilt tree has no MCP server yet; `fehm brief --json` and `/api/briefing` expose the same data.
-  - Links to 3.3–3.8: those pages don't exist yet; 3.1 graph links are wired.
+  - Complete endpoint contracts and relational schema extraction are not supplied by the current briefing index.
+
+Graph, Architecture, Architecture Drift, Project Health, Security Review, Prompt Intelligence and Git Memory links are available for deeper investigation.
 - **CLI output:** `fehm brief` waits for stdout to flush before the CLI's `process.exit`. Other commands still write without waiting, so output larger than 64 KB piped from them can be truncated. That is pre-existing and unchanged.
+
+### Continuous engineering onboarding report
+
+FEHM retains its original application sidebar and collapse behavior. Only Explain Codebase has a local, sticky section navigation. Its five anchors—Understand, Explore, Trace, Evaluate, Change safely—scroll through one continuous report. A topic selector reaches individual areas directly. Sections are never hidden when navigating; existing `#sec-*` and legacy `#report-*` links remain supported, with keyboard focus and reduced-motion-aware scrolling.
+
+The reading order is defined in `briefing/ui/report.ts`. All 18 existing analysis sections appear exactly once. Understand introduces the actual project, detected consumers, inferred capabilities, FR/NFR evidence and technologies. Explore treats architecture, code organization, entry points, APIs, data and integrations as distinct topics. Trace connects static operations to their calls and evidence. Evaluate covers setup/deployment, security, testing, risks and optional recent Git history. Change safely presents dependencies, a prioritized source reading path with inline related-code/test inspection, documented design evidence and handover questions. Detailed blocks and unknowns remain expandable beneath concise explanations.
+
+The system map stays in Explore; a separate operation map loads lazily when Trace approaches the viewport. Each map has independent camera/selection state and unique DOM IDs. Technology selection highlights actual usage in the system map and scrolls there. Endpoint inspection opens the corresponding runtime sequence in Trace. Both use the existing architecture model, validated layouts and SVG renderer. Unsupported schemas, deployment topology, business intent and production behavior are never filled with demonstration data.
+
+Technology logos remain bundled locally from Devicon v2.17.0 with the existing MIT attribution. npm manifest requirements are shown with source evidence and explicitly distinguished from installed/resolved versions. Other version formats remain unextracted. Briefing version 7 refreshes caches for these additional facts. Declaration-only dependencies do not establish component usage. Recent Git history is read on demand through the existing bounded Git Memory API; it does not claim to summarize the full repository history or deployed releases.
+
+Implementation: briefing/page.ts, ui/main.ts, ui/report.ts, ui/report-history.ts, ui/workspace.ts and ui/technology.ts; codebase-briefing/facts.ts, sections-interfaces.ts and types.ts. Dashboard files have been restored to their original sidebar implementation. Tests cover complete/unique report topic coverage, technology declaration and version evidence, briefing APIs and existing analysis. Browser checks cover restored desktop sidebar, continuous rendering, stage/topic anchors, API-to-flow and technology-to-map navigation, unique map IDs, inline dependencies/tests, Git history and mobile overflow.

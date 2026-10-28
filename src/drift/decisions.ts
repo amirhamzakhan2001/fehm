@@ -18,6 +18,7 @@ export const DECISIONS_FILE = ".fehm/drift-decisions.json";
 
 export interface DecisionsFile {
   version: 1;
+  issues?: string[];
   findings: Record<string, Decision>;
   patterns: Record<string, { decision: "approved" | "rejected" | "ignored"; by: string; at: string }>;
 }
@@ -31,14 +32,15 @@ export function readDecisions(root: string): DecisionsFile {
   if (!existsSync(path)) return empty;
   try {
     const raw = JSON.parse(readFileSync(path, "utf8")) as Partial<DecisionsFile>;
+    if (!raw || raw.version !== 1 || !raw.findings || typeof raw.findings !== 'object' || Array.isArray(raw.findings) || !raw.patterns || typeof raw.patterns !== 'object' || Array.isArray(raw.patterns)) throw new Error('Expected version 1, findings and patterns objects');
+    if (Object.values(raw.findings).some(d => !d || !KINDS.has(d.kind)) || Object.values(raw.patterns).some(d => !d || !PATTERN.has(d.decision))) throw new Error('Invalid finding or pattern decision');
     const findings: DecisionsFile["findings"] = {};
     for (const [id, d] of Object.entries(raw.findings ?? {})) if (d && KINDS.has(d.kind)) findings[id] = { kind: d.kind, reason: String(d.reason ?? ""), by: String(d.by ?? ""), at: String(d.at ?? ""), scope: String(d.scope ?? id) };
     const patterns: DecisionsFile["patterns"] = {};
     for (const [id, d] of Object.entries(raw.patterns ?? {})) if (d && PATTERN.has(d.decision)) patterns[id] = { decision: d.decision, by: String(d.by ?? ""), at: String(d.at ?? "") };
     return { version: 1, findings, patterns };
-  } catch {
-    // A malformed file is not trusted; decisions start empty and the page says nothing was decided.
-    return empty;
+  } catch (error) {
+    return { ...empty, issues: [`${DECISIONS_FILE} could not be read: ${(error as Error).message}. Existing decisions were not applied; repair this file before saving decisions.`] };
   }
 }
 
@@ -67,6 +69,7 @@ export function actor(root: string): string {
 
 export function decideFinding(root: string, id: string, kind: DecisionKind | null, reason = "", scope = id): Decision | undefined {
   const data = readDecisions(root);
+  if (data.issues?.length) throw new Error(data.issues.join(" "));
   if (kind === null) delete data.findings[id];
   else data.findings[id] = { kind, reason: reason.slice(0, 500), by: actor(root), at: new Date().toISOString(), scope: scope.slice(0, 300) };
   writeDecisions(root, data);
@@ -75,6 +78,7 @@ export function decideFinding(root: string, id: string, kind: DecisionKind | nul
 
 export function decidePattern(root: string, id: string, decision: "approved" | "rejected" | "ignored" | null): void {
   const data = readDecisions(root);
+  if (data.issues?.length) throw new Error(data.issues.join(" "));
   if (decision === null) delete data.patterns[id];
   else data.patterns[id] = { decision, by: actor(root), at: new Date().toISOString() };
   writeDecisions(root, data);

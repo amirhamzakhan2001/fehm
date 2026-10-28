@@ -118,6 +118,6 @@ export function entityGitHistory(report: GitMemoryReport, path: string, entity?:
     changed = false;
     for (const c of report.commits) for (const f of c.files) if (path && matches(f.path) && f.oldPath && !paths.has(f.oldPath)) { paths.add(f.oldPath); changed = true; }
   }
-  const commits = report.commits.filter(c => c.events.some(e => matches(e.path) && (!entity || e.entity === entity)));
+  const commits = report.commits.filter(c => !entity ? c.files.some(f => matches(f.path) || !!f.oldPath && matches(f.oldPath)) : c.events.some(e => matches(e.path) && e.entity === entity));
   return { path, entity: entity ?? null, lineage: [...paths], commits, coverage: report.coverage, reason: 'Commit messages and versioned decision documents are evidence; undocumented rationale is unknown. Rename lineage is Git similarity evidence, not proof of arbitrary splits or cross-file symbol moves.' };
 }

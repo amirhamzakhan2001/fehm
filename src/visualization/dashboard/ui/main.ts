@@ -49,12 +49,14 @@ let active = "";
 function parseHash(): { id: string; inner: string } {
   const raw = location.hash.replace(/^#\/?/, "");
   const q = raw.indexOf("?");
-  const id = decodeURIComponent(q < 0 ? raw : raw.slice(0, q));
+  const requested = decodeURIComponent(q < 0 ? raw : raw.slice(0, q));
+  const id = requested === 'ontology' ? 'concepts' : requested;
   return { id: views.has(id) ? id : HOME, inner: q < 0 ? "" : raw.slice(q + 1) };
 }
 
 /** Which view serves a same-origin path: `/` is home, otherwise a feature's page route. */
 function viewForPath(pathname: string): string | undefined {
+  if (pathname === '/ontology' || pathname === '/ontology/') return 'concepts';
   if (pathname === "/") return HOME;
   for (const v of views.values()) if (v.path && (pathname === v.path || pathname === `${v.path}/`)) return v.id;
   return undefined;

@@ -144,7 +144,7 @@ export function nodePanel(d: NodeDetail, actions: InspectorActions, canOpen: boo
       canOpen ? h("button", { onclick: () => actions.open(n.id), title: "Show what is inside (Shift+Enter)" }, "Open ⤵") : null,
       h("button", { onclick: () => actions.highlight("up"), title: "Highlight what leads here" }, "Upstream"),
       h("button", { onclick: () => actions.highlight("down"), title: "Highlight what this leads to" }, "Downstream"),
-      n.graphNodeId ? h("a", { href: graphHref(n.graphNodeId), title: "Open in the Feature 3.1 codebase graph" }, "Open in graph") : null,
+      n.graphNodeId ? h("a", { href: graphHref(n.graphNodeId), title: "Open in the Codebase Graph codebase graph" }, "Open in graph") : null,
     ),
     h("section", {}, h("h3", {}, "Depends on", h("span", {}, String(d.dependsOn.length))), relList(d.dependsOn)),
     h("section", {}, h("h3", {}, "Used by", h("span", {}, String(d.usedBy.length))), relList(d.usedBy)),
@@ -168,7 +168,7 @@ export function relationshipPanel(d: RelationshipDetail, actions: InspectorActio
     h("div", { class: "actions" }, h("span", { class: "pill" }, r.label ?? r.type), badge(r.confidence), r.status && r.status !== "unchanged" ? h("span", { class: "pill" }, r.status) : null),
     h("p", { class: "small muted" }, CONF_HELP[r.confidence]),
     h("div", { class: "actions" }, h("button", { onclick: () => actions.select(d.source.id) }, `← ${d.source.name}`), h("button", { onclick: () => actions.select(d.target.id) }, `${d.target.name} →`)),
-    h("section", {}, h("h3", {}, "Made of", h("span", {}, plural(r.weight, "link"))), h("div", { class: "actions" }, ...counts.map(([k, v]) => h("span", { class: "pill", title: k === "signal" ? "Source-line signals (routes, SQL, file writes, imports of a service SDK)" : `Feature 1 '${k}' edges` }, `${k === "signal" ? "signals" : k} ${v}`)))),
+    h("section", {}, h("h3", {}, "Made of", h("span", {}, plural(r.weight, "link"))), h("div", { class: "actions" }, ...counts.map(([k, v]) => h("span", { class: "pill", title: k === "signal" ? "Source-line signals (routes, SQL, file writes, imports of a service SDK)" : `Context Engine '${k}' edges` }, `${k === "signal" ? "signals" : k} ${v}`)))),
     h("section", {}, h("h3", {}, "Evidence", h("span", {}, `${r.evidence.length} shown`)), evidenceList(r.evidence, actions, 6)),
   );
 }

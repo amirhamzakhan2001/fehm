@@ -1,69 +1,34 @@
 import { CHROME_CSS, featureNav } from "../features.js";
 import { DIAGRAM_CSS } from "./diagram-css.js";
 
-/**
- * Static shell for the Feature 3.3 architecture page. Canvas first: the
- * diagram takes the space, detail lives in the inspector, and nothing is
- * drawn over the canvas. All behaviour is in ui/main.ts.
- */
+/** Local, evidence-backed architecture workspace. No external assets or runtime dependencies. */
 export const ARCHITECTURE_PAGE = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Architecture · fehm</title><link rel="icon" href="data:,">
 <style>
 :root{--bg:#07090d;--canvas:#090c12;--panel:#0c0f16;--panel-2:#11151f;--panel-3:#161b28;--line:#1b2130;--line-2:#262e42;--fg:#d6dce8;--fg-2:#b3bdcf;--muted:#7b859c;--faint:#4b546a;--accent:#7aa2f7;--accent-2:#a9c1ff;--ok:#5fd4c0;--likely:#e0af68;--unknown:#8a93a8;--err:#f7768e;--data:#bb9af7;--ext:#e0af68;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;--sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif}
-*{box-sizing:border-box}html,body{height:100%}
-body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.5 var(--sans);display:grid;grid-template-rows:44px auto minmax(0,1fr) auto;overflow:hidden}
-a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
-button{font:inherit;color:inherit;background:var(--panel-2);border:1px solid var(--line-2);border-radius:6px;padding:3px 10px;cursor:pointer;white-space:nowrap}
-button:hover{border-color:var(--accent)}button:disabled{opacity:.45;cursor:default;border-color:var(--line-2)}
-button:focus-visible,input:focus-visible,a:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-code,.mono{font-family:var(--mono);font-size:12px}
-#top{display:flex;align-items:center;gap:10px;padding:0 16px;border-bottom:1px solid var(--line);background:var(--panel);min-width:0}
-.brand{font-weight:700;letter-spacing:.14em;font-size:12px}.sep{color:var(--faint)}.page{color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-size:11px;white-space:nowrap}
-.project{font-family:var(--mono);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
-.grow{flex:1}
-.nav{font-size:12.5px;color:var(--muted)}.nav:hover{color:var(--fg);text-decoration:none}
-.status{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);white-space:nowrap}.status i{width:7px;height:7px;border-radius:50%;background:var(--faint)}
-.status[data-state=ready] i{background:var(--ok)}.status[data-state=busy] i{background:var(--accent);animation:pulse 1s infinite alternate}.status[data-state=stale] i{background:var(--likely)}.status[data-state=error] i{background:var(--err)}
-@keyframes pulse{to{opacity:.3}}
-#refresh[data-stale]{border-color:var(--likely);color:var(--likely)}
-#search-wrap{position:relative;width:min(320px,34vw)}
-#search{width:100%;background:var(--bg);border:1px solid var(--line-2);border-radius:6px;color:var(--fg);padding:5px 10px;font:inherit;font-size:13px}
-#results{position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:30;background:var(--panel-2);border:1px solid var(--line-2);border-radius:8px;box-shadow:0 14px 40px #000a;padding:4px;display:grid;max-height:60vh;overflow:auto}
-#results[hidden]{display:none}
-#results button{border:0;background:none;text-align:left;padding:6px 8px;border-radius:5px;display:grid;grid-template-columns:auto 1fr;gap:0 8px;align-items:baseline}
-#results button:hover,#results button[aria-selected=true]{background:var(--panel-3)}
-#results .k{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}#results .p{grid-column:2;font-family:var(--mono);font-size:11px;color:var(--faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#bar{display:flex;align-items:center;gap:10px;padding:8px 16px;border-bottom:1px solid var(--line);background:var(--panel);flex-wrap:wrap;min-width:0}
-#tabs{display:inline-flex;gap:2px;background:var(--bg);border:1px solid var(--line-2);border-radius:8px;padding:2px}
-#tabs button{border:0;background:none;padding:4px 12px;border-radius:6px;color:var(--muted);font-size:13px}
-#tabs button[aria-selected=true]{background:var(--panel-3);color:var(--fg)}
-#tabs button:disabled{opacity:.38}#tabs .gsep{width:1px;background:var(--line-2);margin:4px 3px}
-#option-wrap{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted);min-width:0}#option-wrap[hidden]{display:none}
-#option{max-width:min(420px,40vw);background:var(--bg);color:var(--fg);border:1px solid var(--line-2);border-radius:6px;padding:3px 6px;font:inherit;font-size:12.5px}
-#crumbs{display:flex;align-items:center;gap:4px;font-size:12.5px;color:var(--muted);min-width:0;overflow:hidden;white-space:nowrap}
-#crumbs button{border:0;background:none;padding:2px 4px;color:var(--accent);font-size:12.5px}#crumbs span.cur{color:var(--fg);overflow:hidden;text-overflow:ellipsis}
-#crumbs .div{color:var(--faint)}
-.tools{display:inline-flex;gap:4px;align-items:center}.tools button{padding:3px 9px;font-size:12.5px}
-#zoom{font-family:var(--mono);font-size:11.5px;color:var(--muted);min-width:42px;text-align:right}
-#focusmode{display:inline-flex;gap:2px;align-items:center;font-size:12px;color:var(--muted)}#focusmode[hidden]{display:none}
-#focusmode button{padding:2px 8px;font-size:12px}#focusmode button[aria-pressed=true]{border-color:var(--accent);color:var(--accent-2)}
-#main{display:grid;grid-template-columns:minmax(0,1fr) 360px;min-height:0}
-#stage{position:relative;min-width:0;min-height:0;background:var(--canvas);overflow:hidden}
-#canvas{width:100%;height:100%;display:block;cursor:grab;touch-action:none;user-select:none}
-#canvas.panning{cursor:grabbing}
-#inspector{border-left:1px solid var(--line);background:var(--panel);overflow:auto;min-height:0}
-#foot{display:flex;gap:14px;align-items:center;padding:5px 16px;border-top:1px solid var(--line);background:var(--panel);font-size:12px;color:var(--muted);min-width:0;flex-wrap:wrap}
-#foot b{color:var(--fg-2);font-weight:560}#foot .note{color:var(--likely)}
-.cov{display:inline-flex;gap:8px;align-items:center}.cov span{display:inline-flex;gap:4px;align-items:center}
-/* message panel shown instead of a diagram */
-#message{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:24px}#message[hidden]{display:none}
-#message .box{max-width:620px;background:var(--panel);border:1px solid var(--line-2);border-radius:10px;padding:18px 20px}
-#message h2{margin:0 0 6px;font-size:16px}#message p{color:var(--muted);margin:0 0 10px}#message ul{margin:0 0 12px;padding-left:18px;font-size:12.5px;color:var(--fg-2)}#message code{color:var(--likely)}
-#draftbar{position:absolute;left:0;right:0;top:0;padding:6px 12px;background:color-mix(in srgb,var(--err) 16%,var(--panel));border-bottom:1px solid var(--err);font-size:12.5px}#draftbar[hidden]{display:none}
-/* diagram */
+
+*{box-sizing:border-box}html,body{height:100%;margin:0}body{background:var(--bg);color:var(--fg);font:13px/1.5 var(--sans);display:grid;grid-template-rows:50px auto auto minmax(0,1fr) 30px;overflow:hidden}
+[hidden]{display:none!important}button,input,select,summary{font:inherit}button,select,input{color:var(--fg);border:1px solid var(--line-2);border-radius:5px;background:var(--panel-2)}button{padding:5px 10px;cursor:pointer;white-space:nowrap}button:hover{background:var(--panel-3);border-color:#485570}button:disabled{opacity:.4;cursor:default}button[aria-pressed=true]{color:var(--accent-2);border-color:var(--accent)}input,select{padding:5px 8px;min-width:0}a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible,a:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:3px}summary{cursor:pointer;list-style:none}summary::-webkit-details-marker{display:none}summary::after{content:' ⌄';color:var(--muted)}code,.mono{font:12px var(--mono)}.grow{flex:1}.muted{color:var(--muted)}.small{font-size:12px}
+#top{display:flex;align-items:center;gap:14px;padding:0 20px;border-bottom:1px solid var(--line);background:var(--panel);min-width:0}.page{font-weight:600;font-size:14px}.project{font:12px var(--mono);color:var(--muted);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-left:14px;border-left:1px solid var(--line-2)}.status{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12px;white-space:nowrap}.status i{width:6px;height:6px;border-radius:50%;background:var(--muted)}.status[data-state=ready] i{background:var(--ok)}.status[data-state=busy] i{background:var(--accent)}.status[data-state=error] i{background:var(--err)}.status[data-state=stale] i{background:var(--likely)}#refresh[data-stale]{border-color:var(--likely)}
+#search-wrap{position:relative;width:min(300px,24vw)}#search{width:100%;background:var(--bg);font-size:12px}#results{position:absolute;top:calc(100% + 6px);left:0;min-width:320px;right:0;z-index:40;background:var(--panel-2);border:1px solid var(--line-2);border-radius:7px;padding:5px;max-height:65vh;overflow:auto;box-shadow:0 12px 36px #0008}#results button{display:grid;grid-template-columns:auto 1fr;gap:0 8px;text-align:left;width:100%;border:0;background:transparent}#results button:hover,#results button[aria-selected=true]{background:var(--panel-3)}#results .k{font-size:10px;color:var(--muted);text-transform:uppercase}#results .p{grid-column:2;font:11px var(--mono);color:var(--muted);overflow:hidden;text-overflow:ellipsis}
+.menu{position:relative}.menu>summary{padding:5px 9px;border:1px solid var(--line-2);border-radius:5px;white-space:nowrap}.menu>div{position:absolute;right:0;top:calc(100% + 6px);z-index:35;min-width:190px;background:var(--panel-2);padding:6px;border:1px solid var(--line-2);border-radius:7px;box-shadow:0 10px 30px #0007;display:grid;gap:3px}.menu button,.menu a{padding:7px 10px;text-align:left;border:0;background:transparent}.menu button:hover,.menu a:hover{background:var(--panel-3)}#product-menu .fehm-nav{display:grid;gap:0;max-height:70vh;overflow:auto}#product-menu .nav{font-size:12px;padding:6px 10px}
+#diagram-navigation{background:var(--panel);border-bottom:1px solid var(--line);min-width:0;padding:0 20px}.navigation-heading{display:flex;gap:18px;align-items:center}#category-nav{display:flex;gap:22px;overflow-x:auto;min-width:0;flex:1;scrollbar-width:thin}#category-nav button{padding:10px 0;border:0;border-bottom:2px solid transparent;background:none;border-radius:0;font-size:12px;color:var(--muted)}#category-nav button[aria-pressed=true]{color:var(--fg);border-bottom-color:var(--accent)}#diagram-query{width:160px;background:transparent;font-size:12px}#diagram-choices{display:flex;gap:5px;overflow-x:auto;align-items:center;padding:8px 0;scrollbar-width:thin}#diagram-choices button{font-size:12px;border-color:transparent;background:none;border-radius:4px;padding:4px 9px;color:var(--fg-2)}#diagram-choices button[aria-current=true]{background:#1b2940;border-color:#324b70;color:#bcd2ff}.empty-category{color:var(--muted);font-size:12px;padding:4px}#category-details{font-size:12px;color:var(--muted)}#category-details>div{width:min(480px,90vw);max-height:50vh;overflow:auto}#category-details p{margin:5px 4px}#category-unavailable p{border-top:1px solid var(--line);padding-top:7px}
+body.navigation-collapsed:not(.documentation){grid-template-rows:50px auto minmax(0,1fr) 30px}#toggle-navigation{display:none}body.navigation-collapsed #toggle-navigation{display:block}body.documentation #legend{display:none}
+#bar{display:flex;gap:12px;align-items:center;padding:6px 20px;border-bottom:1px solid var(--line);min-width:0;min-height:40px}#crumbs{display:flex;align-items:center;gap:5px;overflow:hidden;white-space:nowrap;font-size:12px;color:var(--muted)}#crumbs button{border:0;background:none;padding:2px;color:var(--accent)}#crumbs .cur{overflow:hidden;text-overflow:ellipsis}#option-wrap{display:flex;align-items:center;gap:6px;min-width:0;color:var(--muted);font-size:12px}#option{max-width:320px}#scope-search{width:130px}#diagram-filter{max-width:160px;font-size:12px}.filter-label{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12px}
+#main{display:grid;grid-template-columns:minmax(0,1fr) 350px;position:relative;min-height:0}#main.inspector-collapsed{grid-template-columns:minmax(0,1fr)}#stage{display:grid;grid-template-rows:auto minmax(0,1fr);min-width:0;min-height:0;background:var(--canvas)}#intro{display:flex;align-items:start;gap:20px;justify-content:space-between;padding:15px 24px 10px;min-width:0}#intro h1{font-size:18px;line-height:1.4;font-weight:600;margin:0 0 4px}#intro p{margin:0;color:var(--muted);font-size:12px;max-width:850px}#evidence-details{flex:none;color:var(--muted);font-size:12px;margin-right:36px}#evidence-details>div{width:min(480px,85vw);max-height:50vh;overflow:auto}#evidence-details p{margin:5px}#diagram-summary{line-height:1.65}#viewport{position:relative;min-height:0;min-width:0;overflow:hidden}#canvas{width:100%;height:100%;display:block;cursor:grab;touch-action:none;user-select:none}#canvas.panning{cursor:grabbing}
+#canvas-toolbar{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:3px;padding:4px;background:var(--panel);border:1px solid var(--line-2);border-radius:7px;box-shadow:0 4px 18px #0004}#canvas-toolbar button{border-color:transparent;background:transparent;font-size:12px;padding:4px 9px}#canvas-toolbar button:hover{background:var(--panel-3)}#zoom{font:11px var(--mono);color:var(--muted);min-width:38px;text-align:center}.tool-divider{width:1px;height:18px;background:var(--line-2);margin:0 3px}
+#selection-actions{position:absolute;top:8px;left:20px;right:55px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;pointer-events:none}#selection-actions>*{pointer-events:auto}#selection-name{max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:var(--panel);padding:5px 9px;border:1px solid var(--line);border-radius:5px;font-size:12px}#selection-actions button,#focusmode button{font-size:12px}#focusmode{display:flex;align-items:center;gap:3px;background:var(--panel);padding:2px;border:1px solid var(--line);border-radius:5px}#focusmode>span{display:none}#focusmode button{border-color:transparent;padding:3px 6px}#focusmode button[aria-pressed=true]{color:var(--accent-2);background:var(--panel-3)}#filter-status{position:absolute;bottom:60px;left:20px;right:20px;text-align:center;color:var(--fg-2);font-size:12px;pointer-events:none}#filter-status:not(:empty){background:var(--panel);border:1px solid var(--line);width:fit-content;max-width:calc(100% - 40px);margin:0 auto;padding:5px 10px;border-radius:5px}
+#inspector{border-left:1px solid var(--line-2);background:var(--panel);overflow:auto;min-height:0;padding-top:34px}#inspector-toggle{position:absolute;right:325px;top:12px;z-index:20;width:32px;height:30px;padding:0;font-size:21px}#main.inspector-collapsed #inspector-toggle{right:16px}#inspector-toggle.has-selection::after{content:'';position:absolute;top:3px;right:3px;width:5px;height:5px;border-radius:50%;background:var(--accent)}
+#message{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:30px;background:var(--canvas);z-index:15}#message .box{max-width:560px;text-align:left}#message h2{font-size:18px;font-weight:600;margin:0 0 8px}#message p{color:var(--muted);margin:0 0 16px}#message ul{padding-left:18px;font-size:12px;color:var(--muted)}#message code{color:var(--likely)}#loading{position:absolute;inset:0;background:#090c12db;display:grid;place-content:center;z-index:24;color:var(--fg-2);font-size:13px;pointer-events:auto}#loading span{border:1px solid var(--line-2);background:var(--panel);padding:10px 18px;border-radius:6px}#draftbar{position:absolute;top:0;left:0;right:0;z-index:16;padding:8px 16px;background:var(--panel-3);color:var(--err);border-bottom:1px solid var(--err);font-size:12px}
+#foot{display:flex;align-items:center;gap:14px;border-top:1px solid var(--line);padding:4px 20px;font-size:11px;color:var(--muted);min-width:0}#foot b{font-weight:500;color:var(--fg-2)}#foot details{position:relative;margin-left:auto}#foot details>div{position:absolute;bottom:28px;right:0;width:min(540px,90vw);max-height:40vh;overflow:auto;padding:12px 16px;background:var(--panel-2);border:1px solid var(--line-2);border-radius:6px;box-shadow:0 8px 30px #0008;z-index:30}#foot p{margin:5px 0}#foot .note{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#announcement{position:absolute;bottom:58px;left:50%;transform:translateX(-50%);z-index:40;max-width:85vw;background:var(--panel-2);border:1px solid var(--line-2);padding:8px 14px;border-radius:6px;color:var(--fg);font-size:12px;pointer-events:none}
+body.documentation{grid-template-rows:50px minmax(0,1fr)}body.documentation #diagram-navigation,body.documentation #bar,body.documentation #foot,body.documentation #inspector,body.documentation #inspector-toggle,body.documentation #selection-actions{display:none!important}body.documentation #main{grid-template-columns:1fr}body.documentation #canvas-toolbar{opacity:.3}body.documentation #canvas-toolbar:hover,body.documentation #canvas-toolbar:focus-within{opacity:1}
+@media(max-width:1100px){#top{gap:10px;padding:0 14px}.project{max-width:100px}#search-wrap{width:200px}#option{max-width:220px}#scope-search{width:110px}#bar{flex-wrap:wrap}#category-nav{gap:18px}}
+@media(max-width:850px){#main{grid-template-columns:minmax(0,1fr)}#inspector{position:absolute;right:0;top:0;bottom:0;width:min(350px,calc(100% - 40px));z-index:18;box-shadow:-10px 0 35px #0007}#inspector-toggle{right:min(325px,calc(100% - 65px))}.status span{display:none}#project{max-width:75px}#product-menu{display:none}#diagram-query{width:125px}#selection-actions{left:10px}#focusmode{display:none}#intro{padding:12px 16px 8px}#intro p{max-width:650px}}
+@media(max-width:600px){body.navigation-collapsed:not(.documentation){grid-template-rows:46px auto minmax(0,1fr) 28px}body{grid-template-rows:46px auto auto minmax(0,1fr) 28px}#top{gap:7px;padding:0 10px}.page{font-size:13px}.project{display:none}#search-wrap{flex:1;width:0;min-width:70px}#search{font-size:12px}#top button{font-size:12px;padding:4px 7px}.status{display:none}#view-options>summary{font-size:0;padding:4px 8px}#view-options>summary::after{content:'•••';font-size:13px}#export-svg{display:none}#results{min-width:min(300px,calc(100vw - 24px));left:auto}#diagram-navigation{padding:0 10px}.navigation-heading{gap:8px}#category-nav{gap:15px}#diagram-query{width:100px}#category-nav button{white-space:nowrap}#category-details{display:none}#toggle-navigation{display:block;font-size:12px;padding:4px 7px}#bar{gap:6px;padding:5px 10px}#crumbs{flex:1;min-width:100px}#option-wrap{order:3;flex-basis:100%;max-width:100%}#option{flex:1;max-width:none;width:0}#scope-search{width:110px}#diagram-filter{max-width:110px}.filter-label>span{display:none}#intro{padding:10px 14px 6px;gap:8px}#intro h1{font-size:16px}#intro p{font-size:12px;line-height:1.5}#evidence-details{margin-right:42px}#evidence-details>summary{font-size:0;padding:3px 7px}#evidence-details>summary::after{content:'ⓘ';font-size:16px}#canvas-toolbar{bottom:10px;max-width:calc(100% - 20px)}#canvas-toolbar button{padding:4px 7px}#selection-actions{gap:4px;top:5px}#selection-name{display:none}#selection-actions button{padding:4px 7px;font-size:12px}#foot{padding:4px 10px;gap:8px;font-size:10px}#foot>span:nth-child(2){display:none}#filter-status{bottom:54px;font-size:11px}body.documentation{grid-template-rows:46px minmax(0,1fr)}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
 ${DIAGRAM_CSS}
-@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 /* inspector */
 .insp{padding:14px 16px 28px;display:grid;gap:14px;font-size:13px}
 .insp h2{margin:0;font-size:16px;font-weight:620;word-break:break-word}.insp .eyebrow{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
@@ -86,40 +51,20 @@ pre.code{margin:0;padding:8px 0;background:var(--bg);border-top:1px solid var(--
 pre.code span{display:block;padding:0 10px;white-space:pre}pre.code span.f{background:color-mix(in srgb,var(--accent) 14%,transparent)}pre.code i{color:var(--faint);font-style:normal;display:inline-block;width:38px}
 .legend{display:grid;gap:6px;font-size:12.5px;color:var(--fg-2)}.legend .li{display:flex;gap:10px;align-items:center}.legend svg{flex:none}
 .muted{color:var(--muted)}.small{font-size:12px}
+
 ${CHROME_CSS}
-@media (max-width:980px){#main{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) minmax(0,42%)}#inspector{border-left:0;border-top:1px solid var(--line)}.page{display:none}#search-wrap{width:auto;flex:1}}
-@media (max-width:620px){#main{grid-template-rows:minmax(0,1fr) auto}#inspector{max-height:46vh}#inspector:not(.open){max-height:40px;overflow:hidden}.tools .opt{display:none}}
+#product-menu .fehm-nav{display:grid}html.embedded #product-menu{display:none}
 </style></head><body>
-<header id="top">
-  <span class="brand">FEHM</span><span class="sep">/</span><span class="page">Architecture</span>
-  <span id="project" class="project"></span>
-  <span class="grow"></span>
-  <div id="search-wrap" role="combobox" aria-expanded="false" aria-owns="results" aria-haspopup="listbox">
-    <input id="search" type="search" placeholder="Find component, module, file or symbol  /" autocomplete="off" aria-label="Search the architecture" aria-controls="results">
-    <div id="results" role="listbox" hidden></div>
-  </div>
-  <span id="status" class="status" data-state="busy" role="status" aria-live="polite"><i></i><span>Loading…</span></span>
-  <button id="refresh" title="Re-index incrementally and rebuild the architecture">⟳ Refresh</button>
-  ${featureNav("architecture")}
-</header>
-<div id="bar">
-  <div id="tabs" role="tablist" aria-label="Architecture views"></div>
-  <label id="option-wrap" hidden><span id="option-label"></span><select id="option"></select></label>
-  <nav id="crumbs" aria-label="Drill-down path"></nav>
-  <span class="grow"></span>
-  <span id="focusmode" hidden role="group" aria-label="Highlight around the selection"><span>Highlight</span>
-    <button data-mode="up" aria-pressed="false" title="What leads to the selection">Upstream</button><button data-mode="down" aria-pressed="false" title="What the selection leads to">Downstream</button><button data-mode="both" aria-pressed="false">Both</button>
-  </span>
-  <span class="tools"><button id="zoom-out" title="Zoom out (−)" aria-label="Zoom out">−</button><span id="zoom">100%</span><button id="zoom-in" title="Zoom in (+)" aria-label="Zoom in">+</button><button id="fit" title="Fit to view (F)">Fit</button><button id="reset" class="opt" title="Actual size (0)">1:1</button></span>
-</div>
-<div id="main">
-  <div id="stage">
-    <svg id="canvas" role="application" aria-roledescription="architecture diagram" aria-label="Architecture diagram" xmlns="http://www.w3.org/2000/svg"></svg>
-    <div id="draftbar" hidden role="alert"></div>
-    <div id="message" hidden></div>
-  </div>
-  <aside id="inspector" aria-label="Inspector" aria-live="polite"></aside>
-</div>
-<footer id="foot" aria-live="polite"></footer>
-<script type="module" src="/architecture/assets/architecture/ui/main.js"></script>
-</body></html>`;
+<header id="top"><a class="page" href="/explain#report-architecture" title="Return to the project explanation">← Explain</a><span class="page">Architecture</span><span id="project" class="project"></span><span class="grow"></span>
+<div id="search-wrap" role="combobox" aria-expanded="false" aria-owns="results" aria-haspopup="listbox"><input id="search" type="search" placeholder="Find in architecture  /" autocomplete="off" aria-label="Search the architecture" aria-controls="results"><div id="results" role="listbox" hidden></div></div>
+<span id="status" class="status" data-state="busy" role="status" aria-live="polite"><i></i><span>Loading…</span></span><button id="refresh" title="Re-index changed files and refresh architecture">↻ Refresh</button><button id="export-svg" disabled title="Export the complete verified diagram as SVG">Export SVG</button>
+<details id="view-options" class="menu"><summary aria-label="Workspace options">Workspace</summary><div><button id="documentation" aria-pressed="false">Documentation mode</button><button id="fullscreen">Full screen</button><button id="export-menu">Export SVG</button><button id="coverage">Coverage and limits</button></div></details><details id="product-menu" class="menu"><summary>FEHM</summary><div>${featureNav("architecture")}</div></details></header>
+<section id="diagram-navigation" aria-label="Diagram navigation"><div class="navigation-heading"><nav id="category-nav" aria-label="Diagram families"></nav><input id="diagram-query" type="search" placeholder="Find a diagram" aria-label="Search diagrams"><details id="category-details" class="menu"><summary id="category-summary">Coverage</summary><div><p id="category-description"></p><p id="category-gaps"></p><div id="category-unavailable"></div></div></details></div><div id="diagram-choices" aria-label="Available diagrams"></div></section>
+<div id="bar"><button id="toggle-navigation" aria-controls="diagram-navigation" aria-expanded="true">Views</button><nav id="crumbs" aria-label="Drill-down path"></nav><span class="grow"></span><label id="option-wrap" hidden><span id="option-label"></span><input id="scope-search" type="search" placeholder="Find a scope…" aria-label="Search diagram scopes"><select id="option" aria-label="Diagram scope"></select></label><label class="filter-label"><span>Show</span><select id="diagram-filter" aria-label="Filter diagram elements"><option value="">All elements</option></select></label></div>
+<div id="main" class="inspector-collapsed"><button id="inspector-toggle" aria-label="Expand inspector" title="Inspector and legend" aria-controls="inspector" aria-expanded="false">‹</button><div id="stage">
+<section id="intro" aria-label="Diagram explanation"><div><h1 id="diagram-title">Architecture</h1><p id="diagram-purpose"></p></div><details id="evidence-details" class="menu"><summary aria-label="About this diagram">About this view</summary><div><p id="diagram-summary"></p><p id="diagram-evidence"></p></div></details></section>
+<div id="viewport"><svg id="canvas" role="application" aria-roledescription="architecture diagram" aria-label="Architecture diagram" xmlns="http://www.w3.org/2000/svg"></svg>
+<div id="selection-actions" hidden role="group" aria-label="Selected component actions"><span id="selection-name"></span><button id="inspect-selection">Inspect</button><button id="expand-selection">Explore inside</button><button id="focus-one" aria-pressed="false">1-hop focus</button><button id="focus-two" aria-pressed="false">2-hop focus</button><button id="clear-focus" hidden>Show all</button><span id="focusmode" hidden role="group" aria-label="Highlight around the selection"><span>Highlight</span><button data-mode="up" aria-pressed="false" title="Highlight upstream dependencies">Upstream</button><button data-mode="down" aria-pressed="false" title="Highlight downstream dependencies">Downstream</button><button data-mode="both" aria-pressed="false">Both</button></span></div>
+<div id="filter-status" role="status"></div><div id="canvas-toolbar" role="group" aria-label="Diagram viewport"><button id="zoom-out" aria-label="Zoom out" title="Zoom out (−)">−</button><span id="zoom">100%</span><button id="zoom-in" aria-label="Zoom in" title="Zoom in (+)">+</button><span class="tool-divider"></span><button id="fit" title="Fit all visible elements (F)">Fit</button><button id="reset" title="Reset to actual size (0)">1:1</button><span class="tool-divider"></span><button id="legend" title="Open diagram legend">Legend</button></div>
+<div id="draftbar" hidden role="alert"></div><div id="message" hidden></div><div id="loading" hidden role="status"><span>Preparing diagram…</span></div><div id="announcement" hidden role="status" aria-live="polite"></div></div></div><aside id="inspector" aria-label="Inspector" aria-live="polite" hidden></aside></div><footer id="foot" aria-live="polite"></footer>
+<script type="module" src="/architecture/assets/architecture/ui/main.js"></script></body></html>`;

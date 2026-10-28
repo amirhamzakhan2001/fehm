@@ -1,7 +1,10 @@
 import { analyzePrompt, combineScores, estimateTokens } from './analysis.js';
+import { redactLine } from '../security/secrets.js';
 import { digest } from './discovery.js';
 import type { EvaluationRun, OptimizationMode, PromptCandidate, PromptRecord, SemanticResult } from './types.js';
 import { MODES } from './types.js';
+const placeholders = (value: string): string[] => [...value.matchAll(/\$\{[^}]+\}|\{\{[^}]+\}\}|(?<!\{)\{[a-zA-Z_]\w*\}(?!\})/g)].map(m => m[0]).sort();
+const samePlaceholders = (a: string, b: string): boolean => JSON.stringify(placeholders(a)) === JSON.stringify(placeholders(b));
 /** Conservative edits retain the entire original instruction and its variables. */
 export function improvePrompt(p: PromptRecord, mode: OptimizationMode = 'balanced', source?: string): PromptCandidate {
     if (!MODES.includes(mode))
@@ -46,6 +49,7 @@ export function improvePrompt(p: PromptRecord, mode: OptimizationMode = 'balance
         candidate.patch = null;
         candidate.reasons = ['Sensitive content must be removed before optimization.'];
     }
+    if (p.findings.some(f => f.ruleId === 'PI306')) { candidate.status = 'rejected'; candidate.patch = null; candidate.reasons.push('Sensitive source content must be resolved before proposing a source change.'); }
     return candidate;
 }
 export function textDiff(before: string, after: string): string {
@@ -73,7 +77,7 @@ export function compareCandidate(p: PromptRecord, candidate: PromptCandidate, ba
         reasons.push('Behavioral tests have not completed.');
     if (baseline.suiteDigest !== proposed.suiteDigest || baseline.model !== proposed.model)
         reasons.push('Both versions must use the same evaluation suite and model.');
-    if (!(candidate.text.startsWith(p.text) || candidate.text.replace(/\s/g, '') === p.text.replace(/\s/g, '')) || !p.variables.every(v => candidate.text.includes(v.name)) || !semantic.intentPreserved)
+    if (!(candidate.text.startsWith(p.text) || candidate.text.replace(/\s/g, '') === p.text.replace(/\s/g, '')) || !samePlaceholders(candidate.text, p.text) || !p.variables.every(v => candidate.text.includes(v.name)) || !semantic.intentPreserved)
         reasons.push('Intent or variables were not preserved.');
     for (const run of [baseline,proposed]) {
         if (new Set(run.cases.map(c=>c.id)).size !== run.cases.length || run.cases.some(c=>typeof c.passed!=='boolean'||!Array.isArray(c.assertions)||c.assertions.some(v=>typeof v!=='boolean')||c.passed&&(!c.assertions.length||!c.assertions.every(Boolean)||!!c.error))) reasons.push('Evaluation result is inconsistent.');
@@ -122,4 +126,23 @@ export function estimateImpact(candidate: PromptCandidate, invocations: number, 
     if (!Number.isFinite(invocations) || invocations < 0 || !Number.isFinite(inputCostPerMillion) || inputCostPerMillion < 0)
         throw new Error('Invocation count and price must be finite nonnegative numbers');
     return { invocations, tokenChange: candidate.tokenDelta * invocations, estimatedCostChange: candidate.tokenDelta * invocations * inputCostPerMillion / 1000000, assumptions: 'User-supplied invocation count and uncached input price; byte-based token estimate. Dynamic inputs, output tokens and cache discounts excluded.' };
+}
+
+/** A user-edited proposal is inspectable even when conservative preservation gates reject it. */
+export function editPromptCandidate(p: PromptRecord, text: string, mode: OptimizationMode, source?: string): PromptCandidate {
+    if (text.split('\n').map(redactLine).join('\n') !== text) throw new Error('Remove sensitive values before reviewing a proposal');
+    const candidate = improvePrompt(p, mode, source);
+    const copy = structuredClone(p); copy.text = text; analyzePrompt(copy);
+    candidate.id = 'OPT-' + digest(`${p.id}:${mode}:${text}`).slice(0, 16);
+    candidate.text = text; candidate.score = copy.score;
+    candidate.tokens = estimateTokens(text); candidate.tokenDelta = candidate.tokens - p.tokens.static;
+    candidate.changes = text === p.text ? [] : [{ ruleId: 'manual', reason: 'User-edited proposal; semantic equivalence is not established.', addition: 'Review the complete diff.' }];
+    candidate.intent.variablesPreserved = samePlaceholders(text, p.text);
+    candidate.intent.preserved = text.startsWith(p.text) || text.replace(/\s/g, '') === p.text.replace(/\s/g, '');
+    candidate.diff = textDiff(p.text, text);
+    candidate.patch = candidate.intent.variablesPreserved && p.reconstruction === 'complete' ? sourcePatch(p, text, source ?? '') : null;
+    candidate.status = candidate.intent.variablesPreserved && candidate.intent.preserved && p.reconstruction === 'complete' && candidate.changes.length ? 'needs-validation' : 'rejected';
+    candidate.reasons = ['This proposal has not been behaviorally validated.', ...(!candidate.intent.variablesPreserved ? ['Template placeholders changed.'] : []), ...(!candidate.intent.preserved ? ['Essential instruction preservation cannot be established automatically.'] : []), ...(p.reconstruction === 'partial' ? ['Runtime fragments remain unresolved.'] : [])];
+    if (p.findings.some(f => f.ruleId === 'PI306')) { candidate.status = 'rejected'; candidate.patch = null; candidate.reasons.push('Sensitive source content must be resolved before proposing a source change.'); }
+    return candidate;
 }

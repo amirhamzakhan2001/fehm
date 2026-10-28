@@ -13,7 +13,7 @@
 export interface FeatureEntry {
   /** URL-safe id; the dashboard address is `/#/<id>`. */
   readonly id: string;
-  /** Spec number shown as a chip, e.g. "3.1". */
+  /** Internal specification reference; never displayed as a product label. */
   readonly code: string;
   readonly title: string;
   /** One sentence for the home card. */
@@ -100,25 +100,25 @@ export const FEATURES: readonly FeatureEntry[] = [
     group: "feature",
   },
   {
-    id: "concepts", code: "3.9", title: "Concept intelligence",
+    id: "concepts", code: "3.9", title: "Engineering concepts",
     summary: "Engineering concepts mapped to repository evidence, with explicit scope, qualitative status and links into the code graph.",
     path: "/concepts", icon: "graph", group: "feature",
   },
   {
-    id: "ontology", code: "3.9", title: "Ontology explorer",
-    summary: "Browse the local engineering catalog, definitions, reviewed aliases, detection guidance and typed relationships.",
-    path: "/ontology", icon: "explain", group: "feature",
+    id: "guardrails", code: "3.10", title: "Change Verification & Review",
+    summary: "Working-tree impact, relevant checks, revision-specific evidence and unresolved risks.",
+    path: "/guardrails", icon: "health", group: "feature",
   },
   {
-    id: "guardrails", code: "3.10", title: "Engineering guardrails",
-    summary: "Task requirements, approved checks, TDD evidence, security assessments and revision-specific readiness.",
-    path: "/guardrails", icon: "health", group: "feature",
+    id: "debug", code: "3.11", title: "Failure investigation",
+    summary: "Connect failures to code evidence, testable explanations and the next diagnostic action.",
+    path: "/debug", icon: "health", group: "feature",
   },
   {
     id: "engine",
     code: "1",
     title: "Context engine",
-    summary: "Index status and context-packet debugging for the Feature 1 engine every page is built on.",
+    summary: "Index status and context-packet debugging for the context engine every page is built on.",
     path: "/engine",
     icon: "engine",
     group: "tool",
@@ -152,6 +152,7 @@ export function featureNav(currentId: string): string {
 
 /** Shared page-chrome rules: nav layout, and what the embedded variant hides. */
 export const CHROME_CSS =
+  ".assessment{margin:20px 0;padding:16px 0;border-block:1px solid var(--line);max-width:100%;line-height:1.65}.assessment h2{font-size:16px;margin:0 0 10px}.assessment p{max-width:90ch}details>summary:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:3px}[aria-current=true]{border-left:3px solid var(--accent)}#detail{scroll-margin-top:60px}.lead{font-size:16px;line-height:1.7;max-width:90ch}" +
   ".fehm-nav{display:inline-flex;align-items:center;gap:12px}.fehm-nav .nav+.nav{margin-left:0}" +
   "html.embedded .brand,html.embedded .brand+.sep,html.embedded .fehm-nav{display:none}" +
   "@media (max-width:760px){.fehm-nav{display:none}}";

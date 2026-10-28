@@ -1,11 +1,13 @@
 import type { ArchitectureSummary, ArchNode, DiagramLayout, NodeDetail, PublishedView, RelationshipDetail, SearchHit, ViewType } from "../../../architecture/types.js";
 import { $, h, nodes as present } from "../../graph/ui/dom.js";
-import { DiagramCanvas } from "./canvas.js";
+import { galleryEntries, FAMILIES, CATEGORY_GAPS } from "./catalog.js";
+import { exportDiagram } from "./export.js";
+import { focusNeighborhood } from "./exploration.js";
+import { DiagramCanvas, type ViewportState } from "./canvas.js";
 import { emptyPanel, nodePanel, relationshipPanel, TYPE_LABEL, type InspectorActions } from "./inspector.js";
 
 /**
- * Feature 3.3 page. One semantic model, three lenses (system, components,
- * dependencies). Only layouts that passed showcase validation are drawn; a
+ * Feature 3.3 page. Evidence-backed discovery and focused diagram exploration. Only layouts that passed showcase validation are drawn; a
  * failed draft is shown only on explicit request, clearly marked.
  */
 
@@ -49,13 +51,13 @@ const canvas = new DiagramCanvas($("canvas") as unknown as SVGSVGElement, {
   open: (id) => void openNode(id),
   clear: () => clearSelection(),
   zoomed: (s) => ($("zoom").textContent = `${Math.round(s * 100)}%`),
-});
+}, { initialMinScale: 0.75 });
 
 const actions: InspectorActions = {
   select: (id) => void goTo(id),
   open: (id) => void openNode(id),
   highlight: (mode) => setMode(state.mode === mode ? null : mode),
-  close: () => clearSelection(),
+  close: () => { clearSelection(); toggleInspector(false); $("inspector-toggle").focus(); },
   root: () => state.summary?.repository.root ?? "",
 };
 
@@ -65,6 +67,7 @@ function readHash(): { view: ViewType; focus?: string; sel?: string } {
   const p = new URLSearchParams(location.hash.slice(1));
   const view = (["system", "components", "runtime", "dataflow", "workflow", "lifecycle", "deployment", "security", "dependencies", "delta"] as const).find((v) => v === p.get("view")) ?? "system";
   const out: { view: ViewType; focus?: string; sel?: string } = { view };
+  if (!p.has("view")) out.focus = "context";
   if (p.get("focus")) out.focus = p.get("focus")!;
   if (p.get("sel")) out.sel = p.get("sel")!;
   return out;
@@ -81,18 +84,50 @@ function writeHash(): void {
 
 // ─── view loading ───────────────────────────────────────────────────
 
+let viewRequest = 0;
+let category = FAMILIES.system.family;
+let inspectorOpen = false;
+let focusHops: 0 | 1 | 2 = 0;
+let visibleElements: { nodes: Set<string>; edges: Set<string> } | null = null;
+let noticeTimer = 0;
+const remembered = new Map<string, { camera: ViewportState; selected: Selection; filter: string; hops: 0 | 1 | 2; inspector: boolean }>();
+const viewKey = (view: ViewType, focus?: string): string => `${state.summary?.fingerprint}:${view}:${focus ?? ""}`;
+function rememberView(): void {
+  if (!state.published?.layout) return;
+  remembered.set(viewKey(state.view, state.focus), { camera: canvas.viewport(), selected: state.selected, filter: ($("diagram-filter") as HTMLSelectElement).value, hops: focusHops, inspector: inspectorOpen });
+  if (remembered.size > 40) remembered.delete(remembered.keys().next().value!);
+}
+function announce(message: string): void {
+  clearTimeout(noticeTimer);
+  $("announcement").textContent = message; $("announcement").hidden = false;
+  noticeTimer = window.setTimeout(() => $("announcement").hidden = true, 3200);
+}
+
 async function loadView(view: ViewType, focus?: string, select?: string): Promise<void> {
+  rememberView();
+  clearTimeout(noticeTimer); $("announcement").hidden = true;
+  const request = ++viewRequest;
+  $("loading").hidden = false;
+  $("main").setAttribute("aria-busy", "true");
+  ($("export-svg") as HTMLButtonElement).disabled = true;
+  ($("export-menu") as HTMLButtonElement).disabled = true;
   status("busy", view === "delta" ? "Reading the other revision…" : "Laying out…");
   try {
     const q = new URLSearchParams({ type: view, ...(focus ? { focus } : {}) });
     const pub = await json<PublishedView | { error: string }>(`/api/architecture/view?${q}`);
+    if (request !== viewRequest) return;
+    focusHops = 0; visibleElements = null;
     if ("error" in pub) {
+      state.nodes.clear(); state.selected = null; state.mode = null; state.trace = null;
       // Nothing to draw for this choice (no changes, no evidence): an answer, shown as one.
+      category = FAMILIES[view].family;
       state.view = view;
       if (focus) state.focus = focus;
       else delete state.focus;
       state.published = null;
-      renderTabs();
+      $("canvas-toolbar").hidden = true;
+      $("selection-actions").hidden = true;
+      renderViewControls();
       renderOption();
       $("crumbs").replaceChildren();
       $("canvas").replaceChildren();
@@ -103,6 +138,7 @@ async function loadView(view: ViewType, focus?: string, select?: string): Promis
       readyStatus();
       return;
     }
+    category = FAMILIES[view].family;
     state.view = view;
     if (pub.focus) state.focus = pub.focus;
     else delete state.focus;
@@ -111,23 +147,39 @@ async function loadView(view: ViewType, focus?: string, select?: string): Promis
     state.selected = null;
     state.mode = null;
     state.trace = null;
-    renderTabs();
+    renderViewControls();
     renderOption();
     renderCrumbs();
     draw(pub.layout);
+    refreshMarks();
     renderFoot();
-    if (select && canvas.has(select)) selectNode(select, true);
-    else renderInspector();
+    const saved = remembered.get(viewKey(state.view, state.focus));
+    if (saved && pub.layout) {
+      const filter = $("diagram-filter") as HTMLSelectElement;
+      if ([...filter.options].some(o => o.value === saved.filter)) filter.value = saved.filter;
+      const selection = select ? { kind: "node" as const, id: select } : saved.selected;
+      if (selection?.kind === "node" && canvas.has(selection.id)) { void selectNode(selection.id); focusHops = saved.hops; }
+      else if (selection?.kind === "edge" && pub.relationships.some(r => r.id === selection.id)) void selectEdge(selection.id);
+      else { focusHops = 0; renderInspector(); }
+      applyVisibility();
+      toggleInspector(saved.inspector);
+      canvas.restoreViewport(saved.camera);
+    } else if (select && canvas.has(select)) void selectNode(select, true);
+    else { renderInspector(); toggleInspector(false); }
     writeHash();
     readyStatus();
   } catch (e) {
+    if (request !== viewRequest) return;
     status("error", (e as Error).message);
-    showMessage("Could not build this view", (e as Error).message);
+    showMessage(null, h("div", { class: "box" }, h("h2", {}, "Could not load this diagram"), h("p", {}, (e as Error).message), h("button", { onclick: () => void loadView(view, focus, select) }, "Try again")));
+  } finally {
+    if (request === viewRequest) { $("loading").hidden = true; $("main").setAttribute("aria-busy", "false"); }
   }
 }
 
 function draw(layout: DiagramLayout | null, draft = false): void {
   const pub = state.published!;
+  $("canvas-toolbar").hidden = !layout;
   $("draftbar").hidden = !draft;
   if (!layout) {
     $("canvas").replaceChildren();
@@ -162,28 +214,62 @@ function showMessage(title: string | null, body: string | HTMLElement): void {
 
 const VIEW_TITLE = (v: ViewType): string => state.summary?.views.find((x) => x.type === v)?.title ?? v;
 
-/** All ten views, grouped core | behaviour | operations; views without evidence stay visible, disabled, with the reason. */
-function renderTabs(): void {
-  const tabs = $("tabs");
+/** Update the selected diagram and its contextual controls. */
+function renderViewControls(): void {
+  renderCategoryNavigation();
+  const pub = state.published;
+  const entries = galleryEntries(state.summary?.views ?? []);
+  const entry = entries.find(e => e.descriptor.type === state.view && e.focus === state.focus)
+    ?? entries.find(e => e.descriptor.type === state.view);
+  $("diagram-title").textContent = pub?.title ?? "Architecture unavailable";
+  $("evidence-details").hidden = !pub;
+  $("diagram-purpose").textContent = state.focus === "context" ? "The repository boundary, its callers, and detected data or external integrations." : entry?.descriptor.question ?? "No source-backed diagram is available for this selection.";
+  $("diagram-evidence").textContent = `${FAMILIES[state.view].evidence}${pub ? ` Select for evidence; double-click to explore. Pan for detail or Fit for the full extent.` : ""}`;
+  $("diagram-summary").textContent = state.focus === "context" && pub
+    ? `${state.summary?.repository.name ?? "This repository"} contains ${state.summary?.counts.components ?? 0} source subsystems. Detected outside elements: ${pub.nodes.filter(n => n.id !== "context:system").map(n => n.name).join(", ") || "none"}. Select the system and choose Explore inside to inspect its components. Source grouping alone does not establish an architectural style.`
+    : `${FAMILIES[state.view].scope}. ${pub?.notes.join(" ") || "Select an element to inspect its source evidence, confidence and relationships."}`;
+  $("filter-status").textContent = "";
+  const filter = $("diagram-filter") as HTMLSelectElement;
+  filter.disabled = !pub?.layout;
+  if (!pub) $("diagram-purpose").textContent = "No diagram can be generated from the available source evidence.";
+  filter.replaceChildren(h("option", { value: "" }, "All elements"),
+    h("optgroup", { label: "Relationship types" }, ...[...new Set(pub?.relationships.map(r => r.type) ?? [])].sort().map(t => h("option", { value: `edge:${t}` }, t))),
+    h("optgroup", { label: "Node types" }, ...[...new Set(pub?.nodes.map(n => n.type) ?? [])].sort().map(t => h("option", { value: `node:${t}` }, t))));
+  ($("export-svg") as HTMLButtonElement).disabled = !pub?.layout;
+  ($("export-menu") as HTMLButtonElement).disabled = !pub?.layout;
+}
+
+function renderCategoryNavigation(): void {
   const views = state.summary?.views ?? [];
-  const out: HTMLElement[] = [];
-  views.forEach((v, i) => {
-    if (i && views[i - 1]!.group !== v.group) out.push(h("span", { class: "gsep", "aria-hidden": "true" }));
-    out.push(
-      h(
-        "button",
-        {
-          role: "tab",
-          "aria-selected": String(v.type === state.view),
-          disabled: !v.available,
-          title: v.available ? v.question : `Not available: ${v.reason ?? "no evidence"}`,
-          onclick: () => void switchView(v.type),
-        },
-        v.title,
-      ),
-    );
-  });
-  tabs.replaceChildren(...out);
+  const entries = galleryEntries(views);
+  const families = [...new Set(entries.map(e => e.family))];
+  if (!families.includes(category)) category = families[0] ?? "";
+  const query = ($("diagram-query") as HTMLInputElement).value.trim().toLowerCase();
+  $("category-nav").replaceChildren(...families.map(family => h("button", {
+    "aria-pressed": String(category === family && !query),
+    onclick: () => { category = family; ($("diagram-query") as HTMLInputElement).value = ""; renderCategoryNavigation(); },
+  }, family.replace(" and behavior", "").replace("Infrastructure and deployment", "Deployment").replace("Security and reliability", "Security").replace("Architecture evolution", "Evolution"))));
+  const choices = entries.filter(e => query ? `${e.title} ${e.descriptor.question} ${e.scope}`.toLowerCase().includes(query) : e.family === category);
+  $("diagram-choices").replaceChildren(...choices.map(e => h("button", {
+    "aria-current": String(e.descriptor.type === state.view && (e.descriptor.type !== "system" || e.focus === state.focus)),
+    title: `${e.descriptor.question}\n${e.scope}\n${e.evidence}`,
+    onclick: () => void loadView(e.descriptor.type, e.focus),
+  }, e.title)));
+  if (!choices.length) $("diagram-choices").append(h("span", { class: "empty-category" }, query ? "No matching diagrams. Try context, sequence or dependencies." : "No source-backed diagrams are available. Index source files and refresh."));
+  $("category-summary").textContent = "Coverage";
+  $("category-description").textContent = "Only available, source-backed views appear in navigation. Availability does not imply complete extraction.";
+  $("category-gaps").textContent = Object.values(CATEGORY_GAPS).join(" ");
+  $("category-unavailable").replaceChildren(...views.filter(v => !v.available).map(v => h("p", {}, `${v.title}: ${v.reason ?? "No supporting evidence."}`)));
+}
+
+function toggleInspector(open: boolean): void {
+  inspectorOpen = open;
+  $("inspector").hidden = !open;
+  $("main").classList.toggle("inspector-collapsed", !open);
+  $("inspector-toggle").textContent = open ? "›" : "‹";
+  $("inspector-toggle").setAttribute("aria-expanded", String(open));
+  $("inspector-toggle").setAttribute("aria-label", open ? "Collapse inspector" : "Expand inspector");
+  $("inspector-toggle").title = open ? "Collapse inspector" : "Expand inspector";
 }
 
 /** The picker for views about one thing at a time (entry point, process, entity, revision, component). */
@@ -191,7 +277,7 @@ function renderOption(): void {
   const d = state.summary?.views.find((v) => v.type === state.view);
   const wrap = $("option-wrap");
   const select = $("option") as HTMLSelectElement;
-  if (!d?.options?.length || state.view === "system" || state.view === "dependencies") {
+  if (!d?.options?.length || state.view === "system") {
     wrap.hidden = true;
     return;
   }
@@ -199,19 +285,18 @@ function renderOption(): void {
   $("option-label").textContent = d.optionLabel ?? "Show";
   select.replaceChildren(...d.options.map((o) => h("option", { value: o.id, title: o.detail ?? o.label, ...(o.id === state.focus ? { selected: true } : {}) }, o.label)));
   if (state.focus && !d.options.some((o) => o.id === state.focus)) select.prepend(h("option", { value: state.focus, selected: true }, state.published?.title ?? state.focus));
+  const search = $("scope-search") as HTMLInputElement;
+  search.value = "";
+  search.hidden = d.options.length < 8;
+  search.oninput = () => {
+    const query = search.value.trim().toLowerCase();
+    const matches = d.options!.filter(o => `${o.label} ${o.detail ?? ""}`.toLowerCase().includes(query));
+    select.replaceChildren(...matches.map(o => h("option", { value: o.id, ...(o.id === state.focus ? {selected: true} : {}) }, o.label)));
+    select.disabled = matches.length === 0;
+    if (!matches.length) select.append(h("option", {}, "No matching scopes"));
+  };
+  select.disabled = false;
   select.onchange = () => void loadView(state.view, select.value);
-}
-
-async function switchView(view: ViewType): Promise<void> {
-  if (view === "components") {
-    // Open the selected component (or its parent), else the first one.
-    const sel = state.selected?.kind === "node" ? state.nodes.get(state.selected.id) : undefined;
-    const target = sel && sel.tier === 1 && sel.children.length && sel.type !== "file" ? sel.id : (sel?.parent ?? state.focus);
-    await loadView("components", target);
-    return;
-  }
-  // Views with choices open on the server's default choice (first entry point, entity, revision…).
-  await loadView(view);
 }
 
 function renderCrumbs(): void {
@@ -220,6 +305,7 @@ function renderCrumbs(): void {
   path.forEach((p, i) => {
     if (i) out.push(h("span", { class: "div" }, "›"));
     const last = i === path.length - 1;
+    if (i === 0 && state.focus !== "context") out.push(h("button", { onclick: () => void loadView("system", "context") }, "Context"), h("span", { class: "div" }, "›"));
     if (last) out.push(h("span", { class: "cur", "aria-current": "page" }, state.view === "dependencies" ? "Module dependencies" : i === 0 ? `${p.name} · ${VIEW_TITLE(state.view)}` : p.name));
     else if (p.id === "system") out.push(h("button", { onclick: () => void loadView("system") }, p.name));
     else if (p.id.startsWith("component:") || p.id.startsWith("module:")) out.push(h("button", { onclick: () => void loadView("components", p.id) }, p.name));
@@ -233,16 +319,15 @@ function renderFoot(): void {
   const s = state.summary;
   if (!pub) return;
   const v = pub.validation;
-  const src = v.source === "fresh" ? (v.attempts === 0 ? "verified layout (cached)" : `verified layout · ${v.attempts === 1 ? "first attempt" : `${v.attempts} attempts`}`) : v.source === "last-known-good" ? "last verified layout (latest failed validation)" : "no verified layout";
+  const src = v.source === "fresh" ? "Verified layout" : v.source === "last-known-good" ? "last verified layout (latest failed validation)" : "no verified layout";
   const layout = pub.layout;
   $("foot").replaceChildren(
     ...present(
     h("span", {}, h("b", {}, v.source === "fresh" ? "✓ " : "! "), src),
     h("span", {}, h("b", {}, String(pub.nodes.length)), " nodes · ", h("b", {}, String(pub.relationships.length)), " relationships"),
-    layout ? h("span", { title: "Edge crossings in this layout" }, `${layout.metrics.crossings} crossings`) : null,
-    s ? h("span", { class: "mono", title: "Model fingerprint (indexed file contents + model/layout versions)" }, s.fingerprint.slice(0, 8)) : null,
+
     state.trace ? h("span", { class: "note" }, `Trace: ${state.trace.map((id) => state.nodes.get(id)?.name ?? id).join(" → ")}`) : null,
-    ...pub.notes.map((n) => h("span", { class: "note" }, n)),
+    h("details", {}, h("summary", {}, "Scope notes"), h("div", {}, ...pub.notes.map(n => h("p", {}, n)), h("p", {}, `${layout?.metrics.crossings ?? 0} crossings · model ${s?.fingerprint.slice(0, 8) ?? "unknown"}`))),
     ),
   );
 }
@@ -314,9 +399,47 @@ function refreshMarks(): void {
     if (e) visible = { nodes: new Set([e.source, e.target]), edges: new Set([e.id]) };
   }
   canvas.mark(sel, visible);
+  $("selection-actions").hidden = !sel;
+  const node = sel?.kind === "node" ? state.nodes.get(sel.id) : undefined;
+  $("selection-name").textContent = node?.name ?? "Relationship";
+  $("expand-selection").hidden = !node?.children.length || node.type === "file" || node.tier !== 1;
+  $("focus-one").hidden = !node || state.published?.layout?.kind === "sequence";
+  $("focus-two").hidden = $("focus-one").hidden;
+  applyVisibility();
   const fm = $("focusmode");
   fm.hidden = sel?.kind !== "node";
   for (const b of fm.querySelectorAll<HTMLButtonElement>("button")) b.setAttribute("aria-pressed", String(b.dataset.mode === state.mode));
+}
+
+function applyVisibility(): void {
+  const pub = state.published;
+  if (!pub?.layout) return;
+  const value = ($("diagram-filter") as HTMLSelectElement).value;
+  const neighborhood = focusHops && state.selected?.kind === "node" ? focusNeighborhood(pub.layout, state.selected.id, focusHops) : null;
+  let nodes = new Set(pub.nodes.map(n => n.id));
+  let edges = pub.relationships;
+  if (value) {
+    const selectedNodes = new Set(pub.nodes.filter(n => value === `node:${n.type}`).map(n => n.id));
+    edges = edges.filter(r => value.startsWith("node:") ? selectedNodes.has(r.source) || selectedNodes.has(r.target) : value === `edge:${r.type}`);
+    nodes = new Set([...selectedNodes, ...edges.flatMap(r => [r.source, r.target])]);
+  }
+  if (neighborhood) {
+    nodes = new Set([...nodes].filter(id => neighborhood.nodes.has(id)));
+    edges = edges.filter(e => neighborhood.edges.has(e.id) && nodes.has(e.source) && nodes.has(e.target));
+  }
+  visibleElements = value || neighborhood ? { nodes, edges: new Set(edges.map(r => r.id)) } : null;
+  canvas.filter(visibleElements);
+  $("filter-status").textContent = visibleElements ? `${nodes.size}/${pub.nodes.length} elements · ${edges.length}/${pub.relationships.length} relationships shown${focusHops ? ` · ${focusHops}-hop neighborhood` : ""}. Clear filters to restore full detail.` : "";
+  $("focus-one").setAttribute("aria-pressed", String(focusHops === 1));
+  $("focus-two").setAttribute("aria-pressed", String(focusHops === 2));
+  $("clear-focus").hidden = !visibleElements;
+}
+
+function focusSelection(hops: 1 | 2): void {
+  if (state.selected?.kind !== "node" || !state.published?.layout) return;
+  focusHops = focusHops === hops ? 0 : hops;
+  applyVisibility();
+  if (visibleElements?.nodes.size) { canvas.fitNodes(visibleElements.nodes); canvas.center(state.selected.id); }
 }
 
 function setMode(mode: Mode): void {
@@ -327,7 +450,9 @@ function setMode(mode: Mode): void {
 }
 
 async function selectNode(id: string, center = false): Promise<void> {
+  if (state.selected?.id !== id) focusHops = 0;
   state.selected = { kind: "node", id };
+  toggleInspector(true);
   state.trace = null;
   refreshMarks();
   renderFoot();
@@ -336,6 +461,7 @@ async function selectNode(id: string, center = false): Promise<void> {
   canvas.focusNode(id);
   const panel = $("inspector");
   panel.classList.add("open");
+  $("inspector-toggle").classList.add("has-selection");
   panel.replaceChildren(h("div", { class: "insp muted" }, "Loading…"));
   try {
     const d = await json<NodeDetail>(`/api/architecture/node?id=${encodeURIComponent(id)}`);
@@ -343,28 +469,34 @@ async function selectNode(id: string, center = false): Promise<void> {
     const canOpen = d.node.tier === 1 && d.node.children.length > 0 && d.node.type !== "file" && !(state.view === "components" && state.focus === id);
     panel.replaceChildren(nodePanel(d, actions, canOpen));
   } catch (e) {
+    if (state.selected?.id !== id) return;
     panel.replaceChildren(h("div", { class: "insp" }, (e as Error).message));
   }
 }
 
 async function selectEdge(id: string): Promise<void> {
+  focusHops = 0;
   state.selected = { kind: "edge", id };
+  toggleInspector(true);
   state.trace = null;
   refreshMarks();
   writeHash();
   const panel = $("inspector");
   panel.classList.add("open");
+  $("inspector-toggle").classList.add("has-selection");
   panel.replaceChildren(h("div", { class: "insp muted" }, "Loading…"));
   try {
     const d = await json<RelationshipDetail>(`/api/architecture/relationship?id=${encodeURIComponent(id)}`);
     if (state.selected?.id !== id) return;
     panel.replaceChildren(relationshipPanel(d, actions));
   } catch (e) {
+    if (state.selected?.id !== id) return;
     panel.replaceChildren(h("div", { class: "insp" }, (e as Error).message));
   }
 }
 
 function clearSelection(): void {
+  focusHops = 0;
   state.selected = null;
   state.mode = null;
   state.trace = null;
@@ -375,6 +507,7 @@ function clearSelection(): void {
 }
 
 function renderInspector(): void {
+  $("inspector-toggle").classList.remove("has-selection");
   $("inspector").classList.remove("open");
   $("inspector").replaceChildren(emptyPanel(state.summary, state.published?.notes ?? []));
 }
@@ -417,6 +550,7 @@ async function goTo(id: string): Promise<void> {
 }
 
 async function openNode(id: string): Promise<void> {
+  if (id === "context:system") { await loadView("system"); return; }
   await loadView("components", id);
 }
 
@@ -500,7 +634,9 @@ async function refresh(): Promise<void> {
   status("busy", "Re-indexing…");
   try {
     state.summary = await json<ArchitectureSummary>("/api/architecture/refresh", { method: "POST" });
+    remembered.clear(); state.published = null;
     await loadView(state.view, state.focus);
+    announce("Architecture refreshed from the current source index");
   } catch (e) {
     status("error", (e as Error).message);
   }
@@ -517,19 +653,47 @@ async function checkFreshness(): Promise<void> {
 }
 
 function bindKeys(): void {
+  document.addEventListener("pointerdown", (event) => {
+    for (const menu of document.querySelectorAll<HTMLDetailsElement>("details.menu")) if (!menu.contains(event.target as Node)) menu.open = false;
+  });
+
   document.addEventListener("keydown", (ev) => {
-    const typing = (ev.target as HTMLElement).closest("input, textarea");
+    const typing = (ev.target as HTMLElement).closest("input, textarea, select, [contenteditable=true]");
     if (typing) return;
     if (ev.key === "/") {
       ev.preventDefault();
       ($("search") as HTMLInputElement).focus();
-    } else if (ev.key === "f" || ev.key === "F") canvas.fit();
+    } else if (ev.key === "f" || ev.key === "F") { if (visibleElements) canvas.fitNodes(visibleElements.nodes); else canvas.fit(); }
     else if (ev.key === "0") canvas.reset();
     else if (ev.key === "+" || ev.key === "=") canvas.zoomBy(1.25);
     else if (ev.key === "-") canvas.zoomBy(0.8);
-    else if (ev.key === "Escape") clearSelection();
+    else if (ev.key === "Escape") { for (const menu of document.querySelectorAll<HTMLDetailsElement>("details.menu")) menu.open = false; clearSelection(); toggleInspector(false); }
   });
-  $("fit").addEventListener("click", () => canvas.fit());
+  $("toggle-navigation").addEventListener("click", () => { const collapsed = !$("diagram-navigation").hidden; $("diagram-navigation").hidden = collapsed; document.body.classList.toggle("navigation-collapsed", collapsed); $("toggle-navigation").setAttribute("aria-expanded", String(!collapsed)); });
+  $("diagram-query").addEventListener("input", renderCategoryNavigation);
+  $("inspect-selection").addEventListener("click", () => toggleInspector(true));
+  $("expand-selection").addEventListener("click", () => { if (state.selected?.kind === "node") void openNode(state.selected.id); });
+  $("focus-one").addEventListener("click", () => focusSelection(1));
+  $("focus-two").addEventListener("click", () => focusSelection(2));
+  $("clear-focus").addEventListener("click", () => { focusHops = 0; ($("diagram-filter") as HTMLSelectElement).value = ""; applyVisibility(); });
+  $("legend").addEventListener("click", () => { clearSelection(); toggleInspector(true); $("inspector").querySelector(".legend")?.scrollIntoView({ block: "nearest" }); });
+  $("coverage").addEventListener("click", () => { ($("view-options") as HTMLDetailsElement).open = false; toggleInspector(true); $("inspector").replaceChildren(h("div", { class: "insp" }, h("h2", {}, "Diagram coverage"), h("p", {}, $("category-description").textContent ?? ""), ...Object.values(CATEGORY_GAPS).map(text => h("p", {}, text)), ...state.summary?.views.filter(v => !v.available).map(v => h("p", {}, `${v.title}: ${v.reason ?? "No evidence"}`)) ?? [])); });
+  $("export-menu").addEventListener("click", () => { ($("view-options") as HTMLDetailsElement).open = false; $("export-svg").click(); });
+  $("inspector-toggle").addEventListener("click", () => toggleInspector(!inspectorOpen));
+  $("documentation").addEventListener("click", () => {
+    ($("view-options") as HTMLDetailsElement).open = false;
+    const active = document.body.classList.toggle("documentation");
+    $("documentation").setAttribute("aria-pressed", String(active));
+    $("documentation").textContent = active ? "Exit documentation mode" : "Documentation mode";
+  });
+  $("fullscreen").addEventListener("click", async () => {
+    ($("view-options") as HTMLDetailsElement).open = false;
+    try { if (document.fullscreenElement) await document.exitFullscreen(); else await document.documentElement.requestFullscreen(); }
+    catch { status("error", "Full screen is unavailable in this browser."); }
+  });
+  $("export-svg").addEventListener("click", () => { if (state.published?.layout) { exportDiagram($("canvas") as unknown as SVGSVGElement, state.published); announce("SVG download prepared · complete verified diagram"); } });
+  $("diagram-filter").addEventListener("change", applyVisibility);
+  $("fit").addEventListener("click", () => visibleElements ? canvas.fitNodes(visibleElements.nodes) : canvas.fit());
   $("reset").addEventListener("click", () => canvas.reset());
   $("zoom-in").addEventListener("click", () => canvas.zoomBy(1.25));
   $("zoom-out").addEventListener("click", () => canvas.zoomBy(0.8));

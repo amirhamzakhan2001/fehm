@@ -57,6 +57,7 @@ export class Inspector {
     );
     const actions = h("div", { class: "actions" }, h("button", { type: "button", onclick: () => this.actions.frame(i) }, "Frame"));
     if (path) actions.append(h("a", { href: `/git-memory?path=${encodeURIComponent(path)}`, target: "_blank", rel: "noopener" }, "History"));
+    if (path) actions.append(h("a", { href: `/debug?path=${encodeURIComponent(path)}&line=${line || 1}`, target: "_blank", rel: "noopener" }, "Investigate"));
     if (path) actions.append(h("a", { href: `/concepts?path=${encodeURIComponent(path)}`, target: "_blank", rel: "noopener" }, "Concepts"));
     const body = h("div", {}, h("p", { class: "meta" }, "Loading summary…"));
     this.el.replaceChildren(

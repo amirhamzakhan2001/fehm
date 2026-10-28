@@ -20,6 +20,8 @@ export interface Located {
 
 export interface DeclaredDependency extends Located {
   name: string;
+  /** Manifest requirement, not an installed/resolved version. */
+  requirement?: string;
   dev: boolean;
 }
 
@@ -945,7 +947,7 @@ export function parseManifest(path: string, lines: readonly string[]): Manifest 
       const deps = json[field] as Record<string, string> | undefined;
       if (!deps) continue;
       const start = lineOf(lines, new RegExp(`"${field}"\\s*:`));
-      for (const name of Object.keys(deps)) m.dependencies.push({ path, name, dev, line: lineOf(lines, new RegExp(`"${escapeRe(name)}"\\s*:`), start - 1) });
+      for (const name of Object.keys(deps)) m.dependencies.push({ path, name, dev, ...(typeof deps[name] === "string" ? { requirement: deps[name] } : {}), line: lineOf(lines, new RegExp(`"${escapeRe(name)}"\\s*:`), start - 1) });
     }
     const engines = json.engines as Record<string, string> | undefined;
     if (engines?.node) m.engines = `Node.js ${engines.node}`;

@@ -1,3 +1,5 @@
+import { comparisonView, findingClassification, findingDomain } from './comparison.js';
+import { driftPriority, driftBasis } from '../../shared/ui/assessment.js';
 import type { ArchNode } from "../../../architecture/types.js";
 import type {
   Attention,
@@ -126,10 +128,14 @@ const findingById = (id: string): DriftFinding | undefined => all().find((f) => 
 
 // ─── load ───────────────────────────────────────────────────────────
 
+let loadSerial = 0;
 async function load(path = "/api/drift", init?: RequestInit): Promise<void> {
+  const token = ++loadSerial;
   setStatus("busy", "Analysing…");
   try {
-    state.p = await json<DriftPagePayload>(path, init);
+    const payload = await json<DriftPagePayload>(path, init);
+    if (token !== loadSerial) return;
+    state.p = payload;
     render();
     $("overlay").hidden = true;
     const f = state.p.freshness;
@@ -141,7 +147,9 @@ async function load(path = "/api/drift", init?: RequestInit): Promise<void> {
     const hist = state.p.history;
     if (hist.git && hist.analysed < hist.commits.length && !state.scanning && !state.stop) void scan();
   } catch (e) {
-    setStatus("error", "Failed");
+    if (token !== loadSerial) return;
+    setStatus("error", "Refresh failed — showing previous results");
+    if (state.p) { toast(`Could not refresh: ${(e as Error).message}. Previous results may be stale.`); return; }
     $("overlay").hidden = false;
     $("overlay-title").textContent = "Could not analyse architecture drift";
     $("overlay-text").textContent = (e as Error).message;
@@ -265,9 +273,13 @@ function overview(): Node[] {
   const hero = h(
     "div",
     { class: "card sec" },
-    h("span", { class: "eyebrow" }, "Feature 3.4"),
+    h("span", { class: "eyebrow" }, "Architecture Drift"),
     h("h1", {}, "Architecture drift"),
-    h("p", { class: "lead" }, "Where the implementation differs from patterns established in this project, its frameworks and common practice. Observed deviations with evidence — not verdicts. You decide what is intentional."),
+    h("p", { class: "lead" }, driftPriority(p.findings).length ? `${driftPriority(p.findings).length} open deviations need review. ${p.findings.filter(f => !f.decision && f.basis === 'explicit-rule').length} are based on configured rules; other findings compare the code with conventions that may not apply everywhere.` : 'No open architectural deviations were detected within the available analysis. This does not establish that every architectural requirement was checked.'),
+    ...driftPriority(p.findings).slice(0, 1).map(f => h('div', { class: 'assessment' }, h('h2', {}, 'Start here'), h('button', { class: 'primary', onclick: () => openDrawer(f.id) }, f.title), h('p', {}, f.observed), h('p', {}, f.impact), h('p', { class: 'note' }, driftBasis(f)))),
+    h('p', {class:'note'}, `${p.context.primaryType}: ${p.context.projectTypes.flatMap(t=>t.evidence).slice(0,2).join('; ') || 'Project classification is inferred from repository signals.'}`),
+    h('div',{class:'dacts'}, ...[...new Set(p.findings.map(findingDomain))].map(domain=>h('button',{onclick:()=>openDrawer(p.findings.find(f=>findingDomain(f)===domain)!.id)}, `${domain} · ${p.findings.filter(f=>findingDomain(f)===domain).length}`))),
+    h('p',{class:'note'}, `${p.findings.filter(f=>findingClassification(f)==='Confirmed configured-rule deviation').length} confirmed configured-rule deviations; ${p.findings.filter(f=>findingClassification(f)==='Needs investigation').length} findings need investigation. Other findings are risks or improvement opportunities, not mandatory industry rules.`),
     h(
       "div",
       { class: "stats" },
@@ -313,14 +325,16 @@ function overview(): Node[] {
     h("div", { class: "clusters" }, ...p.clusters.filter((x) => x.kind === "module").map((x) => clusterButton(x.label, x.findings.length, x.categories, () => ((state.component = x.id), renderFilters(), go("findings"), refreshLists())))),
     p.clusters.length ? null : h("div", { class: "emptyline" }, "No deviations from the established baseline were found."),
   );
-  const top = p.findings.filter((f) => f.group !== "ai").slice(0, 6);
+  const top = driftPriority(p.findings).slice(0, 6);
   return [
     hero,
+    h('details', {class:'card sec'}, h('summary',{},'What was applicable, and what remains unverified'), ...(p.areas ?? []).map(a=>h('section',{},h('h3',{},`${a.name} · ${a.status === 'applicable' ? 'source evidence available' : 'insufficient evidence'}`),h('p',{},a.limitation),...a.evidence.map(item=>h('p',{class:'note'},item))))),
+    h('p',{class:'note'},'Context-dependent conventions are not universal rules. A pattern with no measured project evidence is not a passing check.'),
     h(
       "div",
       { class: "cols-2", style: "margin-top:14px" },
       h("div", { class: "grid" }, baseline, h("div", { class: "card sec" }, h("header", {}, h("h2", {}, "Highest attention"), h("span", { class: "q" }, "Attention = potential impact, not a quality score")), top.length ? h("div", { class: "flist" }, ...top.map((f) => card(f))) : h("div", { class: "emptyline" }, "Nothing here."))),
-      h("div", { class: "grid" }, clusters, aiPanel(), h("div", { class: "card sec" }, h("header", {}, h("h2", {}, "Not determined")), h("ul", { class: "unknowns" }, ...p.unknowns.map((u) => h("li", {}, u))))),
+      h("div", { class: "grid" }, clusters, h("div", { class: "card sec" }, h("header", {}, h("h2", {}, "Not determined")), h("ul", { class: "unknowns" }, ...p.unknowns.map((u) => h("li", {}, u))))),
     ),
   ];
 }
@@ -334,39 +348,6 @@ function clusterButton(label: string, n: number, categories: DriftCategory[], on
   return h("button", { class: "cl", onclick }, h("span", {}, label), h("b", {}, String(n)), categories.length ? h("span", { class: "c" }, categories.map((c) => CATEGORY_LABEL[c]).join(" · ")) : null);
 }
 
-function aiPanel(): HTMLElement {
-  const p = state.p!;
-  const ai = p.findings.filter((f) => f.category === "ai-associated");
-  const inconsistent = p.findings.filter((f) => (f.group === "dependencies" || f.group === "runtime") && f.source === "project").length;
-  const naming = p.findings.filter((f) => f.category === "naming").length;
-  const changes = p.history.changes;
-  const sudden = (changes ?? []).filter((c, i, arr) => i > 0 && c.files - arr[i - 1]!.files >= Math.max(20, arr[i - 1]!.files * 0.3));
-  const row = (label: string, n: number | null, onclick?: () => void, title?: string): HTMLElement =>
-    h("tr", { class: onclick && n ? "clickable" : "", ...(onclick && n ? { onclick } : {}), ...(title ? { title } : {}) }, h("td", {}, label), h("td", {}, n === null ? h("span", { class: "muted" }, "needs history") : n ? h("span", { class: "pill" }, `Review · ${n}`) : h("span", { class: "no" }, "not found")));
-  return h(
-    "div",
-    { class: "card sec" },
-    h("header", {}, h("h2", {}, "AI-associated structural signals")),
-    h("div", { class: "disclaimer" }, h("b", {}, "These signals do not establish authorship."), " Each also comes from ordinary engineering (prototyping, generated code, deadlines). Published detectors for AI-written code do not generalise reliably; Fehm makes no claim about who or what wrote any code."),
-    h(
-      "div",
-      { class: "tscroll", style: "margin-top:8px" },
-      h(
-        "table",
-        { class: "t" },
-        h(
-          "tbody",
-          {},
-          row("Architecture inconsistency", inconsistent, () => ((state.group = "dependencies"), renderFilters(), go("findings"), refreshLists())),
-          ...ai.map((f) => row(f.title.replace(/^\d+\s+/, "").replace(/^./, (x) => x.toUpperCase()), f.evidence.length + f.more, () => openDrawer(f.id))),
-          row("Unusual naming", naming, () => ((state.group = "structure"), renderFilters(), go("findings"), refreshLists())),
-          row("Sudden structural change", changes ? sudden.length : null, () => go("history"), "A commit that grew the source by 30% or 20+ files"),
-        ),
-      ),
-    ),
-  );
-}
-
 // ─── finding cards and table ────────────────────────────────────────
 
 function card(f: DriftFinding): HTMLElement {
@@ -377,6 +358,7 @@ function card(f: DriftFinding): HTMLElement {
       "button",
       { class: "head", onclick: () => openDrawer(f.id), "aria-label": `${f.title}. Open evidence` },
       h("span", { class: "t" }, f.title),
+      h("span", { class: "line" }, findingClassification(f)),
       h("span", { class: "meta" }, att(f.attention), confPill(f.confidence), statusPill(f.status), f.decision ? h("span", { class: "pill" }, f.decision.kind) : null),
       h("span", { class: "line" }, h("span", {}, "Observed: "), f.observed),
       h("span", { class: "line" }, h("span", {}, `${BASIS_LABEL[f.basis]}: `), f.baseline),
@@ -400,9 +382,9 @@ function findingsTab(): Node[] {
     return [h("div", { class: "card sec" }, header, h("div", { class: "tscroll" }, h("table", { class: "t" }, h("thead", {}, h("tr", {}, ...["Category", "Observed", "Baseline", "Source", "Confidence", "Attention", "Status"].map((x) => h("th", {}, x)))), h("tbody", {}, ...rows))))];
   }
   const out: Node[] = [];
-  for (const g of Object.keys(GROUP_LABEL) as DriftGroup[]) {
-    const fs = list.filter((f) => f.group === g);
-    if (fs.length) out.push(h("div", { class: "grp" }, GROUP_LABEL[g], h("i", {}, String(fs.length))), h("div", { class: "flist" }, ...fs.map(card)));
+  for (const g of [...new Set(list.map(findingDomain))]) {
+    const fs = list.filter((f) => findingDomain(f) === g);
+    if (fs.length) out.push(h("div", { class: "grp" }, g, h("i", {}, String(fs.length))), h("div", { class: "flist" }, ...fs.map(card)));
   }
   return [h("div", { class: "card sec" }, header, ...out)];
 }
@@ -433,7 +415,9 @@ function renderMap(): void {
     s.innerHTML = `<line x1="1" y1="4" x2="25" y2="4" class="${cls}"/>`;
     return h("span", { class: "key" }, s, label);
   };
-  $("tab-map").replaceChildren(
+  const fullMap = h("details", { class: "context-map" }, h("summary", {}, "Explore the broader dependency context"));
+  $("tab-map").replaceChildren(h("div", { id: "focused-comparison" }), fullMap);
+  fullMap.append(
     h(
       "div",
       { class: "maplayout" },
@@ -442,6 +426,7 @@ function renderMap(): void {
       h("div", { class: "side", id: "map-side" }),
     ),
   );
+  fullMap.addEventListener("toggle", () => { if (fullMap.open) requestAnimationFrame(() => { mapCanvas?.fit(false); markMap(); }); });
   mapCanvas = undefined;
   if (view.layout) {
     const nodes = new Map<string, ArchNode>(view.nodes.map((n) => [n.id, { id: n.id, type: n.type, level: 1, name: n.name, role: { confidence: n.confidence, reasons: [] }, children: [], files: n.files, symbols: 0, technologies: [], evidence: [], tier: 1 }]));
@@ -536,6 +521,13 @@ function renderMapSide(): void {
   const eo = document.getElementById("map-eo");
   if (!side || !clusters || !eo) return;
   const p = state.p!;
+  const focus = document.getElementById('focused-comparison');
+  if (focus) {
+    const selected = state.selected ? findingById(state.selected) : undefined;
+    const choices = h('select', {'aria-label':'Choose architectural deviation'}, h('option',{value:''},'Choose a finding to compare'), ...visible().map(f => h('option',{value:f.id, ...(f.id === selected?.id ? {selected:true}: {})},f.title)));
+    choices.addEventListener('change', () => { if ((choices as HTMLSelectElement).value) selectFinding((choices as HTMLSelectElement).value); else clearMapSelection(); });
+    focus.replaceChildren(h('h2',{},'Compare a practice with the implementation'), h('p',{},'Focus on one deviation. The broader dependency map remains available below.'), choices, selected ? comparisonView(selected,()=>openDrawer(selected.id)) : h('p',{},'Choose a finding above, or select Show on map from its evidence panel.'));
+  }
   const view = p.map[state.level];
   const shown = visible();
   clusters.replaceChildren(
@@ -601,7 +593,7 @@ function patternsTab(): Node[] {
       h("td", {}, r.industry ? h("span", { class: "ok" }, "✓") : h("span", { class: "no" }, "–")),
       h("td", {}, r.framework ? h("span", { class: "ok" }, `✓ ${r.framework}`) : h("span", { class: "no" }, "–")),
       h("td", {}, r.project ? `${pct(r.project.share)} of ${r.project.comparable}` : h("span", { class: "no" }, "no project evidence")),
-      h("td", {}, r.deviations ? h("span", { class: "pill" }, `${r.deviations} deviating`) : h("span", { class: "ok" }, "✓")),
+      h("td", {}, r.deviations ? h("span", { class: "pill" }, `${r.deviations} deviations detected`) : h("span", { class: "muted" }, r.project ? "No deviation detected in analyzed scope" : "Insufficient project evidence")),
     ),
   );
   const out: (HTMLElement | null)[] = [
@@ -669,6 +661,9 @@ async function scan(): Promise<void> {
   else if (state.p) $("tab-history").replaceChildren(...historyTab());
 }
 
+let historyQuery = '';
+let historySince = '';
+let historyKind = 'all';
 function historyTab(): Node[] {
   const p = state.p!;
   const hist = p.history;
@@ -698,30 +693,39 @@ function historyTab(): Node[] {
     h("div", { class: "dacts", style: "margin-top:10px;align-items:center" }, hist.baseline ? h("span", { class: "note" }, `Baseline set ${new Date(hist.baseline.createdAt).toLocaleString()}${hist.baseline.commit ? ` at ${hist.baseline.commit.slice(0, 7)}` : ""} (${plural(hist.baseline.findings, "finding")}).`) : null, h("button", { disabled: !p.writable, onclick: () => void setBaseline() }, hist.baseline ? "Move baseline to now" : "Set baseline now"), hist.baseline ? h("button", { disabled: !p.writable, onclick: () => void setBaseline(true) }, "Clear baseline") : null),
   );
   const changes = hist.changes ?? [];
+  const meaningful = changes.filter((c,i) => (i === 0 || c.added.length || c.resolved.length) && (!historyQuery || `${c.subject} ${c.ref} ${[...c.added,...c.resolved].map(f=>`${f.id} ${f.title}`).join(' ')}`.toLowerCase().includes(historyQuery.toLowerCase())) && (!historySince || !!c.date && c.date.slice(0,10) >= historySince) && (historyKind === 'all' || (historyKind === 'appeared' ? c.added.length > 0 : c.resolved.length > 0)));
+  const query = h('input', {type:'search', value:historyQuery, 'aria-label':'Search architecture history', placeholder:'Component, finding or commit'});
+  const since = h('input', {type:'date', value:historySince, 'aria-label':'Architecture history since'});
+  const kind = h('select', {'aria-label':'Architecture change type'}, ...['all','appeared','no longer detected'].map(v=>h('option',{value:v,...(v===historyKind?{selected:true}:{})},v)));
+  const filters = h('form',{class:'dacts'},query,since,kind,h('button',{type:'submit'},'Filter history'));
+  filters.addEventListener('submit', e=>{e.preventDefault();historyQuery=(query as HTMLInputElement).value;historySince=(since as HTMLInputElement).value;historyKind=(kind as HTMLSelectElement).value;$("tab-history").replaceChildren(...historyTab());});
   const timeline = changes.length
     ? h(
         "div",
         { class: "timeline" },
-        ...[...changes].reverse().map((c, ri, arr) => {
+        ...[...meaningful].reverse().map((c, ri, arr) => {
           const prev = arr[ri + 1];
-          const sudden = prev && c.files - prev.files >= Math.max(20, prev.files * 0.3);
-          const item = (x: { id: string; title: string }, cls: string): HTMLElement => h("button", { class: cls, onclick: () => (findingById(x.id) ? openDrawer(x.id) : toast("No longer present in the current state.")) }, x.title);
+
+          const item = (x: { id: string; title: string }, cls: string): HTMLElement => h("button", { class: cls, onclick: (e: Event) => { if (findingById(x.id)) openDrawer(x.id); else if (c.ref !== "working-tree") void viewCommit(c.ref, undefined, e.currentTarget as HTMLElement); else toast("No longer detected in the working tree. Inspect the earlier commit for historical evidence."); } }, `${cls === "res" ? "No longer detected: " : "Appeared: "}${x.title}`);
           return h(
             "div",
             { class: "tl", id: `tl-${c.short.replace(/\W/g, "")}` },
             h("span", { class: "c" }, c.short),
             h("span", {}, c.subject || "—", c.date ? h("span", { class: "muted small" }, ` · ${new Date(c.date).toLocaleDateString()}`) : null),
-            h("span", { class: "c" }, plural(c.total, "finding")),
-            h("div", { class: "ch" }, ...c.added.slice(0, 12).map((x) => item(x, "add")), ...c.resolved.slice(0, 12).map((x) => item(x, "res")), c.added.length + c.resolved.length > 24 ? h("span", { class: "muted" }, "…") : null, !prev ? h("span", { class: "muted" }, "Oldest analysed state: the comparison point of the window.") : !c.added.length && !c.resolved.length ? h("span", { class: "muted" }, "No change in findings.") : null, sudden ? h("span", { class: "flag" }, `Sudden structural change: ${prev.files} → ${c.files} source files (AI-associated signal; not an authorship claim).`) : null),
+            h("span", { class: "c" }, `${c.added.length} appeared · ${c.resolved.length} no longer detected`),
+            h("p", {class:"note"}, "Commit message is the author’s statement. Findings are recomputed with today’s rules; disappearance does not prove a repair."),
+            c.ref !== "working-tree" ? h("button", {onclick:(e: Event)=>void viewCommit(c.ref, undefined, e.currentTarget as HTMLElement)}, "Inspect commit and diff") : h("span", {class:"note"}, "Uncommitted working-tree analysis; no commit exists for this state."),
+            h("div", { class: "ch" }, ...c.added.slice(0, 12).map((x) => item(x, "add")), ...c.resolved.slice(0, 12).map((x) => item(x, "res")), c.added.length + c.resolved.length > 24 ? h("span", { class: "muted" }, "…") : null, !prev ? h("span", { class: "muted" }, "Oldest analysed state: the comparison point of the window.") : !c.added.length && !c.resolved.length ? h("span", { class: "muted" }, "No change in findings.") : null),
           );
         }),
       )
     : null;
-  const resolved = hist.resolved.length ? h("div", { class: "card sec", style: "margin-top:14px" }, h("header", {}, h("h2", {}, `Resolved (${hist.resolved.length})`), h("span", { class: "q" }, `Present at ${hist.comparison?.label ?? "the comparison point"}, gone now`)), h("ul", { class: "unknowns" }, ...hist.resolved.map((r) => h("li", {}, r.title)))) : null;
+  const resolved = hist.resolved.length ? h("div", { class: "card sec", style: "margin-top:14px" }, h("header", {}, h("h2", {}, `No longer detected (${hist.resolved.length})`), h("span", { class: "q" }, `Present at ${hist.comparison?.label ?? "the comparison point"}, gone now`)), h("ul", { class: "unknowns" }, ...hist.resolved.map((r) => h("li", {}, r.title)))) : null;
   const out: (HTMLElement | null)[] = [
-    controls,
+    controls, filters,
+    !meaningful.length ? h("p",{},"No architectural finding changes match this history filter.") : null,
     changes.length ? h("div", { class: "card sec", style: "margin-top:14px" }, h("header", {}, h("h2", {}, "Drift trend"), h("span", { class: "q" }, "Findings per analysed commit, oldest to newest; the last bar is the working tree. Hover or focus a bar for details.")), trendChart(changes)) : null,
-    timeline ? h("div", { class: "card sec", style: "margin-top:14px" }, h("header", {}, h("h2", {}, "Introduced and resolved")), timeline) : null,
+    timeline ? h("div", { class: "card sec", style: "margin-top:14px" }, h("header", {}, h("h2", {}, "Meaningful changes in detected deviations")), timeline) : null,
     resolved,
   ];
   return out.filter((x): x is HTMLElement => Boolean(x));
@@ -810,6 +814,7 @@ function openDrawer(id: string, focus = true): void {
   $("dhead").replaceChildren(h("h2", {}, f.title), x, h("div", { class: "chips" }, h("span", { class: "pill" }, CATEGORY_LABEL[f.category]), att(f.attention), confPill(f.confidence), statusPill(f.status), h("span", { class: "pill" }, BASIS_LABEL[f.basis]), f.decision ? h("span", { class: "pill" }, `decided: ${f.decision.kind}`) : null));
   const pattern = p.patterns.find((y) => y.id === f.pattern);
   const body: (Node | null)[] = [
+    h('section', {}, h('h4', {}, 'What this means'), h('p', {}, f.explanation), h('p', {}, f.impact), h('p', { class: 'note' }, driftBasis(f)), h('p', {}, f.suggestion?.text ?? 'Review the evidence and confirm whether the baseline applies before changing code.')),
     expectedObserved(f),
     h("section", {}, h("h4", {}, "Why detected"), h("ul", { class: "bases" }, ...f.bases.map((b) => h("li", {}, h("span", { class: "src" }, BASIS_LABEL[b.basis]), h("span", {}, b.text))))),
     f.stats ? h("section", {}, h("h4", {}, "Project pattern"), h("p", {}, `${f.stats.matching} of ${f.stats.comparable} comparable ${f.stats.unitLabel} (${pct(f.stats.frequency)}) follow it.`), pattern?.examples.length ? h("p", { class: "note" }, "Examples: ", pattern.examples.slice(0, 3).map((e) => e.path).join(", ")) : null) : null,
@@ -832,7 +837,7 @@ function openDrawer(id: string, focus = true): void {
       "div",
       { class: "dacts" },
       f.evidence[0]?.path ? h("a", { class: "act", href: editorHref(f.evidence[0].path, f.evidence[0].line) }, "Open source") : null,
-      h("button", { class: "act", onclick: () => ((state.selected = f.id), go("map"), renderMapSide()) }, "Show on map"),
+      h("button", { class: "act", onclick: () => { $("drawer").classList.remove("open"); state.selected = f.id; go("map"); markMap(); renderMapSide(); } }, "Show on map"),
       f.evidence.find((e) => e.nodeId) ? h("a", { class: "act", href: graphHref(f.evidence.find((e) => e.nodeId)!.nodeId!) }, "Show in graph") : null,
       h("button", { class: "act", title: "Copy a compact context about this finding for an LLM (no repository dump)", onclick: () => void copyContext(f.id) }, "Copy LLM context"),
     ),
@@ -863,6 +868,7 @@ async function viewCommit(ref: string, path: string | undefined, anchor: HTMLEle
       "div",
       { class: "ev", style: "margin-top:6px" },
       h("div", { class: "row" }, h("span", { class: "p" }, `${c.short} · ${c.author} · ${new Date(c.date).toLocaleString()}`), h("span", { class: "d" }, `${c.files.length} files: ${c.files.slice(0, 6).map((f) => `${f.path} +${f.added}/−${f.removed}`).join(", ")}${c.files.length > 6 ? " …" : ""}`)),
+      c.diffTruncated ? h("p", {class:"note"}, "Diff limited to the first 240 lines. Inspect the commit in Git for the complete patch.") : null,
       c.diff?.length ? h("pre", { class: "code" }, ...c.diff.map((l) => h("span", { class: l.startsWith("+") && !l.startsWith("+++") ? "plus" : l.startsWith("-") && !l.startsWith("---") ? "minus" : "" }, l))) : null,
     );
     anchor.parentElement?.after(box);

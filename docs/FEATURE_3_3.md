@@ -56,7 +56,7 @@ Hierarchy: system → component → module → file. The 3.1 graph takes over at
 
 ## Views
 
-One page, ten lenses in three groups. The tabs are always all shown. A view whose evidence the repository lacks is disabled, with the reason as its tooltip (for example "No Dockerfile, compose file, Kubernetes manifest or hosting-platform configuration was found"). Views about one thing at a time have a picker: entry point, process, entity, revision or component.
+One page with evidence-backed navigation grouped by engineering question. The default is system context; Subsystems opens the detailed system projection. Only available diagram families appear in the navbar. Unavailable views and extraction limits are explained under Coverage. Views about one thing at a time have a scope picker. Detailed dependencies offer an explicit All modules choice. See [library research and comparison](research/architecture-libraries.md) for the audit and dependency decision.
 
 | # | View | Evidence it is built from | Layout | Module |
 |---|---|---|---|---|
@@ -169,3 +169,27 @@ CLI: `fehm architecture [--view …] [--focus ID] [--json]`. It exits 1 when no 
   - **LLM interpretation:** component responsibility beyond doc comments is deferred. The architecture is fully deterministic.
   - **Theme and tests:** there is no light theme, since the dashboard pages are dark only. Screenshot-based visual regression tests are deferred. Geometry is covered by validator unit tests, seeded stress tests (100 nodes / 250 edges), a determinism check, and validation of this repository's own views.
 - **Density:** the Dependencies view caps at 30 modules. That is a readability decision made up front and stated in the footer. It is not a repair.
+
+## Discovery and documentation workspace
+
+The workspace supports source inspection, typed node/relationship filters (with hidden relationship counts), keyboard selection, pan/zoom, full screen, and documentation mode. Large diagrams open at a minimum 75% camera scale; Fit is an explicit overview action. Filters preserve endpoint context and validated geometry. SVG export always includes the complete verified diagram at its native size, with embedded styles, title and explanation metadata; it removes selection/filter/zoom effects. Existing source and drift APIs remain compatible.
+
+## Workspace redesign
+
+The diagram receives the majority of the viewport: at 1512 × 982 the initial canvas is approximately 703px tall. A compact header holds project status, search, refresh and export. Navigation shows only available diagram families, with searchable diagram choices. The A–D taxonomy remains documented in Coverage rather than occupying empty navigation tabs. There is no separate Browse diagrams modal.
+
+The inspector starts hidden. Selecting a node or relationship opens its source-linked detail panel; the arrow and Close action recover canvas space. The panel overlays the diagram on narrow screens. The mobile Views button collapses navigation. Scope lists with eight or more choices have a search input. About this view explains scope and provenance without filling the primary workspace with metadata.
+
+A contextual action strip offers Inspect, Explore inside, and one-/two-hop focus for structural diagrams. Focus retains original edge directions and intersects with the type filter. Visible/total counts make omitted detail explicit. Clear restores all elements. Focus uses existing validated geometry and centers the selected component; it does not invent relationships or relayout nodes. Large neighborhoods may still require panning or component drill-down. Sequence views retain lifelines and do not offer neighborhood focus.
+
+The workspace remembers camera center/scale, selection, filter, neighborhood depth and inspector state per view/scope for the current page session (maximum 40 views, keyed by model fingerprint). Reanalysis clears this state. Returning through breadcrumbs restores a previously visited scope. This is session-local, not cross-browser persistence.
+
+Zoom, fit, actual size and legend sit in a compact canvas toolbar. Fit acts on a filtered neighborhood when applicable; the default camera avoids shrinking dense views below 75%. Natural sparse diagrams remain at or below actual size. Documentation mode hides navigation and inspection chrome. Export remains a full verified SVG independent of viewport and filters, with explicit download feedback.
+
+Loading blocks stale canvas interactions while a requested view is prepared. Failed view requests show an actionable Retry; unavailable evidence and empty repositories have separate explanations. Requests are sequenced so late responses cannot replace newer selections.
+
+### Audit and validation
+
+The earlier interface stacked a header, taxonomy tabs, diagram chips, coverage descriptions, a tools row and a large introduction above the canvas. It also exposed empty categories and reset camera/filter state on navigation. The redesign consolidates these controls, moves secondary metadata into disclosures, reuses the existing inspector and diagram engine, and adds focused exploration rather than another rendering library.
+
+Validated against actual FEHM sources, the API/data-access corpus, a single-function library and an empty repository. Browser checks cover dense neighborhoods, filter intersections, exact camera restoration within numerical tolerance, source inspection, sequences, scope search, delayed loading, HTTP failure/retry, independent SVG export, desktop/mobile sizing, fullscreen and the embedded dashboard. Unit coverage includes bounded traversal through cycles and parallel relationships; existing layout stress and source-evidence tests remain in place. No new dependencies were added.

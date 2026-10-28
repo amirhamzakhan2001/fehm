@@ -166,7 +166,7 @@ function overview(p: SecurityPagePayload): HTMLElement {
     h(
       "div",
       { id: "hero" },
-      h("span", { class: "eyebrow" }, "Feature 3.6"),
+      h("span", { class: "eyebrow" }, "Security Review"),
       h("h1", {}, "Security review"),
       h("p", { class: "tagline" }, "What security risks exist, how untrusted data moves through the code, which controls exist and which are missing, and what evidence supports each finding?"),
       h("div", { class: "verdict" }, h("span", { class: `pill p-${p.posture}` }, h("i"), POSTURE[p.posture]), h("div", { class: "meta" }, p.provenance.commit ? h("code", {}, `${p.provenance.commit.slice(0, 8)}${p.provenance.dirty ? " + changes" : ""}`) : null, h("span", {}, `reviewed ${ago(p.generatedAt)}`), p.scope === "changed" ? tag("changed files only", "warn") : null)),

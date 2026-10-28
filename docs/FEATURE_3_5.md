@@ -318,3 +318,91 @@ fehm health --fail-on critical|high|medium|new         # CI gate; new = not in t
 - The review store (`findings-review.json`) is shared: a finding reviewed on either page stays reviewed.
 
 Bump `HEALTH_VERSION` whenever findings or metrics change for the same code: it keys the per-file cache and marks trend points.
+
+## Engineering Readiness and Web Delivery & SEO
+
+Project Health now includes an evidence-based Engineering Readiness assessment.
+It answers which safeguards and verification steps remain unresolved. It never
+classifies a repository as AI-written, beginner-written or engineer-written.
+The existing `ai-code` rule/category identifiers remain stable for integrations
+and saved reviews; their UI label is now **Implementation integrity**.
+
+The assessment references existing Health findings for implementation integrity,
+reliability, tests and verification. The localhost server also supplies the
+existing Security and Drift services, so readiness links to their open findings
+without copying them into Health's counts, baseline or review storage. Drift
+references are explicitly repository-wide even in Health's changed-file view.
+Unavailable or stale reports remain unverified. CLI/library calls without those
+service adapters explicitly report that cross-feature evidence is unavailable.
+
+Health's JSON schema is now `1.1`, analyzer version `2`. New fields are
+`readiness` and `webDelivery`. Overall readiness is `risks-detected` or
+`evidence-incomplete`, never a numeric score or a production-readiness guarantee.
+Recorded check results distinguish not-run, stale, passed, failed, timeout and
+error. Passed results retain their existing content-fingerprint semantics; they
+do not establish correctness of all workflows. Accepted/suppressed findings do
+not count as open risks, but also do not establish a verified fix.
+
+### Configure audience per component
+
+Merge the following into `.fehm/health.json` (do not replace existing settings):
+
+```json
+{
+  "readiness": {
+    "profiles": [
+      { "include": ["website/**"], "audience": "public" },
+      { "include": ["admin/**"], "audience": "private" },
+      { "include": ["tools/**"], "audience": "local" }
+    ]
+  }
+}
+```
+
+For a standalone public site, use `"include": ["**/*.html", "**/*.htm"]`.
+Supported audience values: `public`, `private`, `local`, `unknown`. No profile
+means unknown. Overlapping matches also mean unknown; they do not silently
+select the public profile. Invalid configuration is reported by Health's
+existing validator. Public SEO expectations never apply merely because React,
+a route, an HTML file or an authentication package exists.
+
+### Implemented checks and boundaries
+
+The shared scanner now indexes eligible `.html`/`.htm` delivery assets as config
+files, retaining ignore rules, size limits, symlink exclusion and content
+freshness. The analyzer inspects at most 200 complete literal documents, 256 KB
+per document and at most 500 source findings, with omissions reported. Templates and fragments are excluded explicitly. Build output
+remains outside the default source index.
+
+All inspected documents: absent/nonempty viewport metadata and images without
+an `alt` attribute. Empty `alt` is allowed for decorative images; alt quality
+and runtime mobile behavior are not established by this check.
+
+Public documents only: absent/generic/competing titles, repeated titles within
+the same configured audience profile, absent descriptions, `noindex`/`none`
+robots directives, and competing/empty canonical elements. Findings are source
+concerns with file/line evidence and a rendered-response verification action,
+not confirmed deployment defects. Comments and script bodies are excluded from
+literal markup checks. Multiple H1 elements are not flagged automatically.
+
+Missing sitemap, canonical, Open Graph or structured-data files/tags are not
+blanket defects. Their necessity and correctness need route, deployment and
+sharing context. Client-side rendering is not classified as poor engineering.
+
+Not implemented in this increment: browser crawling of the target application,
+HTTP/redirect/404 probes, bundle measurements, visual accessibility checks,
+cache-isolation tests, generated framework metadata analysis, API contract
+execution, semantic transaction/idempotency verification, load tests or automatic
+production deployment classification. These appear as limitations, not passing
+checks. Existing backend/security detectors remain responsible for their own
+supported rules; this assessment does not claim to implement the full production
+engineering checklist. Analysis starts no project commands or network scans.
+Use Change Verification for explicitly approved verification workflows.
+
+### Validation
+
+Regression fixtures cover public versus private/local/unknown applicability,
+comment/script false positives, decorative alt text, templates and fragments,
+repeated titles, overlapping profiles, invalid configuration, stale check
+results, reviewed findings, and JSON/text integration. Browser smoke validation
+covers the Health readiness sections, finding navigation and mobile layout.

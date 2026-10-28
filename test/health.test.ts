@@ -453,6 +453,6 @@ test("CLI: fehm health prints the report and --fail-on gates CI", () => {
   assert.equal(run("--fail-on", "high").status, 1, "a focused test is a high finding");
   assert.equal(run("--fail-on", "critical").status, 0);
   const json = JSON.parse(run("--json").out) as HealthReport;
-  assert.equal(json.schemaVersion, "1.0");
+  assert.equal(json.schemaVersion, "1.1");
   assert.equal((JSON.parse(run("--sbom", "cyclonedx").out) as { bomFormat: string }).bomFormat, "CycloneDX");
 });

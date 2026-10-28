@@ -14,8 +14,8 @@ const state: { p: HealthPagePayload | null; scope: "all" | "changed"; q: string;
 
 const STATUS_LABEL: Record<HealthStatus, string> = { healthy: "Healthy", attention: "Attention", degraded: "Degraded", critical: "Critical", unknown: "Unknown" };
 const SEVERITIES: Severity[] = ["critical", "high", "medium", "low", "info"];
-const CATEGORY_LABEL: Record<string, string> = { build: "Build", test: "Tests", coverage: "Coverage", quality: "Quality", "dead-code": "Dead code", dependency: "Dependencies", reliability: "Reliability", "ai-code": "AI-code indicators", debt: "Technical debt", ci: "CI" };
-const DIM_SECTION: Record<string, string> = { build: "build", tests: "tests", coverage: "coverage", quality: "quality", maintainability: "quality", "dead-code": "dead-code", dependencies: "dependencies", reliability: "reliability", debt: "debt", "ai-code": "ai-code", ci: "build" };
+const CATEGORY_LABEL: Record<string, string> = { build: "Build", test: "Tests", coverage: "Coverage", quality: "Quality", "dead-code": "Dead code", dependency: "Dependencies", reliability: "Reliability", "ai-code": "Implementation integrity", debt: "Technical debt", ci: "CI", "web-delivery": "Web Delivery & SEO" };
+const DIM_SECTION: Record<string, string> = { build: "build", tests: "tests", coverage: "coverage", quality: "quality", maintainability: "quality", "dead-code": "dead-code", dependencies: "dependencies", reliability: "reliability", debt: "debt", "ai-code": "ai-code", ci: "build", "web-delivery": "web-delivery" };
 const REVIEW_LABEL: Record<ReviewStatus, string> = { reviewed: "Reviewed", "false-positive": "False positive", "accepted-risk": "Accepted risk", suppressed: "Suppressed" };
 const DEAD_LABEL: Record<DeadCodeState, [string, string]> = {
   "definitely-unused": ["Definitely unused", "Not exported, no references, no mentions anywhere, fully parsed."],
@@ -78,7 +78,7 @@ function table(head: string[], rows: Node[][], cls = ""): HTMLElement {
 }
 const td = (x: Child, cls = ""): HTMLElement => h("td", cls ? { class: cls } : {}, x);
 const tag = (text: string, cls = ""): HTMLElement => h("span", { class: `tag ${cls}` }, text);
-const pathLink = (path: string, line?: number, nodeId?: string): HTMLElement => h("a", { href: nodeId ? graphHref(nodeId) : graphHref(`file:${path}`), title: "Show in the 3.1 graph" }, `${path}${line ? `:${line}` : ""}`);
+const pathLink = (path: string, line?: number, nodeId?: string): HTMLElement => h("a", { href: nodeId ? graphHref(nodeId) : graphHref(`file:${path}`), title: "Show in the codebase graph" }, `${path}${line ? `:${line}` : ""}`);
 
 function meter(parts: [number, string][], total: number): HTMLElement {
   return h("div", { class: "meter", role: "img", "aria-label": parts.map(([v]) => String(v)).join(" / ") }, ...parts.filter(([v]) => v > 0).map(([v, cls]) => h("i", { class: cls, style: `width:${total ? (v / total) * 100 : 0}%` })));
@@ -93,11 +93,18 @@ function svgEl<K extends keyof SVGElementTagNameMap>(tag: K, attrs: Record<strin
 
 // ─── load ───────────────────────────────────────────────────────────
 
+let loadSerial = 0;
+let findingLimit = 50;
 async function load(path = `/api/health${state.scope === "changed" ? "?scope=changed" : ""}`, init?: RequestInit): Promise<void> {
+  const token = ++loadSerial;
+  const expanded = [...document.querySelectorAll<HTMLDetailsElement>("details.f[open]")].map(e => e.dataset.id);
   setStatus("busy", "Analysing…");
   try {
-    state.p = await json<HealthPagePayload>(path, init);
+    const payload = await json<HealthPagePayload>(path, init);
+    if (token !== loadSerial) return;
+    state.p = payload;
     render();
+    for (const e of document.querySelectorAll<HTMLDetailsElement>("details.f")) if (expanded.includes(e.dataset.id)) e.open = true;
     $("overlay").hidden = true;
     const f = state.p.freshness;
     const refresh = $("refresh");
@@ -106,7 +113,9 @@ async function load(path = `/api/health${state.scope === "changed" ? "?scope=cha
     setStatus(f.fresh ? "ready" : "stale", f.fresh ? `${state.p.durationMs} ms` : `${f.added + f.modified + f.deleted} files changed, analyse again`);
     openFromHash();
   } catch (e) {
-    setStatus("error", "Failed");
+    if (token !== loadSerial) return;
+    setStatus("error", "Refresh failed — showing previous results");
+    if (state.p) { toast(`Could not refresh: ${(e as Error).message}. Previous results may be stale.`); return; }
     $("overlay").hidden = false;
     $("overlay-title").textContent = "Could not analyse project health";
     $("overlay-text").textContent = (e as Error).message;
@@ -118,6 +127,8 @@ async function load(path = `/api/health${state.scope === "changed" ? "?scope=cha
 
 const SECTIONS = [
   ["overview", "Overview"],
+  ["readiness", "Engineering readiness"],
+  ["web-delivery", "Web Delivery & SEO"],
   ["attention", "Attention required"],
   ["tests", "Tests"],
   ["coverage", "Coverage"],
@@ -125,7 +136,7 @@ const SECTIONS = [
   ["dead-code", "Dead code"],
   ["dependencies", "Dependencies"],
   ["reliability", "Reliability"],
-  ["ai-code", "AI-code indicators"],
+  ["ai-code", "Implementation integrity"],
   ["debt", "Technical debt"],
   ["build", "Build & CI"],
   ["trends", "Trends"],
@@ -151,6 +162,8 @@ function render(): void {
   );
   $("content").replaceChildren(
     overview(p),
+    readinessSection(p),
+    webSection(p),
     attention(p),
     testsSection(p),
     coverageSection(p),
@@ -191,9 +204,11 @@ function overview(p: HealthPagePayload): HTMLElement {
     h(
       "div",
       { id: "hero" },
-      h("span", { class: "eyebrow" }, "Feature 3.5"),
+      h("span", { class: "eyebrow" }, "Project Health"),
       h("h1", {}, "Project health"),
-      h("p", { class: "tagline" }, "How healthy is this codebase, where are its weak points, and how much confidence do we have that important behaviour is actually protected?"),
+      h("p", { class: "tagline" }, `${p.summary.open} open findings are available for review. ${p.coverage.runtime ? 'Runtime coverage artifacts are available; their scope and freshness are shown under Coverage.' : 'Runtime test coverage has not been measured from an available artifact; graph connections do not prove tests passed.'}`),
+      h('p', { class: 'note' }, `${p.build.checks.filter(c => c.last && !c.last.stale).length} of ${p.build.checks.length} detected build/test checks have results for the current index. Unrun or stale checks do not establish a passing build or test suite.`),
+      h('div', { class: 'assessment' }, h('h2', {}, 'Investigate first'), ...p.findings.filter(isOpen).slice().sort((a,b) => SEVERITIES.indexOf(a.severity) - SEVERITIES.indexOf(b.severity)).slice(0,3).map(findingRow)),
       h(
         "div",
         { class: "verdict" },
@@ -202,15 +217,15 @@ function overview(p: HealthPagePayload): HTMLElement {
       ),
       h("ul", { class: "reasons" }, ...p.statusReasons.map((r) => h("li", {}, r))),
       h("p", { class: "note" }, "The overall status is the worst status among the dimensions that could be measured. There is no overall score: each dimension below shows what it measures."),
-      h("div", { class: "dims" }, ...dims),
+      h("details", {}, h("summary", {}, "Explore health categories and measurements"), h("div", { class: "dims" }, ...dims), ...p.dimensions.filter(d => d.metric).map(d => h("p", { class: "note" }, h("strong", {}, `${d.title}: `), d.metric!.definition))),
       h("div", { class: "sevs", "aria-label": "Open findings by severity" }, ...sevs),
       h(
         "div",
         { class: "meta", style: "margin-top:12px" },
-        base ? h("span", {}, `Baseline ${ago(base.createdAt)}: `, h("b", {}, `${base.added} new`), `, ${base.fixed.length} fixed, ${base.unchanged} unchanged`) : h("span", {}, "No baseline: every finding counts as current."),
-        h("button", { disabled: !p.writable, onclick: setBaseline, title: "Accept the current findings; later runs show what is new and what was fixed" }, base ? "Move baseline here" : "Set baseline"),
+        base ? h("span", {}, `Baseline ${ago(base.createdAt)}: `, h("b", {}, `${base.added} new`), `, ${base.fixed.length} no longer detected, ${base.unchanged} unchanged`) : h("span", {}, "No baseline: every finding counts as current."),
+        h("button", { disabled: !p.writable, onclick: setBaseline, title: "Accept the current findings; later runs show what is new and what is no longer detected" }, base ? "Move baseline here" : "Set baseline"),
         base ? h("button", { disabled: !p.writable, onclick: clearBaseline }, "Clear baseline") : null,
-        base && base.fixed.length ? h("details", {}, h("summary", { class: "note" }, `Fixed since the baseline (${base.fixed.length})`), h("ul", { class: "plain" }, ...base.fixed.slice(0, 40).map((f) => h("li", {}, h("span", { class: `sv ${f.severity}` }, f.severity), " ", f.title)))) : null,
+        base && base.fixed.length ? h("details", {}, h("summary", { class: "note" }, `No longer detected since the baseline (${base.fixed.length})`), h("ul", { class: "plain" }, ...base.fixed.slice(0, 40).map((f) => h("li", {}, h("span", { class: `sv ${f.severity}` }, f.severity), " ", f.title)))) : null,
       ),
       p.config.issues.length ? h("div", { class: "banner warn", style: "margin-top:12px" }, h("b", {}, `${p.config.file} could not be used. `), p.config.issues.join(" ")) : null,
     ),
@@ -354,7 +369,7 @@ function qualitySection(p: HealthPagePayload): HTMLElement {
     total ? h("div", { class: "legend" }, h("span", {}, h("i", { class: "bar-ok" }), `${d.low} low (≤ 5)`), h("span", {}, h("i", { class: "bar-strong" }), `${d.medium} moderate`), h("span", {}, h("i", { class: "bar-warn" }), `${d.high} high`), h("span", {}, h("i", { class: "bar-err" }), `${d.critical} very high (> 2× limit)`), h("span", {}, "cyclomatic complexity per function")) : null,
     files.length ? h("h3", {}, "Complexity heatmap") : null,
     files.length ? heat : null,
-    files.length ? h("p", { class: "note" }, "One tile per file: width grows with the lines in its functions, colour with its most complex function. Select a tile to open the file in the 3.1 graph.") : null,
+    files.length ? h("p", { class: "note" }, "One tile per file: width grows with the lines in its functions, colour with its most complex function. Select a tile to open the file in the codebase graph.") : null,
     q.top.length ? h("h3", {}, "Most complex functions") : null,
     q.top.length
       ? table(
@@ -453,16 +468,42 @@ function categorySection(id: string, title: string, question: string, category: 
   return section(id, title, question, findingsOf(p, (f) => f.category === category, "No findings in this category."));
 }
 
+function readinessSection(p: HealthPagePayload): HTMLElement {
+  const r = p.readiness;
+  return section('readiness', 'Engineering readiness', 'What evidence supports dependable behavior beyond the happy path?',
+    h('p', {}, r.summary),
+    h('p', {class: 'note'}, 'Authorship unknown. Findings describe safeguards and verification, not whether the author was an engineer or used AI.'),
+    table(['Area', 'Assessment', 'Evidence'], r.areas.map(a => {
+      const links = a.references
+        ? a.references.map(ref => h('div', {}, h('a', {href: ref.href}, ref.title)))
+        : a.findingIds.slice(0, 10).map(id => h('div', {}, h('a', {href: `#finding=${encodeURIComponent(id)}`}, p.findings.find(f => f.id === id)?.title ?? id)));
+      return [td(h('a', {href: a.owner}, a.name)), td(a.status.replaceAll('-', ' ')), td(h('div', {}, a.detail, ...links))];
+    }), 'readiness-table'),
+    h('h3', {}, 'Recorded checks'),
+    r.verification.length ? table(['Check', 'Result'], r.verification.map(v => [td(v.command), td(v.status)])) : h('p', {}, 'No executable checks discovered. Critical behavior remains unverified.'),
+    h('details', {}, h('summary', {}, 'Assessment boundaries'), h('ul', {}, ...r.limitations.map(x => h('li', {}, x)))),
+  );
+}
+
+function webSection(p: HealthPagePayload): HTMLElement {
+  return section('web-delivery', 'Web Delivery & SEO', 'Does the delivery evidence match the intended audience?',
+    h('p', {}, `${p.webDelivery.documents} literal HTML documents inspected; ${p.webDelivery.publicDocuments} configured as public. Runtime browser checks have not run.`),
+    h('p', {class: 'note'}, 'Configure readiness.profiles in .fehm/health.json with include globs and audience: public, private, local or unknown. Overlapping profiles remain unknown.'),
+    findingsOf(p, f => f.category === 'web-delivery', 'No supported static web findings. Rendered routes and browser behavior remain unverified.'),
+    h('details', {}, h('summary', {}, 'Coverage and limitations'), h('ul', {}, ...p.webDelivery.limitations.map(x => h('li', {}, x)))),
+  );
+}
+
 function aiSection(p: HealthPagePayload): HTMLElement {
   const byRule = new Map<string, number>();
   for (const f of p.findings.filter((x) => x.category === "ai-code" && isOpen(x))) byRule.set(f.title.replace(/^\d+\s+/, ""), (byRule.get(f.title.replace(/^\d+\s+/, "")) ?? 0) + f.evidence.length + f.more);
   return section(
     "ai-code",
-    "AI-code defect indicators",
-    "Are there defects typical of generated code: imports of things that do not exist, placeholders, weakened tests, disabled safety checks?",
-    h("div", { class: "disclaimer" }, h("b", {}, "These are defect patterns, not authorship. "), "They are common in AI-generated code and in rushed human code alike. Fehm does not and cannot tell who or what wrote the code, and never reports a percentage of AI-written code."),
+    "Implementation integrity concerns",
+    "Are implementations complete, imports resolvable, tests meaningful and safety controls enabled?",
+    h("div", { class: "disclaimer" }, h("b", {}, "These are defect patterns, not authorship. "), "These observations apply regardless of how the code was authored. Fehm does not and cannot tell who or what wrote the code, and never reports a percentage of AI-written code."),
     byRule.size ? h("div", { class: "sevs" }, ...[...byRule].map(([k, n]) => h("span", { class: "sev" }, k, h("b", {}, String(n))))) : null,
-    findingsOf(p, (f) => f.category === "ai-code", "No AI-code defect indicators."),
+    findingsOf(p, (f) => f.category === "ai-code", "No Implementation integrity concerns."),
   );
 }
 
@@ -629,7 +670,7 @@ function renderFindingList(): void {
   for (const b of document.querySelectorAll<HTMLButtonElement>("[data-sev]")) b.setAttribute("aria-pressed", String(b.dataset.sev === state.sev));
   const el = document.getElementById("flist");
   if (!el) return;
-  el.replaceChildren(...(list.length ? list.slice(0, 300).map((f) => findingRow(f)) : [h("div", { class: "emptyline" }, "No findings match.")]), ...(list.length > 300 ? [h("p", { class: "more" }, `${list.length - 300} more; narrow the filters.`)] : []));
+  el.replaceChildren(...(list.length ? list.slice(0, findingLimit).map((f) => findingRow(f)) : [h("div", { class: "emptyline" }, "No findings match.")]), ...(list.length > findingLimit ? [h("button", { onclick: () => { findingLimit += 50; renderFindingList(); } }, `Show next 50 (${list.length - findingLimit} remaining)`)] : []));
 }
 
 function findingRow(f: Finding): HTMLElement {
@@ -637,7 +678,7 @@ function findingRow(f: Finding): HTMLElement {
   const det = h(
     "details",
     { class: `f ${f.severity}${isOpen(f) ? "" : " reviewed-out"}`, "data-id": f.id },
-    h("summary", {}, h("span", { class: `sv ${f.severity}` }, f.severity), h("span", { class: "tt" }, f.title), h("span", { class: "fm" }, f.baseline === "new" ? tag("new", "warn") : null, f.review ? tag(REVIEW_LABEL[f.review.status], "muted") : null, h("span", { class: `cf ${f.confidence}`, title: "Confidence in the evidence" }, f.confidence)), where ? h("span", { class: "sub" }, where) : null),
+    h("summary", {}, h("span", { class: `sv ${f.severity}` }, f.severity), h("span", { class: "tt" }, f.title.replace("has no test protection", "has no detected test relationship")), h("span", { class: "fm" }, f.baseline === "new" ? tag("new", "warn") : null, f.review ? tag(REVIEW_LABEL[f.review.status], "muted") : null, h("span", { class: `cf ${f.confidence}`, title: "Confidence in the evidence" }, f.confidence)), where ? h("span", { class: "sub" }, where) : null),
   );
   det.addEventListener("toggle", () => {
     if (det.open && det.childElementCount === 1) det.append(findingBody(f));
@@ -667,12 +708,12 @@ function findingBody(f: Finding): HTMLElement {
     { class: "fbody" },
     h("div", {}, h("h4", {}, "What was detected"), h("p", {}, f.message)),
     f.metric ? h("div", {}, h("h4", {}, "Measurement"), h("p", {}, `${f.metric.name}: ${f.metric.value} (limit ${f.metric.threshold})`)) : null,
-    h("div", {}, h("h4", {}, "Evidence"), evidence),
+    h("details", {}, h("summary", {}, "Inspect source and supporting evidence"), evidence),
     f.missing?.length ? h("div", {}, h("h4", {}, "Not established"), h("ul", { class: "plain" }, ...f.missing.map((m) => h("li", {}, m)))) : null,
     h("div", {}, h("h4", {}, "Why it matters"), h("p", {}, f.why)),
     h("div", {}, h("h4", {}, "What to do"), h("p", {}, f.action)),
     h("div", {}, h("h4", {}, "How to verify"), h("ul", { class: "plain" }, ...f.verification.map((v) => h("li", {}, v)))),
-    h("div", {}, h("h4", {}, "Rule"), h("p", { class: "mono" }, f.ruleId, f.upstream ? h("span", { class: "note" }, ` · adapted from Skylos ${f.upstream}`) : null, h("span", { class: "note" }, ` · id ${f.id}`))),
+    h("details", {}, h("summary", {}, "Technical rule details"), h("p", { class: "mono" }, f.ruleId, f.upstream ? h("span", { class: "note" }, ` · adapted from Skylos ${f.upstream}`) : null, h("span", { class: "note" }, ` · id ${f.id}`))),
     h("div", {}, h("h4", {}, "Review"), reviews),
   );
 }

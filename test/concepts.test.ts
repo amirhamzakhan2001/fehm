@@ -118,6 +118,9 @@ test('concept and ontology pages, API filters, source guards, refresh protection
   const request=(path:string,method='GET',headers={})=>new Promise<{status:number;body:string}>((resolve,reject)=>{const req=http.request({host:'127.0.0.1',port,path,method,headers},res=>{let body='';res.on('data',c=>body+=c);res.on('end',()=>resolve({status:res.statusCode!,body}));});req.on('error',reject);req.end();});
   try{
     for(const path of ['/concepts','/ontology','/concepts/assets/concepts/ui/main.js'])assert.equal((await request(path)).status,200);
+    const inventory=JSON.parse((await request('/api/concepts/inventory')).body);
+    assert.equal(inventory.concepts.length,catalog().metadata.total_concepts);
+    assert.equal((await request('/concepts')).body,(await request('/ontology')).body);
     assert.equal((await request('/concepts/assets/concepts/service.js')).status,404);
     assert.equal(JSON.parse((await request('/api/concepts/lookup?q=DFA')).body).ambiguous,true);
     assert.equal((await request('/api/concepts/refresh')).status,405);assert.equal((await request('/api/concepts/refresh','POST')).status,403);

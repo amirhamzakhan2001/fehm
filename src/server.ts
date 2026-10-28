@@ -1,3 +1,4 @@
+import { createDebuggingRoutes } from './visualization/debugging/routes.js';
 import { createGuardrailRoutes } from "./visualization/guardrails/routes.js";
 import { createConceptRoutes } from "./visualization/concepts/routes.js";
 import { createGitMemoryRoutes } from "./visualization/git-memory/routes.js";
@@ -34,7 +35,8 @@ export function startServer(root: string, port: number, options: IndexOptions = 
   const viewOptions = { ...(options.stateDirectory ? { stateDirectory: options.stateDirectory } : {}), ...(options.dryRun ? { dryRun: true } : {}) };
   const architecture = createArchitectureRoutes(viewOptions);
   const security = createSecurityRoutes({ ...viewOptions, architecture: architecture.service });
-  const health = createHealthRoutes({ ...viewOptions, architecture: architecture.service });
+  const drift = createDriftRoutes({ ...viewOptions, architecture: architecture.service });
+  const health = createHealthRoutes({ ...viewOptions, architecture: architecture.service, security: security.service, drift: drift.service });
   const prompts = createPromptRoutes({ ...viewOptions, architecture: architecture.service, security: security.service });
   const concepts = createConceptRoutes({ ...viewOptions, architecture: architecture.service, security: security.service, health: health.service, prompts: prompts.service });
   const views: ViewRoutes[] = [
@@ -44,13 +46,14 @@ export function startServer(root: string, port: number, options: IndexOptions = 
     createBriefingRoutes(viewOptions),
     architecture,
     // Drift evaluates 3.3's model: share it instead of building a second one per engine.
-    createDriftRoutes({ ...viewOptions, architecture: architecture.service }),
+    drift,
     health,
     security,
     prompts,
     concepts,
     createGitMemoryRoutes(viewOptions),
     createGuardrailRoutes(),
+    createDebuggingRoutes(viewOptions),
   ];
   const server = createServer((req, res) => {
     const url = new URL(req.url ?? "/", "http://127.0.0.1");

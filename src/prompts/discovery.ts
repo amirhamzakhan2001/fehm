@@ -1,4 +1,6 @@
 import ts from 'typescript';
+import { assetPrompts } from './assets.js';
+import { isTestPath, EXCLUDED_DIRECTORIES, DEFAULT_MAX_FILE_BYTES } from '../scanner.js';
 import { pythonPrompts } from './python.js';
 import { createHash } from 'node:crypto';
 import { posix } from 'node:path';
@@ -33,8 +35,6 @@ export function discoverPrompts(engine: FehmEngine, facts: BriefingFacts): {
     const coverage: PromptReport['coverage'] = { astFiles: 0, heuristicFiles: 0, templateFiles: 0, unsupportedFiles: 0, semantic: 'not-run', behavioral: 'not-run' };
     const units = new Map<string, Unit>();
     for (const file of facts.files) {
-        if (file.role === 'test')
-            continue;
         if (!/\.[cm]?[jt]sx?$/.test(file.path) || /\.d\.[cm]?ts$/.test(file.path))
             continue;
         const sf = ts.createSourceFile(file.path, facts.lines(file.path).join('\n'), ts.ScriptTarget.Latest, true, /tsx$/.test(file.path) ? ts.ScriptKind.TSX : /jsx$/.test(file.path) ? ts.ScriptKind.JSX : ts.ScriptKind.TS);
@@ -68,6 +68,8 @@ export function discoverPrompts(engine: FehmEngine, facts: BriefingFacts): {
         if (p === scope)
             return true; return false; };
     const binding = (u: Unit, name: string, at: ts.Node): ts.Node | undefined => (u.bindings.get(name) ?? []).filter(n => ancestor(enclosingScope(n), at)).sort((a, b) => b.pos - a.pos)[0];
+    const referencedDefinitions = new Map<ts.Node, { unit: Unit; role: PromptRole }>();
+    const definitionsAdded = new Set<ts.Node>();
     const resolve = (u: Unit, n: ts.Node | undefined, r: PromptRole = 'user', seen = new Set<ts.Node>()): Resolved => {
         if (!n || seen.has(n) || seen.size > 60)
             return { fragments: [], complete: false };
@@ -85,6 +87,7 @@ export function discoverPrompts(engine: FehmEngine, facts: BriefingFacts): {
         if (ts.isIdentifier(n)) {
             const b = binding(u, n.text, n);
             if (b && ts.isVariableDeclaration(b) && b.initializer) {
+                referencedDefinitions.set(b, { unit: u, role: r });
                 if ((u.writes.get(n.text) ?? []).some(w => w.pos > b.pos && w.pos < n.pos && ancestor(enclosingScope(w), n)))
                     return fragment('${' + n.text + ' (modified at runtime)}', false);
                 return recurse(b.initializer);
@@ -92,8 +95,10 @@ export function discoverPrompts(engine: FehmEngine, facts: BriefingFacts): {
             const imp = u.imports.get(n.text), other = imp && units.get(imp.path);
             if (other && imp) {
                 const decl = (other.bindings.get(imp.name) ?? []).find(x => ts.isSourceFile(enclosingScope(x)));
-                if (decl && ts.isVariableDeclaration(decl))
+                if (decl && ts.isVariableDeclaration(decl)) {
+                    referencedDefinitions.set(decl, { unit: other, role: r });
                     return resolve(other, decl.initializer, r, next);
+                }
             }
             return fragment('${' + n.text + '}', false);
         }
@@ -102,6 +107,11 @@ export function discoverPrompts(engine: FehmEngine, facts: BriefingFacts): {
             if (b.fragments[0])
                 b.fragments[0].separator = "";
             return { complete: a.complete && b.complete, fragments: [...a.fragments, ...b.fragments] };
+        }
+        if (ts.isCallExpression(n) && /(?:^|\.)(?:readFileSync|readFile)$/.test(n.expression.getText(u.sf)) && n.arguments[0] && ts.isStringLiteral(n.arguments[0])) {
+            const requested = n.arguments[0].text;
+            const path = [posix.normalize(requested), posix.normalize(posix.join(posix.dirname(u.path), requested))].find(path => !path.startsWith('../') && engine.fileHashes().has(path));
+            if (path) return { complete: true, fragments: [{ role: r, text: facts.lines(path).join('\n'), path, line: 1, resolved: true }] };
         }
         if (ts.isCallExpression(n) && ts.isPropertyAccessExpression(n.expression) && n.expression.name.text === 'join') {
             const result = recurse(n.expression.expression);
@@ -129,11 +139,11 @@ export function discoverPrompts(engine: FehmEngine, facts: BriefingFacts): {
                     result.complete = false;
                 return result;
             }
-            const result = merge(props.filter(p => /^(messages|prompt|input|contents|system|system_prompt|instructions|instruction)$/.test(p.name.getText(u.sf).replace(/["']/g, ''))).map(p => recurse(p.initializer, /system/.test(p.name.getText()) ? 'system' : /instructions/.test(p.name.getText()) ? 'developer' : r)));
+            const result = merge(props.filter(p => /^(messages|prompt|input|contents|parts|text|systemInstruction|system|system_prompt|instructions|instruction)$/.test(p.name.getText(u.sf).replace(/["']/g, ''))).map(p => recurse(p.initializer, /system/.test(p.name.getText()) ? 'system' : /instructions/.test(p.name.getText()) ? 'developer' : r)));
             if (n.properties.some(ts.isSpreadAssignment))
                 result.complete = false;
             for (const prop of n.properties.filter(ts.isShorthandPropertyAssignment))
-                if (/^(messages|prompt|input|contents|system|system_prompt|instructions|instruction)$/.test(prop.name.text)) {
+                if (/^(messages|prompt|input|contents|parts|text|systemInstruction|system|system_prompt|instructions|instruction)$/.test(prop.name.text)) {
                     const resolved = recurse(prop.name, /system/.test(prop.name.text) ? 'system' : prop.name.text === 'instructions' ? 'developer' : r);
                     result.fragments.push(...resolved.fragments);
                     result.complete = result.complete && resolved.complete;
@@ -157,9 +167,13 @@ export function discoverPrompts(engine: FehmEngine, facts: BriefingFacts): {
         const format = (parserEvidence ?? /JSON\.parse\(|json\.loads\(/.test(context)) ? 'json' : 'unknown';
         const enforced = /\bresponse_format\s*[:=][\s\S]{0,200}\b(?:json_schema|json_object)\b|\bjson_schema\s*[:=]|\bwith_structured_output\s*\(|\b(?:generateObject|streamObject)\s*\(/.test(callContext);
         const pkg = facts.packages.filter(p => p.importers.includes(path)).map(p => p.name).find(n => /openai|anthropic|genai|generative|ollama|mistral|groq|cohere|bedrock|langchain|together|vllm/.test(n));
-        const id = 'P-' + digest(`${path}:${owner?.id ?? ''}:${line}:${call}`).slice(0, 12);
+        const baseId = 'P-' + digest(`${path}:${owner?.id ?? ''}:${line}:${call}`).slice(0, 12);
+        const occurrence = prompts.filter(p => p.path === path && p.line === line && p.call === call).length;
+        const id = occurrence ? `${baseId}-${occurrence + 1}` : baseId;
         const behavioral = safeFragments.some(f => ['system', 'developer'].includes(f.role) && f.text.trim() && f.resolved);
         const p: PromptRecord = {
+            environment: isTestPath(path) ? 'test' : /(^|\/)(examples?|demos?|benchmarks?|bench)(\/|$)/i.test(path) ? 'example' : /(^|\/)(scripts?|tools?|dev)(\/|$)/i.test(path) ? 'development' : 'production',
+            analysisStatus: 'pending', referenceIds: [],
             id, name: owner?.name ?? posix.basename(path), path, line, fileId: `file:${path}`, ...(owner ? { functionId: owner.id } : {}), call,
             provider: pkg ?? 'unknown/custom', model: /\bmodel(?:Id|_id)?["']?\s*[:=]\s*["']([^"']+)["']/.exec(callContext)?.[1] ?? null,
             kind: tools.length || /agent/i.test(call) ? 'agent' : /retriev|context|sources/i.test(text) ? 'rag' : /classif|categor|sentiment/i.test(text) ? 'classification' : /extract/i.test(text) ? 'extraction' : /transcrib|image|audio|video/i.test(context) ? 'multimodal' : /code|debug/i.test(text) ? 'code' : /moderate|policy|guardrail/i.test(text) ? 'guardrail' : 'generation',
@@ -224,6 +238,18 @@ export function discoverPrompts(engine: FehmEngine, facts: BriefingFacts): {
                 const span = literal && (ts.isStringLiteral(literal) || ts.isNoSubstitutionTemplateLiteral(literal)) && result.fragments.length === 1 ? { start: literal.getStart(u.sf), end: literal.end, original: literal.getText(u.sf), encoding: 'js' as const } : undefined;
                 add(u.path, u.sf.getLineAndCharacterOfPosition(n.getStart()).line + 1, n.expression.getText(), result.fragments, result.complete, parent.getText(u.sf), .95, span, n.getText(u.sf), parserEvidence);
             }
+            if (ts.isObjectLiteralExpression(n)) {
+                const props = n.properties.filter(ts.isPropertyAssignment);
+                const rr = props.find(prop => prop.name.getText(u.sf).replace(/["']/g, '') === 'role')?.initializer;
+                if (rr && ts.isStringLiteral(rr) && /^(system|developer|user|assistant|tool)$/.test(rr.text) && props.some(prop => prop.name.getText(u.sf).replace(/["']/g, '') === 'content')) {
+                    const result = resolve(u, n);
+                    add(u.path, u.sf.getLineAndCharacterOfPosition(n.getStart()).line + 1, 'template', result.fragments, result.complete, '', .7);
+                }
+            }
+            if (ts.isCallExpression(n) && /(?:ChatPromptTemplate|PromptTemplate)\.(?:fromTemplate|fromMessages)|(?:^|\.)from_template$/.test(n.expression.getText(u.sf))) {
+                const r = resolve(u, n.arguments[0]);
+                add(u.path, u.sf.getLineAndCharacterOfPosition(n.getStart()).line + 1, 'template', r.fragments, r.complete, '', .85);
+            }
             ts.forEachChild(n, walk);
         };
         const builders = (node: ts.Node): void => {
@@ -243,18 +269,34 @@ export function discoverPrompts(engine: FehmEngine, facts: BriefingFacts): {
         builders(u.sf);
         walk(u.sf);
         for (const [name, declarations] of u.bindings)
-            if (PROMPT_NAME.test(name))
+            if (PROMPT_NAME.test(name) && !/(?:id|name|count|score|report|record|history|status|path|file|policy|schema|digest|hash|index|cache|registry|findings|tokens)$/i.test(name))
                 for (const d of declarations) {
-                    if (used.has(d) || !ts.isVariableDeclaration(d) || !d.initializer || prompts.some(p => p.fragments.some(f => f.path === u.path && f.line === u.sf.getLineAndCharacterOfPosition(d.initializer!.getStart()).line + 1)))
+                    if (!ts.isVariableDeclaration(d) || !d.initializer)
                         continue;
+                    if (ts.isObjectLiteralExpression(d.initializer) && !/\b(?:messages|content|prompt|instructions|system)\s*[:},]/.test(d.initializer.getText(u.sf))) continue;
                     const r = resolve(u, d.initializer, /system/i.test(name) ? 'system' : /instruction/i.test(name) ? 'developer' : 'user');
-                if (!r.fragments.some(f => f.resolved && f.text.trim().length >= 8) || r.fragments.some(f => /<!doctype\s+html|<html\b/i.test(f.text))) continue;
-                    add(u.path, u.sf.getLineAndCharacterOfPosition(d.getStart()).line + 1, 'template', r.fragments, r.complete, '', .8);
+                if ((!r.fragments.some(f => f.text.trim().length >= 8) && r.complete) || (r.complete && !r.fragments.length) || r.fragments.some(f => /<!doctype\s+html|<html\b/i.test(f.text))) continue;
+                    if (ts.isRegularExpressionLiteral(d.initializer)) continue;
+                    definitionsAdded.add(d);
+                    const literal = d.initializer;
+                    const span = ts.isStringLiteral(literal) || ts.isNoSubstitutionTemplateLiteral(literal) ? { start: literal.getStart(u.sf), end: literal.end, original: literal.getText(u.sf), encoding: 'js' as const } : undefined;
+                    add(u.path, u.sf.getLineAndCharacterOfPosition(d.getStart()).line + 1, 'template', r.fragments, r.complete, '', r.complete ? .8 : .5, span);
+                    prompts.at(-1)!.name = name;
                 }
+    }
+    for (const [declaration, reference] of referencedDefinitions) {
+        if (definitionsAdded.has(declaration) || !ts.isVariableDeclaration(declaration) || !declaration.initializer) continue;
+        const u = reference.unit, literal = declaration.initializer;
+        const result = resolve(u, literal, reference.role);
+        if (!result.fragments.length) continue;
+        definitionsAdded.add(declaration);
+        const span = ts.isStringLiteral(literal) || ts.isNoSubstitutionTemplateLiteral(literal) ? { start: literal.getStart(u.sf), end: literal.end, original: literal.getText(u.sf), encoding: 'js' as const } : undefined;
+        add(u.path, u.sf.getLineAndCharacterOfPosition(declaration.getStart()).line + 1, 'template', result.fragments, result.complete, '', .9, span);
+        prompts.at(-1)!.name = declaration.name.getText(u.sf);
     }
     // Python reconstruction is deliberately labelled heuristic, never AST evidence.
     for (const file of facts.files) {
-        if (file.role === 'test' || units.has(file.path))
+        if (units.has(file.path))
             continue;
         const source = facts.lines(file.path).join('\n');
         if (/\.py$/.test(file.path)) {
@@ -262,28 +304,21 @@ export function discoverPrompts(engine: FehmEngine, facts: BriefingFacts): {
             for (const p of pythonPrompts(file.path, source))
                 add(file.path, p.line, p.call, p.fragments, p.complete, p.context, .65);
         }
-        else if (/(?:^|\/)(?:prompts?|templates?)\/|\.prompt\.(?:txt|md)$|\.(?:jinja2?|prompt)$/.test(file.path)) {
-            coverage.templateFiles++;
-            add(file.path, 1, 'template', [{ role: /system/i.test(file.path) ? 'system' : 'user', text: source, path: file.path, line: 1, resolved: true }], true, '', .85, { start: 0, end: source.length, original: source, encoding: 'text' });
+        else if (/\.(?:json|ya?ml|toml)$/.test(file.path)) {
+            const candidates = assetPrompts(file.path, source);
+            for (const candidate of candidates) add(file.path, candidate.line, 'template', [{ role: candidate.role, text: candidate.text, path: file.path, line: candidate.line, resolved: candidate.complete }], candidate.complete, '', /\.json$/.test(file.path) ? .85 : .65);
+            if (candidates.length) coverage.templateFiles++;
         }
-        else if (/\.(?:json|ya?ml)$/.test(file.path)) {
-            const matches = [...source.matchAll(/["']?(system_prompt|user_prompt|developer_prompt|instructions)["']?\s*:\s*(?:"((?:\\.|[^"\\])*)"|'([^']*)'|[|>]\s*\n((?:[ \t]+[^\n]*\n?)+))/g)];
-            for (const m of matches) {
-                let text = m[2] ?? m[3] ?? m[4] ?? '';
-                if (m[2]) {
-                    try {
-                        text = JSON.parse('"' + m[2] + '"') as string;
-                    }
-                    catch { /* retain literal */ }
-                }
-                const line = source.slice(0, m.index).split('\n').length;
-                add(file.path, line, 'template', [{ role: /system/.test(m[1]!) ? 'system' : /developer|instructions/.test(m[1]!) ? 'developer' : 'user', text, path: file.path, line, resolved: true }], true, '', .75);
-            }
-            if (matches.length)
-                coverage.templateFiles++;
+        else if (/\.(?:txt|md|mdx|jinja2?|prompt)$/.test(file.path) && (/(?:^|\/)(?:prompts?|templates?|instructions?)\/|(?:prompt|instructions|system)[^/]*\.(?:txt|md|mdx)$|\.(?:jinja2?|prompt)$|(?:^|\/)(?:AGENTS|CLAUDE|SKILL)\.md$/i.test(file.path) || /^(?:#.*\n)?\s*(?:You are |Your task is |System instructions?:|Developer instructions?:)/i.test(source))) {
+            coverage.templateFiles++;
+            add(file.path, 1, 'template', [{ role: /system/i.test(file.path) ? 'system' : 'user', text: source, path: file.path, line: 1, resolved: true }], true, '', .8, { start: 0, end: source.length, original: source, encoding: 'text' });
         }
         else if (file.role === 'source')
             coverage.unsupportedFiles++;
     }
+    for (const p of prompts) {
+        if (p.call !== 'template') p.referenceIds = prompts.filter(definition => definition.call === 'template' && definition.fragments.some(fragment => p.fragments.some(used => fragment.path === used.path && fragment.line === used.line && fragment.text === used.text))).map(definition => definition.id);
+    }
+    coverage.exclusions = { directories: [...EXCLUDED_DIRECTORIES].sort(), maxFileBytes: DEFAULT_MAX_FILE_BYTES, rules: ['Root .gitignore and .fehmignore plus configured scanner ignores', 'Symlinks, binaries and unsupported extensions are not indexed', 'Hidden directories except .github are skipped'] };
     return { prompts: prompts.sort((a, b) => a.path.localeCompare(b.path) || a.line - b.line), coverage };
 }

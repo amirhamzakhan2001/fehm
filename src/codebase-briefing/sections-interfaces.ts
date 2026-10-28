@@ -61,13 +61,12 @@ export const api: SectionBuilder = ({ facts }) => {
     type: "groups",
     groups: [...groups.entries()]
       .sort((a, b) => b[1].length - a[1].length || (a[0] < b[0] ? -1 : 1))
-      .slice(0, 16)
       .map(([key, rs]) => {
         const claim = set.observed(`${key}: ${plural(rs.length, "route")}.`, rs.slice(0, 6).map((r) => ev(r.path, r.line, { provenance: "heuristic", detail: `${r.method} ${r.route}` })));
         return {
           title: key,
           note: [...new Set(rs.map((r) => r.path))].join(", "),
-          items: rs.slice(0, 20).map((r) => stripItem({ title: `${r.method === "ANY" ? "ANY" : r.method} ${r.route}`, detail: r.handler ? `${r.handler.name} · ${r.handler.path}:${r.handler.location?.line ?? "?"}` : `registered at ${r.path}:${r.line}`, claim, path: r.path, line: r.line, nodeId: r.handler?.id, flowFrom: r.handler?.id ?? r.enclosing?.id })),
+          items: rs.map((r) => stripItem({ title: `${r.method === "ANY" ? "ANY" : r.method} ${r.route}`, detail: r.handler ? `${r.handler.name} · ${r.handler.path}:${r.handler.location?.line ?? "?"}` : `registered at ${r.path}:${r.line}`, claim, path: r.path, line: r.line, nodeId: r.handler?.id, flowFrom: r.handler?.id ?? r.enclosing?.id })),
         };
       }),
   });
@@ -122,7 +121,7 @@ export const database: SectionBuilder = ({ facts }) => {
   }
   if (schemaFiles.length) blocks.push({ type: "list", title: "Schema / migration files", items: schemaFiles.slice(0, 10).map((f) => ({ title: f.path, path: f.path, nodeId: `file:${f.path}`, claim: set.declared(`Schema/migration file ${f.path}.`, [ev(f.path, 1, { source: "configuration" })], "Declared schema; application usage is shown separately.") })) });
   set.unknowns.push("Runtime database configuration (hosts, credentials, pool sizes) is not in the index.");
-  if (!facts.files.some((f) => /\.(sql|prisma)$/.test(f.path))) set.unknowns.push("`.sql` and `.prisma` files are not indexed by Feature 1, so schema declarations in them are not visible.");
+  if (!facts.files.some((f) => /\.(sql|prisma)$/.test(f.path))) set.unknowns.push("`.sql` and `.prisma` files are not indexed by Context Engine, so schema declarations in them are not visible.");
   return { id: "database", title: "Database & schema", question: "Where does data live?", summary, blocks, set };
 };
 
@@ -234,7 +233,7 @@ export const infrastructure: SectionBuilder = ({ facts }) => {
   }
   if (cloudSdks.length && !deployTargets.length) set.inferred(`${listText(cloudSdks.map((p) => p.info!.label))} dependency found, but no deployment configuration identifies the hosting provider; cloud usage is possible, the deployment target is unknown.`, cloudSdks.flatMap((p) => pkgEvidence(facts, p, 2)), 0.5);
   if (!ci.length) set.unknown("No CI configuration found in the index.");
-  if (!facts.files.some((f) => /\.tf$/.test(f.path))) set.unknowns.push("Terraform/Helm sources are not indexed by Feature 1; infrastructure-as-code may exist outside the index.");
+  if (!facts.files.some((f) => /\.tf$/.test(f.path))) set.unknowns.push("Terraform/Helm sources are not indexed by Context Engine; infrastructure-as-code may exist outside the index.");
   const engines = facts.manifests.map((m) => m.engines).filter(Boolean) as string[];
   const blocks: Block[] = [{ type: "facts", rows: [{ label: "Deployment", value: deployment }, ...(engines.length ? [{ label: "Runtime requirement", value: engines.join(", "), claim: set.declared(`Requires ${engines.join(", ")}.`, facts.manifests.filter((m) => m.engines).map((m) => ev(m.path, 1, { source: "manifest" }))) }] : [])] }, { type: "groups", groups, empty: "No infrastructure configuration found." }];
   return { id: "infrastructure", title: "Infrastructure & deployment", question: "How is it built, shipped and hosted?", summary: deployment + (ci.length ? ` · ${plural(ci.length, "CI workflow")}` : ""), blocks, set };
@@ -304,11 +303,11 @@ export const technology: SectionBuilder = ({ facts }) => {
   const byCategory = new Map<TechCategory, { label: string; purpose: string; used: boolean; claim: string }[]>();
   const seen = new Set<string>();
   for (const p of facts.packages) {
-    if (!p.info || seen.has(p.info.label)) continue;
+    if (!p.info || !p.importers.length || seen.has(p.info.label)) continue;
     const used = facts.runtimeImporters(p).length > 0;
     const testOnly = !used && p.importers.length > 0;
     seen.add(p.info.label);
-    const claim = set.observed(`${p.info.label} — ${p.info.purpose}; imported by ${plural(p.importers.length, "file")}${testOnly ? " (tests only)" : ""}.`, pkgEvidence(facts, { ...p, importers: p.importers }, 3));
+    const claim = set.observed(`${p.info.label} — ${p.info.purpose}; imported by ${plural(p.importers.length, "file")}${testOnly ? " (tests only)" : ""}.`, p.importers.slice(0, 8).map(path => ev(path, facts.graph.edgesOf(p.nodeId, "in", ["imports"]).find(edge => facts.fileOf(edge.source) === path)?.evidence.location?.line, { nodeId: `file:${path}`, provenance: p.provenance, detail: `imports ${p.name}` })));
     byCategory.set(p.info.category, [...(byCategory.get(p.info.category) ?? []), { label: p.info.label, purpose: p.info.purpose, used: used || testOnly, claim }]);
   }
   for (const d of facts.declaredDependencies) {
@@ -321,6 +320,10 @@ export const technology: SectionBuilder = ({ facts }) => {
   const groups = [...byCategory.entries()]
     .sort((a, b) => ORDER.indexOf(a[0]) - ORDER.indexOf(b[0]))
     .map(([cat, list]) => ({ title: CATEGORY_LABEL[cat], items: list.map((t) => ({ title: t.label, detail: t.purpose, badge: t.used ? "imported" : "declared", claim: t.claim })) }));
+  for (const dependency of facts.declaredDependencies.filter(d => d.requirement)) {
+    const label = techInfo(dependency.name)?.label ?? dependency.name;
+    rows.push({ label: `${label} requirement`, value: dependency.requirement!, claim: set.declared(`${dependency.name} requires ${dependency.requirement} in ${dependency.path}; this is a manifest requirement, not the installed version.`, [ev(dependency.path, dependency.line, { source: "manifest" })]) });
+  }
   const other = facts.declaredDependencies.filter((d) => !techInfo(d.name));
   const blocks: Block[] = [{ type: "facts", rows }, { type: "groups", title: "Why each technology is here", groups, empty: "No recognised libraries." }];
   if (other.length) blocks.push({ type: "list", title: `Other declared dependencies (${other.length})`, items: other.slice(0, 24).map((d) => ({ title: d.name, detail: `${d.dev ? "dev · " : ""}${d.path}:${d.line}` })) });

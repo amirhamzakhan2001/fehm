@@ -10,13 +10,13 @@
 import type { AnalyzerRun, Confidence, Finding, Severity } from "../findings/model.js";
 import type { Language } from "../model.js";
 
-export const HEALTH_SCHEMA = "1.0";
+export const HEALTH_SCHEMA = "1.1";
 /** Bump when findings or metrics change for the same code (invalidates the per-file cache and marks trend points). */
-export const HEALTH_VERSION = "1";
+export const HEALTH_VERSION = "2";
 
 export type HealthStatus = "healthy" | "attention" | "degraded" | "critical" | "unknown";
 
-export type DimensionId = "build" | "tests" | "coverage" | "quality" | "maintainability" | "dead-code" | "dependencies" | "reliability" | "debt" | "ai-code" | "ci";
+export type DimensionId = "web-delivery" | "build" | "tests" | "coverage" | "quality" | "maintainability" | "dead-code" | "dependencies" | "reliability" | "debt" | "ai-code" | "ci";
 
 export interface DimensionMetric {
   label: string;
@@ -403,6 +403,8 @@ export interface Provenance {
 }
 
 export interface HealthReport {
+  readiness: import('./readiness.js').EngineeringReadiness;
+  webDelivery: import('./readiness.js').WebAssessment;
   schemaVersion: string;
   version: string;
   repository: { name: string; root: string };

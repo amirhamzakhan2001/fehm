@@ -18,6 +18,7 @@ export type Severity = "critical" | "high" | "medium" | "low" | "info";
 export const SEVERITIES: readonly Severity[] = ["critical", "high", "medium", "low", "info"];
 
 export type FindingCategory =
+  | "web-delivery"
   | "build"
   | "test"
   | "coverage"

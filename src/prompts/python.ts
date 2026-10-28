@@ -161,5 +161,11 @@ export function pythonPrompts(path: string, source: string): PythonPrompt[] {
         }
         out.push({ line: lineAt(match.index!), call: match[1]!, fragments: parts.flatMap(p => p.fragments), complete: parts.length > 0 && parts.every(p => p.complete), context });
     }
+    for (const assignment of assignments) {
+        if (!/prompt|instructions|system_message/i.test(assignment.name) || /(?:_|^)(?:id|name|count|score|report|record|history|status|path|file|policy|schema|digest|hash|index|cache|registry|findings|tokens)$/i.test(assignment.name)) continue;
+        const resolved = resolve(assignment.value, endExpression(assignment.value), /system/i.test(assignment.name) ? 'system' : 'user');
+        if (!resolved.fragments.length) continue;
+        out.push({ line: lineAt(assignment.start), call: 'template', fragments: resolved.fragments, complete: resolved.complete, context: '' });
+    }
     return out;
 }

@@ -86,8 +86,8 @@ table.t th{position:sticky;top:0;background:var(--panel-2);text-align:left;font-
 table.t td{padding:6px 10px;border-bottom:1px solid var(--line);vertical-align:top}table.t tr:last-child td{border-bottom:0}
 table.t tr.clickable{cursor:pointer}table.t tr.clickable:hover td{background:var(--panel-2)}
 .ok{color:var(--ok)}.no{color:var(--faint)}
-.maplayout{display:grid;grid-template-columns:230px minmax(0,1fr) 320px;gap:12px;min-height:0}
-.mapstage{position:relative;height:clamp(380px,64vh,720px);border:1px solid var(--line-2);border-radius:8px;background:var(--canvas);overflow:hidden}
+.maplayout{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:12px;min-height:0}
+.maplayout>.clside{display:none}.context-map{margin-top:24px}.context-map>summary{cursor:pointer;padding:16px}#focused-comparison>select{max-width:100%;width:min(640px,100%)}.drift-comparison{padding:20px 0}.comparison-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;margin:20px 0}.comparison-side{min-width:0;border:1px solid var(--line-2);padding:18px;border-radius:8px}.comparison-side h3{font-size:18px}.comparison-viewport{overflow:auto;max-height:70vh;min-height:240px}.comparison-plane{display:flex;flex-direction:column;align-items:center;padding:20px;gap:8px}.comparison-node{min-width:170px;max-width:100%;white-space:normal;padding:16px;border:1px solid var(--accent)}.comparison-edge[aria-pressed=true],.comparison-node[aria-pressed=true]{background:var(--panel-3);outline:2px solid var(--accent)}.comparison-edge{border:0;background:transparent;padding:8px}.comparison-edge.differs{border:1px dashed var(--likely);color:var(--likely)}.comparison-selection{padding:16px;border-top:1px solid var(--line-2)}@media(max-width:760px){.comparison-pair{grid-template-columns:1fr}.comparison-side{padding:12px}}.mapstage{position:relative;height:clamp(380px,64vh,720px);border:1px solid var(--line-2);border-radius:8px;background:var(--canvas);overflow:hidden}
 .mapstage svg{width:100%;height:100%;display:block;cursor:grab;touch-action:none;user-select:none}
 .mapstage .empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;color:var(--muted)}
 .maptools{position:absolute;top:8px;right:8px;display:flex;gap:4px;z-index:2}.maptools button{padding:2px 9px;font-size:12px;background:var(--panel)}
@@ -176,7 +176,7 @@ ${CHROME_CSS}
 </div>
 <aside id="drawer" aria-label="Finding details"><header id="dhead"></header><div id="dbody"></div></aside>
 <div id="tip" role="tooltip" hidden></div>
-<div id="overlay"><div class="box"><h2 id="overlay-title">Analysing architecture drift…</h2><p id="overlay-text">Mining the project's own conventions from Feature 1's index. No model calls.</p><button id="overlay-action" hidden>Retry</button></div></div>
+<div id="overlay"><div class="box"><h2 id="overlay-title">Analysing architecture drift…</h2><p id="overlay-text">Mining the project's own conventions from the repository index. No model calls.</p><button id="overlay-action" hidden>Retry</button></div></div>
 <div id="toast" role="status" aria-live="polite" hidden></div>
 <script type="module" src="/drift/assets/drift/ui/main.js"></script>
 </body></html>`;

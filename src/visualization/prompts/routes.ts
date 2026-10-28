@@ -3,6 +3,7 @@ import { pageAsset } from '../graph/assets.js';
 import { pageHeaders, renderPage, type ViewRoutes } from '../http.js';
 import type { SecurityServiceOptions } from '../security/service.js';
 import { evaluatePrompt, suggestedCases, validateCases } from '../../prompts/evaluation.js';
+import { digest } from '../../prompts/discovery.js';
 import { compareCandidate } from '../../prompts/optimization.js';
 import { MODES, type SemanticResult, type OptimizationMode } from '../../prompts/types.js';
 import { PromptService } from './service.js';
@@ -49,7 +50,7 @@ export function createPromptRoutes(options: SecurityServiceOptions & { security?
                 }
                 return true;
             }
-            if (path === '/api/prompts/evaluate' || path === '/api/prompts/compare') {
+            if (path === '/api/prompts/evaluate' || path === '/api/prompts/compare' || path === '/api/prompts/proposal') {
                 if (req.method !== 'POST') {
                     reply(405, { error: 'POST required' });
                     return true;
@@ -75,6 +76,10 @@ export function createPromptRoutes(options: SecurityServiceOptions & { security?
                             if (!data || typeof data !== 'object')
                                 throw new Error('Expected an evaluation object');
                             const d = data as Record<string, unknown>;
+                            if (path === '/api/prompts/proposal') {
+                                if (typeof d.promptId !== 'string' || typeof d.text !== 'string' || d.text.length > 200000 || !MODES.includes(d.mode as OptimizationMode) || typeof d.save !== 'boolean') throw new Error('promptId, text, valid mode and boolean save are required');
+                                reply(200, service.proposal(ctx.engine(), d.promptId, d.mode as OptimizationMode, d.text, d.save)); return;
+                            }
                             if (typeof d.promptId !== 'string' || typeof d.model !== 'string' || !d.outputs || typeof d.outputs !== 'object' || Array.isArray(d.outputs))
                                 throw new Error('promptId, model and recorded outputs are required');
                             validateCases(d.cases);
@@ -84,9 +89,11 @@ export function createPromptRoutes(options: SecurityServiceOptions & { security?
                             const mode = d.mode;
                             if (mode !== undefined && !MODES.includes(mode as OptimizationMode))
                                 throw new Error('Invalid mode');
-                            const text = mode ? service.candidate(ctx.engine(), p.id, mode as OptimizationMode).text : p.text;
+                            const candidate = d.candidateId !== undefined ? service.proposals(ctx.engine(), p.id).find(c => c.id === d.candidateId) : mode ? service.candidate(ctx.engine(), p.id, mode as OptimizationMode) : undefined;
+                            if (d.candidateId !== undefined && (!candidate || candidate.originalDigest !== digest(p.text))) throw new Error('Saved proposal is missing or belongs to an older prompt version');
+                            const text = candidate?.text ?? p.text;
                             if (path === '/api/prompts/compare') {
-                                if (!mode || !d.baselineOutputs || typeof d.baselineOutputs !== 'object' || !d.semantic || typeof d.semantic !== 'object')
+                                if (!candidate || !d.baselineOutputs || typeof d.baselineOutputs !== 'object' || !d.semantic || typeof d.semantic !== 'object')
                                     throw new Error('Comparison needs mode, baselineOutputs, candidate outputs and semantic review');
                                 const semantic = d.semantic as SemanticResult;
                                 if (!Number.isFinite(semantic.score) || semantic.score < 0 || semantic.score > 100 || typeof semantic.intentPreserved !== 'boolean' || typeof semantic.model !== 'string' || typeof semantic.rationale !== 'string' || !semantic.rationale)
@@ -99,7 +106,7 @@ export function createPromptRoutes(options: SecurityServiceOptions & { security?
                                     throw new Error('Missing recorded output'); return output; };
                                 const baseline = await evaluatePrompt(p.text, d.cases, recorded(d.baselineOutputs as Record<string, unknown>), d.model);
                                 const proposed = await evaluatePrompt(text, d.cases, recorded(d.outputs as Record<string, unknown>), d.model);
-                                reply(200, { baseline, proposed, semantic, candidate: compareCandidate(p, service.candidate(ctx.engine(), p.id, mode as OptimizationMode), baseline, proposed, semantic), source: 'User-supplied outputs and semantic review; execution provenance is not verified' });
+                                reply(200, { baseline, proposed, semantic, candidate: compareCandidate(p, candidate, baseline, proposed, semantic), source: 'User-supplied outputs and semantic review; execution provenance is not verified' });
                                 return;
                             }
                             const outputs = d.outputs as Record<string, unknown>;
@@ -128,6 +135,10 @@ export function createPromptRoutes(options: SecurityServiceOptions & { security?
             const p = service.report(engine).prompts.find(p => p.id === url.searchParams.get('id'));
             if (!p) {
                 reply(404, { error: 'Prompt not found' });
+                return true;
+            }
+            if (path === '/api/prompts/proposals') {
+                try { reply(200, service.proposals(engine, p.id)); } catch (error) { reply(409, { error: (error as Error).message }); }
                 return true;
             }
             if (path === '/api/prompts/history') {

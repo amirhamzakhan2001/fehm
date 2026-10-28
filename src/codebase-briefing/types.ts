@@ -8,7 +8,7 @@ import type { Provenance } from "../model.js";
 /** Bump when the briefing payload changes shape. */
 export const BRIEFING_SCHEMA = "1.0";
 /** Bump when any section builder changes its output; invalidates `.fehm/briefing.json`. */
-export const BRIEFING_VERSION = "3";
+export const BRIEFING_VERSION = "7";
 
 /**
  * confirmed — observed in the index (type-checker/AST/filesystem) or declared in configuration.

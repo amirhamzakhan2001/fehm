@@ -155,6 +155,9 @@ export class OntologyIndex {
         }
     }
     close(): void { this.db.close(); }
+    all(): ConceptCandidate[] {
+        return this.db.prepare('SELECT c.record,c.section,s.name AS sectionName FROM concepts c JOIN sections s ON s.id=c.section').all().map(row => ({ ...JSON.parse(String(row.record)) as ConceptRecord, section: String(row.section), sectionName: String(row.sectionName), retrievalScore: 0, match: 'text' as const }));
+    }
     summary() {
         return { version: this.version, hash: this.hash, concepts: Number(this.db.prepare('SELECT count(*) AS n FROM concepts').get()?.n), sections: this.db.prepare('SELECT id,name FROM sections ORDER BY name').all(), types: this.db.prepare('SELECT DISTINCT type FROM concepts ORDER BY type').all().map(r => String(r.type)), ambiguities: this.db.prepare('SELECT term, count(DISTINCT concept) AS candidates FROM terms GROUP BY term HAVING count(DISTINCT concept)>1').all() };
     }

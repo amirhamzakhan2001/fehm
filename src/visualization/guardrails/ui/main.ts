@@ -1,3 +1,4 @@
+import type { ChangeAnalysis } from '../../../guardrails/change.js';
 import type { Guardrails } from '../../../guardrails/workflow.js';
 type Report = ReturnType<Guardrails['report']>;
 const runs = document.querySelector<HTMLSelectElement>('#runs')!;
@@ -21,21 +22,37 @@ function table(title: string, headers: string[], rows: string[][]): void {
 }
 async function refresh(): Promise<void> {
   try {
+    const response = await fetch('/api/guardrails/change');
+    if (!response.ok) throw new Error('Current change analysis unavailable');
+    const change = await response.json() as ChangeAnalysis;
+    const target = document.querySelector<HTMLElement>('#change')!;
+    target.replaceChildren();
+    const heading = document.createElement('h2'); heading.textContent = `Current change · ${change.files.length} files`;
+    const summary = document.createElement('p'); summary.textContent = `${change.affected.length} potentially affected files · ${change.suggestedTests.length} connected tests · TDD sequence unknown`;
+    target.append(heading, summary);
+    for (const [title, value] of [['Risks and next actions', change.risks], ['Suggested checks (not execution evidence)', change.checks], ['Unknowns and limitations', [...change.unknowns, ...change.limitations]], ['Changed files', change.files]]) {
+      const detail = document.createElement('details'), label = document.createElement('summary'), pre = document.createElement('pre');
+      label.textContent = String(title); pre.textContent = JSON.stringify(value, null, 2); detail.append(label, pre); target.append(detail);
+    }
     const history = await fetch('/api/guardrails').then(r => r.json()) as {id:string;task:string}[];
     const selected = runs.value; runs.replaceChildren(new Option('Select a run',''));
     for (const run of history) runs.add(new Option(run.task,run.id));
     runs.value = history.some(r => r.id === selected) ? selected : history[0]?.id ?? '';
     container.replaceChildren(); download.disabled = true; report = undefined;
     if (!runs.value) { status.textContent = 'No verification runs yet.'; return; }
-    const response = await fetch(`/api/guardrails/report?id=${encodeURIComponent(runs.value)}`);
-    if (!response.ok) throw new Error((await response.json() as {error:string}).error);
-    report = await response.json() as Report; download.disabled = false;
+    const reportResponse = await fetch(`/api/guardrails/report?id=${encodeURIComponent(runs.value)}`);
+    if (!reportResponse.ok) throw new Error((await reportResponse.json() as {error:string}).error);
+    report = await reportResponse.json() as Report; download.disabled = false;
     status.textContent = `${report.run.task}: ${report.readiness.replaceAll('_',' ')}`;
     section('Readiness and unresolved checks', report.reasons.length ? report.reasons : 'All configured required evidence is current.');
-    table('Acceptance criteria', ['Requirement','Origin','Confirmation','Checks'], report.run.requirements.map(r => [r.text,r.origin,r.confirmed ? 'Confirmed' : 'Needs confirmation',r.checks.join(', ') || 'Unmapped']));
-    table('Verification checks', ['Check','Category','Status','Duration'], report.checks.map(c => [c.id,c.category,c.status,c.evidence ? `${c.evidence.durationMs} ms` : 'Not run']));
+    if (!report.run.change) table('Acceptance criteria', ['Requirement','Origin','Confirmation','Checks'], report.run.requirements.map(r => [r.text,r.origin,r.confirmed ? 'Confirmed' : 'Needs confirmation',r.checks.join(', ') || 'Unmapped']));
+    table('Verification checks', ['Check','Category','Status','Duration'], report.checks.map(c => [c.id,c.category,c.status === 'pending' ? 'Not run' : c.status,c.evidence ? `${c.evidence.durationMs} ms` : 'Not run']));
     for (const check of report.checks) if (check.evidence) section(`${check.id} · ${check.evidence.phase} · execution output`,check.evidence.output || 'No captured output');
-    section('TDD checkpoints and exceptions', {red:report.run.red,exception:report.run.exception});
+    for (const check of report.checks) if (check.evidence && ['failed','blocked','inconclusive'].includes(check.status)) {
+      const a=document.createElement('a'); a.href=`/debug?run-id=${encodeURIComponent(report.run.id)}&evidence-id=${encodeURIComponent(check.evidence.id)}`;
+      a.textContent=`Investigate ${check.id} · `; container.append(a);
+    }
+    section('TDD checkpoints and exceptions', report.run.change ? 'Unknown: development sequence was not observed.' : {red:report.run.red,exception:report.run.exception});
     section('Security assessment', {current:report.securityCurrent,...report.run.security});
     section('Changed files and test review', {changed:report.changedFiles,review:report.testReviewPaths});
     section('Impact and suggested tests',report.impact);

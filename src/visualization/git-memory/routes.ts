@@ -4,7 +4,7 @@ import { stateDir } from '../../persistence.js';
 import { readTrend } from '../../health/history.js';
 import { promptHistory } from '../../prompts/revisions.js';
 import { compareGitMemory, entityGitHistory, indexGitMemory, renderGitMemory, searchGitMemory } from '../../git-memory/history.js';
-import { historyBlame, rawHistoryDiff } from '../../git-memory/git.js';
+import { commitHistoryDiff, historyBlame, rawHistoryDiff } from '../../git-memory/git.js';
 import { compareMemorySnapshots, historicalSnapshot } from '../../git-memory/snapshots.js';
 import type { HistoryFilter, HistoryOptions } from '../../git-memory/types.js';
 import { GIT_MEMORY_PAGE } from './page.js';
@@ -27,7 +27,7 @@ export function createGitMemoryRoutes(options: HistoryOptions = {}): ViewRoutes 
       const opts: HistoryOptions = { ...options, ...(p.has('ref') ? { ref: p.get('ref')! } : {}), ...(p.has('limit') ? { limit: Number(p.get('limit')) } : {}) };
       const from = p.get('from') ?? 'HEAD~1', to = p.get('to') ?? 'HEAD';
       if (action === '/compare') reply(200, compareGitMemory(root, from, to));
-      else if (action === '/diff') reply(200, rawHistoryDiff(root, from, to), 'text/plain; charset=utf-8');
+      else if (action === '/diff') reply(200, p.has('commit') ? commitHistoryDiff(root, p.get('commit')!) : rawHistoryDiff(root, from, to), 'text/plain; charset=utf-8');
       else if (action === '/blame') reply(200, historyBlame(root, p.get('ref') ?? 'HEAD', p.get('path') ?? '', Number(p.get('start') ?? 1), Number(p.get('end') ?? 50)), 'text/plain; charset=utf-8');
       else if (action === '/snapshot') reply(200, historicalSnapshot(root, p.get('ref') ?? 'HEAD', opts));
       else if (action === '/snapshot-compare') reply(200, compareMemorySnapshots(historicalSnapshot(root, from, opts), historicalSnapshot(root, to, opts)));

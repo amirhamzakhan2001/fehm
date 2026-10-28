@@ -18,3 +18,13 @@ test('CLI integration: start, approve, gate and invalidate a verification run', 
   assert.equal(stale.status,1);
   assert.equal(JSON.parse(stale.stdout).checks[0].status,'stale');
 });
+
+test('change CLI analysis needs no task file and an unexecuted gate cannot pass', () => {
+  const root = makeRepo({'source.js':'export const value = 1;'});
+  const args = ['--import','tsx',join(REPO_ROOT,'src/cli.ts'),'guardrails','verify','--root',root,'--json','--gate'];
+  const result = spawnSync(process.execPath,args,{cwd:REPO_ROOT,encoding:'utf8',timeout:20000});
+  assert.equal(result.status,1);
+  const value = JSON.parse(result.stdout);
+  assert.equal(value.report,null); assert.equal(value.analysis.tdd,'unknown');
+  assert.ok(value.analysis.unknowns.length);
+});

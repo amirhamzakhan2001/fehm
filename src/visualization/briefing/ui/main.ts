@@ -11,6 +11,11 @@ import type {
   FlowTreeNode,
 } from "../../../codebase-briefing/types.js";
 import type { GraphNodeDetail } from "../../graph/model.js";
+import { REPORT_STAGES, REPORT_TITLES } from "./report.js";
+import { historySection } from "./report-history.js";
+import { technologyStack } from "./technology.js";
+import { architectureWorkspace } from "./workspace.js";
+import { basisLabel, itemsIn, meetingQuestions, readingOrder, QUALITY_TOPICS } from "./onboarding.js";
 import { $, h } from "../../graph/ui/dom.js";
 
 /**
@@ -20,9 +25,12 @@ import { $, h } from "../../graph/ui/dom.js";
  */
 
 let briefing: CodebaseBriefing | null = null;
+let workspace: ReturnType<typeof architectureWorkspace> | undefined;
+let flowWorkspace: ReturnType<typeof architectureWorkspace> | undefined;
+let reportObserver: IntersectionObserver | undefined;
+let flowObserver: IntersectionObserver | undefined;
 let claims = new Map<string, Claim>();
-const LIST_CAP = 12;
-const STATE_LABEL = { confirmed: "CONFIRMED", likely: "LIKELY", unknown: "UNKNOWN" } as const;
+const LIST_CAP = 6;
 
 async function json<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(path, init);
@@ -85,6 +93,15 @@ function graphHref(nodeId: string): string {
   return `/graph#node=${encodeURIComponent(nodeId)}`;
 }
 
+/** Render only inline code; repository text is never interpreted as HTML. */
+function prose(text: string): (string | HTMLElement)[] {
+  return text.split(/(`[^`\n]+`)/g).map((part) => part.startsWith("`") && part.endsWith("`") ? h("code", {}, part.slice(1, -1)) : part);
+}
+
+function disclosure(label: string, ...children: HTMLElement[]): HTMLDetailsElement {
+  return h("details", { class: "supporting" }, h("summary", {}, label), ...children);
+}
+
 /** Toggle an inline panel after `anchor`; one panel per anchor/kind. */
 function toggle(anchor: HTMLElement, button: HTMLButtonElement, kind: string, build: () => HTMLElement | Promise<HTMLElement>): void {
   const host = anchor.closest("li, .risk, .rrow, dd, .flowbox, p.lead") ?? anchor;
@@ -126,9 +143,9 @@ function evidencePanel(claim: Claim): HTMLElement {
   return h(
     "div",
     {},
-    h("p", { class: "ctext" }, claim.text),
-    h("div", { class: "row" }, h("span", { class: `state ${claim.state}` }, STATE_LABEL[claim.state]), `basis: ${claim.basis}`, `· confidence ${pct(claim.confidence)}`, claim.evidence.some((e) => e.stale) ? h("span", { class: "stale-tag" }, "· includes stale evidence") : null),
-    rows.length ? h("table", {}, h("tbody", {}, ...rows)) : h("div", { class: "muted" }, "No evidence — this is stated as unknown."),
+    h("p", { class: "ctext" }, ...prose(claim.text)),
+    h("div", { class: "row" }, h("span", { class: `state ${claim.state}` }, basisLabel(claim)), `basis: ${claim.basis}`, `· confidence ${pct(claim.confidence)}`, claim.evidence.some((e) => e.stale) ? h("span", { class: "stale-tag" }, "· includes stale evidence") : null),
+    rows.length ? h("table", {}, h("tbody", {}, ...rows)) : h("div", { class: "muted" }, "No direct source reference is available. Check the stated basis and limitations."),
     claim.note ? h("p", { class: "note" }, claim.note) : null,
   );
 }
@@ -167,14 +184,14 @@ async function flowPanel(nodeId: string): Promise<HTMLElement> {
       n.repeated ? h("span", { class: "rep" }, " ↺") : null,
       n.children.length ? h("ul", { class: "tree" }, ...n.children.map(render)) : null,
     );
-  return h("div", {}, h("div", { class: "row" }, "Static call tree (depth 3) from Feature 1 — dynamic dispatch is not shown."), h("ul", { class: "tree" }, render(r.root)));
+  return h("div", {}, h("div", { class: "row" }, "Static call tree (depth 3) from Context Engine — dynamic dispatch is not shown."), h("ul", { class: "tree" }, render(r.root)));
 }
 
 function actions(opts: { claim?: string | undefined; nodeId?: string | undefined; flowFrom?: string | undefined; path?: string | undefined; line?: number | undefined }, anchor: () => HTMLElement): HTMLElement | null {
   const btns: HTMLElement[] = [];
   const claim = opts.claim ? claims.get(opts.claim) : undefined;
   if (claim) {
-    const b = h("button", { class: "act", type: "button", "aria-expanded": "false", title: "Show evidence" }, claim.evidence.some((e) => e.stale) ? "evidence ⚠" : "evidence") as HTMLButtonElement;
+    const b = h("button", { class: "act", type: "button", "aria-expanded": "false", title: `${basisLabel(claim)} · ${claim.evidence.length} source references` }, claim.evidence[0] ? `${claim.evidence[0].path.split("/").pop()}${claim.evidence[0].line ? `:${claim.evidence[0].line}` : ""}${claim.evidence.some((e) => e.stale) ? " ⚠" : ""}` : basisLabel(claim)) as HTMLButtonElement;
     b.addEventListener("click", () => toggle(anchor(), b, "evidence", () => evidencePanel(claim)));
     btns.push(b);
   }
@@ -190,7 +207,11 @@ function actions(opts: { claim?: string | undefined; nodeId?: string | undefined
     b.addEventListener("click", () => toggle(anchor(), b, "explain", () => explainPanel(id)));
     btns.push(b);
   }
-  if (opts.nodeId) btns.push(h("a", { class: "act", href: graphHref(opts.nodeId), title: "Explore in graph (3.1)" }, "graph"));
+  if (opts.path) {
+    const href = sourceHref(opts.path, opts.line);
+    if (href) btns.push(h("a", { class: "act", href, title: opts.path }, "source"));
+  }
+  if (opts.nodeId) btns.push(h("a", { class: "act", href: graphHref(opts.nodeId), title: "Explore in graph" }, "graph"));
   return btns.length ? h("span", { class: "acts" }, ...btns) : null;
 }
 
@@ -201,7 +222,7 @@ function itemEl(i: BriefingItem): HTMLElement {
   const isPath = /[/.]/.test(i.title) && !/\s/.test(i.title);
   const badge = i.badge ? h("span", { class: `pill ${i.badge.toLowerCase()}` }, i.badge) : null;
   li.append(
-    h("div", { class: "main" }, h("div", { class: `title${isPath ? " path" : ""}` }, i.title), i.detail ? h("div", { class: "detail" }, i.detail) : null),
+    h("div", { class: "main" }, h("div", { class: `title${isPath ? " path" : ""}` }, ...prose(i.title)), i.detail ? h("div", { class: "detail" }, ...prose(i.detail)) : null),
     ...(badge ? [badge] : []),
     ...[actions(i, () => li)].filter((x): x is HTMLElement => Boolean(x)),
   );
@@ -213,10 +234,13 @@ function cappedList(items: BriefingItem[], ordered = false): HTMLElement {
   const first = items.slice(0, LIST_CAP);
   list.append(...first.map(itemEl));
   if (items.length > LIST_CAP) {
-    const more = h("button", { class: "more", type: "button" }, `Show ${items.length - LIST_CAP} more`);
+    const more = h("button", { class: "more", type: "button" }, `Show next ${Math.min(LIST_CAP, items.length - LIST_CAP)} of ${items.length - LIST_CAP} remaining`);
     more.addEventListener("click", () => {
-      list.append(...items.slice(LIST_CAP).map(itemEl));
-      more.remove();
+      const shown = list.children.length;
+      list.append(...items.slice(shown, shown + LIST_CAP).map(itemEl));
+      const remaining = items.length - list.children.length;
+      if (!remaining) more.remove();
+      else more.textContent = `Show next ${Math.min(LIST_CAP, remaining)} of ${remaining} remaining`;
     });
     return h("div", {}, list, more);
   }
@@ -237,7 +261,7 @@ function flowSteps(steps: FlowStepView[]): HTMLElement {
 function blockEl(b: Block): HTMLElement | null {
   switch (b.type) {
     case "text": {
-      const p = h("p", { class: "lead" }, b.text);
+      const p = h("p", { class: "lead" }, ...prose(b.text));
       const a = actions({ claim: b.claim }, () => p);
       if (a) p.append(" ", a);
       return p;
@@ -245,7 +269,7 @@ function blockEl(b: Block): HTMLElement | null {
     case "facts": {
       const dl = h("dl", { class: "facts" });
       for (const r of b.rows) {
-        const dd = h("dd", {}, h("span", {}, r.value));
+        const dd = h("dd", {}, h("span", {}, ...prose(r.value)));
         const a = actions({ claim: r.claim }, () => dd);
         if (a) dd.append(a);
         dl.append(h("dt", {}, r.label), dd);
@@ -263,7 +287,9 @@ function blockEl(b: Block): HTMLElement | null {
       const title = h("h5", {}, h("span", {}, b.title));
       const a = actions({ claim: b.claim }, () => box);
       if (a) title.append(a);
-      box.append(title, flowSteps(b.steps));
+      box.append(title, h("p", { class: "flow-note" }, "This sequence follows static relationships in the index; it does not establish runtime order. Dotted steps are inferred."), flowSteps(b.steps));
+      const steps = b.steps.map((step, index) => h("li", {}, h("div", { class: "main" }, h("code", {}, step.name), h("p", { class: "detail" }, `${index === 0 ? "The indexed path starts here" : "The next recorded relationship leads here"}${step.layer ? ` (${step.layer})` : ""}.`, step.path ? h("code", {}, ` ${step.path}${step.line ? `:${step.line}` : ""}`) : null))));
+      box.append(disclosure("Trace step by step", h("ol", { class: "items" }, ...steps)));
       return box;
     }
     case "diagram": {
@@ -314,51 +340,81 @@ function blockEl(b: Block): HTMLElement | null {
 // ─── page ────────────────────────────────────────────────────────
 
 function sectionEl(s: BriefingSection, open: Record<string, boolean>): HTMLElement {
-  const details = h("details", {});
-  details.open = open[s.id] ?? s.expanded;
-  details.addEventListener("toggle", () => saveOpen(s.id, details.open));
-  const summary = h(
-    "summary",
-    {},
-    h("div", {}, h("div", { class: "q" }, s.question), h("h2", {}, h("span", { class: "chev", "aria-hidden": "true" }, "▸"), s.title)),
-    h("div", { class: "meta" }, s.stale ? h("span", { class: "state stale", title: "Evidence changed since indexing" }, "STALE") : null, h("span", { class: "conf", title: "Mean claim confidence" }, s.state === "unknown" ? "" : pct(s.confidence)), h("span", { class: `state ${s.state}` }, STATE_LABEL[s.state])),
-    s.blocks[0]?.type === "text" && s.blocks[0].text === s.summary ? null : h("div", { class: "sum" }, s.summary),
-  );
+  const section = h("section", { class: `sec${s.id === "overview" ? " executive" : ""}`, id: `sec-${s.id}` });
+  section.append(h("header", { class: "section-heading" },
+    h("div", {}, h("div", { class: "q" }, s.question), h("h2", {}, REPORT_TITLES[s.id] ?? s.title)),
+    h("span", { class: `state ${s.stale ? "stale" : s.state}`, title: `Section confidence: ${pct(s.confidence)}. Individual statements may have different evidence.` }, s.stale ? "Stale evidence" : s.state === "likely" ? "Inferred" : s.state === "confirmed" ? "Evidence available" : "Limited evidence")));
   const body = h("div", { class: "body" });
-  for (const b of s.blocks) {
-    const el = blockEl(b);
-    if (el) body.append(el);
+  const firstText = s.blocks.find((b) => b.type === "text");
+  if (s.id !== "features" && (!firstText || firstText.text !== s.summary)) body.append(h("p", { class: "lead" }, ...prose(s.summary === "—" ? "There is not enough indexed evidence to explain this area yet." : s.summary)));
+  for (const block of s.blocks) {
+    if (block.type === "text") body.append(blockEl(block)!);
   }
-  if (s.unknowns.length) body.append(h("div", {}, h("h4", {}, "Could not determine"), h("ul", { class: "unknowns" }, ...s.unknowns.map((u) => h("li", {}, u)))));
-  if (s.links?.length) body.append(h("div", { class: "links" }, ...s.links.map((l) => h("a", { href: l.href }, `${l.label} →`))));
-  details.append(summary, body);
-  return h("section", { class: `sec card`, id: `sec-${s.id}`, ...(s.id === "cheatSheet" ? { "data-cheat": "true" } : {}) }, details);
+  // Reuse existing claim language and provenance instead of inventing a second analysis.
+  const narrativeClaims = s.id === "features" ? [] : s.id === "overview"
+    ? s.blocks.flatMap((b) => b.type === "list" && b.title === "Primary users / consumers" ? b.items.flatMap((i) => i.claim ? [claims.get(i.claim)] : []) : []).filter((c): c is Claim => Boolean(c)).slice(0, 3)
+    : !firstText ? s.claims.filter((c) => c.text.length > 45 && c.state !== "unknown").slice(0, 2) : [];
+  for (const claim of narrativeClaims) {
+    const paragraph = h("p", { class: "lead" }, claim.basis === "inferred" ? "Inferred from the index: " : claim.basis === "declared" ? "The project declares: " : "", ...prose(claim.text));
+    const action = actions({ claim: claim.id }, () => paragraph);
+    if (action) paragraph.append(" ", action);
+    body.append(paragraph);
+  }
+  if (s.id === "overview") {
+    const facts = s.blocks.find((block) => block.type === "facts");
+    const languages = facts?.rows.find((row) => row.label === "Languages");
+    if (languages && languages.value !== "none detected") {
+      const paragraph = h("p", { class: "lead" }, `The indexed languages are ${languages.value}. Counts include source and test files.`);
+      paragraph.append(actions({ claim: languages.claim }, () => paragraph) ?? "");
+      body.append(paragraph);
+    }
+    const architecture = briefing?.sections.find((section) => section.id === "architecture");
+    if (architecture) body.append(h("p", { class: "lead" }, "The structural analysis suggests: ", ...prose(architecture.summary), ". ", h("a", { href: "#sec-architecture" }, "Explore the architecture and its evidence →")));
+  }
+  if (s.id === "features") {
+    body.append(h('p', { class: 'lead' }, 'These capabilities are inferred from implementation and code comments. They describe what appears to be built; documented user journeys and business rules still need confirmation.'));
+    const capabilities = s.blocks.flatMap(block => block.type === 'list' ? block.items : []).slice(0, 4);
+    body.append(h('ul', { class: 'capability-summary' }, ...capabilities.map(item => {
+      const row = h('li', {}, h('strong', {}, item.title), ' — ', ...prose(item.detail?.split(' · ')[0] ?? 'Responsibility is not documented.'));
+      row.append(actions({ claim: item.claim }, () => row) ?? ''); return row;
+    })));
+  }
+  const supporting = h("div", { class: "supporting-body" });
+  for (const b of s.blocks) {
+    if (s.id === "api" && b.type === "groups") continue;
+    const el = blockEl(b);
+    if (!el) continue;
+    if (b.type === "text") continue;
+    else if (b.type === "diagram") supporting.append(disclosure(b.title === "Repository layout" ? "Browse repository layout" : "Text dependency reference", el));
+    else supporting.append(el);
+  }
+  if (s.id === "api" && briefing) body.append(apiReference(briefing));
+  // Keep the briefing readable; preserve every existing block behind an accessible disclosure.
+  if (supporting.childElementCount) {
+    const details = disclosure(s.id === "overview" ? "Project facts, users & capabilities" : "Explore details & source evidence", supporting);
+    details.open = open[s.id] ?? false;
+    details.addEventListener("toggle", () => saveOpen(s.id, details.open));
+    body.append(details);
+  }
+  if (s.unknowns.length) body.append(disclosure(`What remains unknown (${s.unknowns.length})`, h("ul", { class: "unknowns" }, ...s.unknowns.map((u) => h("li", {}, ...prose(u))))));
+  const related: Record<string, { label: string; href: string }[]> = {
+    risks: [{ label: "Architecture drift", href: "/drift" }, { label: "Project health", href: "/health" }],
+    security: [{ label: "Security review", href: "/security" }],
+    engineerMustKnow: [{ label: "Git memory & logs", href: "/git-memory" }, { label: "Prompt intelligence", href: "/prompts" }],
+    testing: [{ label: "Project health", href: "/health" }],
+  };
+  const links = [...(s.links ?? []), ...(related[s.id] ?? [])];
+  if (links.length) body.append(h("div", { class: "links" }, ...links.map((l) => h("a", { href: l.href }, `${l.label} →`))));
+  section.append(body);
+  return section;
 }
 
 function hero(b: CodebaseBriefing): HTMLElement {
-  const m = b.metrics;
-  const stale = !b.freshness.fresh;
-  const confirmed = h("span", { class: "badge ok", title: "Share of claims backed by compiler/AST/filesystem facts or declarations" }, "Confirmed ", h("b", {}, pct(m.confirmedShare)), h("span", { class: "meter" }, h("i", { style: `width:${pct(m.confirmedShare)}` })));
-  const unknownLink = h("a", { class: "badge", href: "#unknown-all" }, h("b", {}, String(m.unknowns)), " unknowns");
-  const card = h(
-    "section",
-    { class: "card", id: "hero" },
-    h("div", { class: "eyebrow" }, `Explain codebase · ${stale ? "stale" : "fresh"} · built ${ago(b.generatedAt)}`),
-    h("h1", {}, b.headline.name),
-    h("p", { class: "tagline" }, b.headline.tagline),
-    h("div", { class: "chips" }, ...b.headline.tags.map((t) => h("span", { class: "chip" }, t))),
-    h(
-      "div",
-      { class: "badges" },
-      confirmed,
-      unknownLink,
-      h("span", { class: "badge", title: "Files · entities · non-structural relationships in the Feature 1 index" }, h("b", {}, String(m.files)), " files · ", h("b", {}, String(m.symbols)), " symbols · ", h("b", {}, String(m.relationships)), " relationships"),
-      m.heuristicShare > 0.15 ? h("span", { class: "badge warn" }, `${pct(m.heuristicShare)} heuristic relationships`) : null,
-      h("span", { class: "badge", title: `Rebuilt: ${b.cache.rebuilt.join(", ") || "none"}` }, `${b.cache.reused.length}/${b.sections.length} sections cached · ${b.cache.durationMs} ms · no LLM`),
-    ),
-  );
-  if (stale) card.append(staleBanner(b.freshness));
-  return card;
+  const meta = disclosure("Analysis details", h("p", {}, `${b.metrics.files} files · ${b.metrics.symbols} symbols · ${b.metrics.relationships} relationships. ${pct(b.metrics.confirmedShare)} of claims are supported by source or declarations; ${b.metrics.unknowns} unknowns. Static analysis, not runtime verification.`));
+  const header = h("header", { id: "hero", class: "compact-hero" }, h("div", {}, h("div", { class: "eyebrow" }, "Explain Codebase"), h("h1", {}, b.headline.name)),
+    h("div", { class: "analysis-time" }, h("time", { datetime: b.generatedAt, title: new Date(b.generatedAt).toLocaleString() }, `Analyzed ${ago(b.generatedAt)}`), ` · ${b.freshness.fresh ? "Current index" : "Stale evidence"} · ${pct(b.metrics.confirmedShare)} source / declaration coverage`), meta);
+  if (!b.freshness.fresh) header.append(staleBanner(b.freshness));
+  return header;
 }
 
 function staleBanner(f: BriefingFreshness): HTMLElement {
@@ -386,8 +442,7 @@ function askCard(): HTMLElement {
     ctrl?.abort();
     ctrl = new AbortController();
     answers.replaceChildren(h("div", { class: "muted" }, "Searching the index…"));
-    fetch(`/api/briefing/ask?q=${encodeURIComponent(q)}`, { signal: ctrl.signal })
-      .then((r) => r.json() as Promise<BriefingAskResponse>)
+    json<BriefingAskResponse>(`/api/briefing/ask?q=${encodeURIComponent(q)}`, { signal: ctrl.signal })
       .then((r) => {
         if (!r.hits.length) return answers.replaceChildren(h("div", { class: "muted" }, "No matching code in the index."));
         answers.replaceChildren(
@@ -402,64 +457,174 @@ function askCard(): HTMLElement {
         if (err.name !== "AbortError") answers.replaceChildren(h("div", { class: "muted" }, err.message));
       });
   });
-  return h("section", { class: "card", id: "ask" }, form, h("p", { class: "hint" }, "Answers come from Feature 1 retrieval over the index — ranked code with evidence, not generated prose. Press / to focus."), answers);
+  return h("section", { class: "card", id: "ask" }, form, h("p", { class: "hint" }, "Search indexed code and inspect its evidence. Press / to focus."), answers);
 }
 
-function toc(b: CodebaseBriefing): HTMLElement {
-  const ol = h("ol", {});
-  for (const s of b.sections) {
-    ol.append(h("li", {}, h("a", { href: `#sec-${s.id}`, "data-sec": s.id }, h("span", { class: `dot ${s.state}${s.stale ? " stale" : ""}`, title: `${STATE_LABEL[s.state]}${s.stale ? " · stale" : ""}` }), s.title, h("span", { class: "n" }, s.state === "unknown" ? "?" : pct(s.confidence)))));
+function requirements(b: CodebaseBriefing): HTMLElement {
+  const functional = itemsIn(b, "features");
+  const section = h("section", { class: "sec" }, h("h2", {}, "Requirements & product behavior"), h("p", { class: "lead" }, "Capabilities found in source are evidence of implementation, not automatically agreed product requirements. Confirm architectural intent and acceptance criteria with the linked documentation and tests."), h("h3", {}, "Functional behavior"));
+  section.append(functional.length ? cappedList(functional) : h("p", {}, "No functional capabilities could be identified. Product requirements and user roles need documentation."));
+  section.append(h("h3", {}, "Non-functional requirements"), h("p", {}, "These are implementation signals and gaps, not performance guarantees or service-level objectives."));
+  for (const topic of QUALITY_TOPICS) {
+    const candidates = b.sections.find((s) => s.id === topic.section)?.claims.filter((c) => c.state !== "unknown" && topic.match.test(c.text)).slice(0, 2) ?? [];
+    const area = h("div", { class: "requirement-topic" }, h("h4", {}, topic.name));
+    for (const claim of candidates) {
+      const paragraph = h("p", {}, h("span", { class: "basis-label" }, `${basisLabel(claim)} · `), ...prose(claim.text));
+      paragraph.append(actions({ claim: claim.id }, () => paragraph) ?? ""); area.append(paragraph);
+    }
+    area.append(h("p", { class: "muted" }, candidates.length ? topic.limitation : `Undocumented in the available analysis. ${topic.limitation}`), h("a", { href: `#sec-${topic.section}` }, "Inspect supporting analysis →")); section.append(area);
   }
-  ol.append(h("li", {}, h("a", { href: "#unknown-all" }, h("span", { class: "dot unknown" }), "What Fehm could not determine", h("span", { class: "n" }, String(b.unknowns.length)))));
-  const expand = h("button", { type: "button" }, "Expand all");
-  const collapse = h("button", { type: "button" }, "Collapse all");
-  expand.addEventListener("click", () => document.querySelectorAll<HTMLDetailsElement>("section.sec > details").forEach((d) => (d.open = true)));
-  collapse.addEventListener("click", () => document.querySelectorAll<HTMLDetailsElement>("section.sec > details").forEach((d) => (d.open = false)));
-  return h("div", {}, h("h3", {}, "Briefing"), ol, h("div", { class: "tools" }, expand, collapse), h("p", { class: "muted", style: "font-size:11.5px;margin-top:14px" }, `Tuned for a ${b.archetype.primary.toUpperCase()} repository: ${b.archetype.signals.slice(0, 3).join("; ")}.`));
+  return section;
+}
+
+function apiReference(b: CodebaseBriefing): HTMLElement {
+  const endpoints = itemsIn(b, "api");
+  const input = h("input", { type: "search", "aria-label": "Search endpoints", placeholder: "Search path, handler, source or resource…" });
+  const method = h("select", { "aria-label": "HTTP method" }, h("option", { value: "" }, "All methods"), ...[...new Set(endpoints.map((e) => e.title.split(" ")[0]!))].sort().map((m) => h("option", { value: m }, m)));
+  const results = h("div", { class: "endpoint-results" });
+  const detail = h("div", { class: "endpoint-detail", "aria-live": "polite" });
+  const count = h("p", { role: "status", class: "muted" });
+  let limit = 20;
+  let selection = 0;
+  const choose = async (item: BriefingItem): Promise<void> => {
+    const token = ++selection;
+    const content = h("div", {}, h("h3", {}, item.title), h("p", {}, item.detail ?? "Handler not resolved."), h("p", { class: "muted" }, "Pattern-extracted route registration; reachability has not been executed. Request and response schemas, status codes, per-route authentication enforcement and error contracts are not extracted."));
+    content.append(actions(item, () => content) ?? "");
+    const sequence = h("button", { type: "button", onclick: () => { ensureFlow().open("runtime", `http:${item.title}`); jumpTo("operation-map"); } }, "Inspect request lifecycle");
+    content.append(sequence); detail.replaceChildren(content);
+    if (item.nodeId) {
+      try {
+        const explanation = await explainPanel(item.nodeId);
+        if (token === selection) content.append(explanation);
+      } catch (error) { if (token === selection) content.append(h("p", {}, (error as Error).message)); }
+    }
+  };
+  const update = (): void => {
+    const query = input.value.trim().toLowerCase();
+    const found = endpoints.filter((e) => (!method.value || e.title.startsWith(`${method.value} `)) && `${e.title} ${e.detail ?? ""} ${e.path ?? ""}`.toLowerCase().includes(query));
+    count.textContent = `${found.length} matching routes. Showing ${Math.min(limit, found.length)}.`;
+    const table = h("table", { class: "endpoint-table" }, h("thead", {}, h("tr", {}, h("th", {}, "Method / path"), h("th", {}, "Handler / registration source"))), h("tbody", {}, ...found.slice(0, limit).map((item) => h("tr", {}, h("td", {}, h("button", { type: "button", onclick: () => void choose(item) }, item.title)), h("td", {}, ...prose(item.detail ?? "Not resolved"))))));
+    results.replaceChildren(found.length ? table : h("p", {}, "No matching indexed endpoints."));
+    if (found.length > limit) results.append(h("button", { type: "button", onclick: () => { limit += 20; update(); } }, "Show next 20 endpoints"));
+  };
+  input.addEventListener("input", () => { limit = 20; update(); }); method.addEventListener("change", () => { limit = 20; update(); }); update();
+  return h("div", { class: "api-reference" }, h("h3", {}, "Endpoint reference"), h("div", { class: "reference-controls" }, input, method), count, results, detail);
+}
+
+function ensureFlow(): ReturnType<typeof architectureWorkspace> {
+  if (!flowWorkspace) {
+    flowWorkspace = architectureWorkspace("runtime");
+    document.getElementById("operation-map")?.replaceChildren(flowWorkspace.element);
+  }
+  return flowWorkspace;
+}
+
+function jumpTo(id: string, updateHash = true): void {
+  const target = document.getElementById(id);
+  if (!target) return;
+  for (let parent = target.parentElement; parent; parent = parent.parentElement) if (parent instanceof HTMLDetailsElement) parent.open = true;
+  const stage = target.closest<HTMLElement>('[data-stage]');
+  if (stage) document.querySelectorAll<HTMLElement>('[data-stage-link]').forEach(link => { if (link.dataset.stageLink === stage.dataset.stage) link.setAttribute('aria-current', 'location'); else link.removeAttribute('aria-current'); });
+  if (updateHash && location.hash !== `#${id}`) history.pushState(null, "", `#${id}`);
+  target.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'start' });
+  target.setAttribute('tabindex', '-1'); target.focus({ preventScroll: true });
+}
+
+function followHash(): void {
+  let id: string;
+  try { id = decodeURIComponent(location.hash.slice(1)); } catch { return; }
+  // Preserve links saved before the continuous report replaced switching panels.
+  const legacy: Record<string, string> = { overview: 'stage-understand', requirements: 'sec-features', architecture: 'sec-architecture', runtime: 'stage-trace', apis: 'sec-api', data: 'sec-database', quality: 'sec-testing', assessment: 'sec-risks', meeting: 'sec-cheatSheet', evidence: 'unknown-all' };
+  if (id.startsWith('report-')) id = legacy[id.slice(7)] ?? id;
+  if (id) jumpTo(id, false);
+}
+window.addEventListener("hashchange", followHash);
+window.addEventListener("popstate", followHash);
+
+function toc(b: CodebaseBriefing): HTMLElement {
+  const topics = h('select', { 'aria-label': 'Jump to report topic' }, h('option', { value: '' }, 'Jump to topic…'),
+    ...REPORT_STAGES.map(stage => h('optgroup', { label: stage.title }, ...stage.sections.filter(id => b.sections.some(section => section.id === id)).map(id => h('option', { value: `sec-${id}` }, REPORT_TITLES[id] ?? id)))),
+    h('option', { value: 'report-history' }, 'Git history & evolution'), h('option', { value: 'report-decisions' }, 'Design decisions & constraints'), h('option', { value: 'unknown-all' }, 'Unresolved questions'));
+  topics.addEventListener('change', () => { if (topics.value) jumpTo(topics.value); topics.value = ''; });
+  return h('div', { class: 'report-navigation' }, h('div', { class: 'stage-links' }, ...REPORT_STAGES.map((stage, i) => h('a', { href: `#stage-${stage.id}`, 'data-stage-link': stage.id, onclick: event => { event.preventDefault(); jumpTo(`stage-${stage.id}`); } }, h('span', { 'aria-hidden': 'true' }, `0${i + 1}`), stage.title))), topics);
+}
+
+function projectIntroduction(b: CodebaseBriefing): HTMLElement {
+  const overview = b.sections.find(section => section.id === 'overview');
+  const purpose = overview?.blocks.find(block => block.type === 'text');
+  const users = overview?.blocks.find(block => block.type === 'list' && block.title === 'Primary users / consumers');
+  return h('section', { id: 'sec-overview', class: 'project-introduction' }, h('div', { class: 'eyebrow' }, 'Project introduction'), h('h1', {}, b.headline.name),
+    purpose ? blockEl(purpose) : h('p', { class: 'lead' }, 'The indexed repository does not document the project’s purpose yet.'),
+    users?.type === 'list' && users.items.length ? h('p', { class: 'lead' }, 'The repository exposes interfaces for ', users.items.map(item => item.title.toLowerCase()).join(', '), '. These are detected consumers, not a verified description of customer roles.') : null,
+    h('p', { class: 'muted' }, b.archetype.primary ? `Project type inferred from repository signals: ${b.archetype.primary}.` : 'Project type is not established.'),
+    overview ? disclosure('Project facts, capabilities & evidence', h('div', {}, ...overview.blocks.filter(block => block !== purpose).map(block => blockEl(block)))) : null);
 }
 
 function render(b: CodebaseBriefing): void {
   briefing = b;
-  claims = new Map(b.sections.flatMap((s) => s.claims.map((c) => [c.id, c] as const)));
+  claims = new Map(b.sections.flatMap(s => s.claims.map(c => [c.id, c] as const)));
   document.title = `Explain · ${b.headline.name} · fehm`;
-  $("project").textContent = b.repository.root;
+  $("project").textContent = b.repository.name; $("project").title = b.repository.root;
   const open = loadOpen();
-  const content = $("content");
-  const unknowns = h("section", { class: "card", id: "unknown-all" }, h("h2", {}, "What Fehm could not determine"), h("p", { class: "muted", style: "margin:0 0 10px;font-size:12.5px" }, "Stated explicitly so nothing above reads as more certain than the evidence allows."), h("ul", { class: "unknowns" }, ...b.unknowns.map((u) => h("li", {}, u.text, h("span", { class: "muted" }, `  — ${b.sections.find((s) => s.id === u.section)?.title ?? u.section}`)))));
-  content.replaceChildren(
-    hero(b),
-    askCard(),
-    ...b.sections.map((s) => sectionEl(s, open)),
-    unknowns,
-    h("p", { class: "foot" }, `Deterministic briefing built from the Feature 1 index · schema ${b.schemaVersion} · ${b.metrics.claims} claims · generated ${new Date(b.generatedAt).toLocaleString()}`),
-  );
+  workspace?.destroy(); flowWorkspace?.destroy(); flowWorkspace = undefined;
+  reportObserver?.disconnect(); flowObserver?.disconnect();
+  workspace = architectureWorkspace();
+  const topic = (id: BriefingSection['id']): HTMLElement | null => {
+    const section = b.sections.find(s => s.id === id);
+    if (!section) return null;
+    if (id === 'overview') return projectIntroduction(b);
+    const area = sectionEl(section, open);
+    if (id === 'features') area.append(disclosure('Functional requirements & quality expectations', requirements(b)));
+    if (id === 'technology') area.querySelector('.body')?.prepend(technologyStack(b, technology => { void workspace?.highlightTechnology(technology); jumpTo('system-map'); }));
+    if (id === 'architecture') area.querySelector('.body')?.append(h('div', { id: 'system-map' }, workspace!.element));
+    if (id === 'dataFlows') area.querySelector('.body')?.append(h('div', { id: 'operation-map' }, h('p', { class: 'muted' }, 'The operation map loads as you reach this section.'), h('button', { type: 'button', onclick: () => { ensureFlow(); } }, 'Explore an operation')));
+    if (id === 'entryPoints') {
+      const scripts = section.blocks.flatMap(block => block.type === 'groups' ? block.groups.filter(group => group.title === 'Developer scripts') : []);
+      if (scripts.length) area.querySelector('.body')?.append(disclosure('Local commands declared by the project', h('div', {}, ...scripts.map(group => blockEl({ type: 'groups', groups: [group] })) )));
+    }
+    if (id === 'engineerMustKnow') area.querySelector('.body')?.prepend(h('h3', {}, 'Start with these files'), h('ol', { class: 'reading-order' }, ...readingOrder(b).map(item => {
+      const row = h('li', {}, h('a', { href: item.nodeId ? graphHref(item.nodeId) : sourceHref(item.path) ?? '#sec-components' }, item.path), h('p', {}, item.why));
+      const id = item.nodeId ?? `file:${item.path}`;
+      const inspect = h('button', { type: 'button', class: 'act', 'aria-expanded': 'false' }, 'Inspect dependencies & related tests');
+      inspect.addEventListener('click', () => toggle(row, inspect, 'explain', () => explainPanel(id))); row.append(inspect); return row;
+    })));
+    return area;
+  };
+  const stages = REPORT_STAGES.map((stage, index) => {
+    const area = h('section', { id: `stage-${stage.id}`, class: 'report-stage', 'data-stage': stage.id, 'aria-labelledby': `heading-${stage.id}` },
+      h('header', { class: 'stage-heading' }, h('span', { class: 'stage-number' }, `STAGE 0${index + 1}`), h('h2', { id: `heading-${stage.id}` }, stage.title), h('p', {}, stage.introduction)), ...stage.sections.map(topic));
+    if (stage.id === 'evaluate') area.append(historySection());
+    if (stage.id === 'change') {
+      area.append(h('section', { id: 'report-decisions', class: 'sec' }, h('h2', {}, 'Design decisions & constraints'), h('p', { class: 'lead' }, 'The structural explanation above describes what the code suggests. It does not establish the team’s reasons for choosing it.'),
+        ...b.sections.filter(s => ['architecture', 'engineerMustKnow'].includes(s.id)).flatMap(s => s.claims.filter(c => c.evidence.some(e => e.source === 'documentation')).slice(0, 3).map(c => { const row = h('p', {}, ...prose(c.text)); row.append(actions({ claim: c.id }, () => row) ?? ''); return row; })),
+        h('p', {}, 'Use the linked documentation and history to confirm intent, compatibility constraints and trade-offs before replacing an abstraction.'), h('a', { href: '#report-history' }, 'Review the project’s evolution →')));
+      area.append(h('section', { class: 'sec', id: 'unknown-all' }, h('h2', {}, 'Handover questions'), h('p', { class: 'lead' }, 'These gaps need confirmation before treating the report as a complete specification.'), h('ul', {}, ...meetingQuestions(b).map(question => h('li', {}, question.text, ' ', h('a', { href: `#sec-${question.section}` }, 'Related evidence →')))), disclosure(`All recorded unknowns (${b.unknowns.length})`, h('ul', {}, ...b.unknowns.map(u => h('li', {}, u.text))))));
+    }
+    return area;
+  });
+  $("content").replaceChildren(...stages, disclosure('Analysis coverage & freshness', hero(b)), askCard(), h('p', { class: 'foot' }, 'This report describes indexed source and declared configuration. Static analysis does not establish production behavior or undocumented business intent.'));
   $("toc").replaceChildren(toc(b));
-  const stale = !b.freshness.fresh;
-  $("refresh").toggleAttribute("data-stale", stale);
-  status(stale ? "stale" : "ready", stale ? "Stale" : "Fresh");
-  observeToc();
-  if (location.hash) document.getElementById(location.hash.slice(1))?.scrollIntoView();
+  const updateStage = (): void => {
+    const line = ($('toc').getBoundingClientRect().bottom || 100) + 30;
+    const active = stages.filter(stage => stage.getBoundingClientRect().top <= line).at(-1) ?? stages[0]!;
+    document.querySelectorAll<HTMLElement>('[data-stage-link]').forEach(link => {
+      if (link.dataset.stageLink === active.dataset.stage) link.setAttribute('aria-current', 'location'); else link.removeAttribute('aria-current');
+    });
+  };
+  reportObserver = new IntersectionObserver(updateStage, { rootMargin: '-100px 0px -50% 0px', threshold: [0, .1] }); stages.forEach(stage => reportObserver!.observe(stage)); updateStage();
+  flowObserver = new IntersectionObserver(entries => { if (entries.some(entry => entry.isIntersecting)) { ensureFlow(); flowObserver?.disconnect(); } }, { rootMargin: '250px' });
+  const operation = document.getElementById('operation-map'); if (operation) flowObserver.observe(operation);
+  const stale = !b.freshness.fresh; $("refresh").toggleAttribute('data-stale', stale); status(stale ? 'stale' : 'ready', stale ? 'Stale' : 'Fresh');
+  if (location.hash) requestAnimationFrame(followHash);
 }
 
-let observer: IntersectionObserver | undefined;
-function observeToc(): void {
-  observer?.disconnect();
-  observer = new IntersectionObserver(
-    (entries) => {
-      for (const e of entries) {
-        if (!e.isIntersecting) continue;
-        const id = e.target.id.replace(/^sec-/, "");
-        document.querySelectorAll("#toc a[data-sec]").forEach((a) => a.setAttribute("aria-current", String((a as HTMLElement).dataset.sec === id)));
-      }
-    },
-    { rootMargin: "-50px 0px -70% 0px" },
-  );
-  document.querySelectorAll("section.sec").forEach((s) => observer!.observe(s));
-}
 
 async function load(): Promise<void> {
   const overlay = $("overlay");
   try {
+    $("overlay-title").textContent = "Building briefing…";
+    $("overlay-text").textContent = "Preparing a briefing from the repository index. Large projects may take a moment.";
+    $("overlay-action").hidden = true;
     status("busy", "Building…");
     render(await json<CodebaseBriefing>("/api/briefing"));
     overlay.hidden = true;
@@ -473,12 +638,23 @@ async function load(): Promise<void> {
   }
 }
 
+let refreshing = false;
 async function refresh(): Promise<void> {
+  if (refreshing) return;
+  refreshing = true;
+  ($("refresh") as HTMLButtonElement).disabled = true;
+  document.getElementById("refresh-error")?.remove();
   status("busy", "Updating…");
   try {
     render(await json<CodebaseBriefing>("/api/briefing/refresh", { method: "POST" }));
   } catch (e) {
-    status("error", (e as Error).message);
+    status("error", "Refresh failed");
+    const retry = h("button", { type: "button" }, "Retry refresh");
+    retry.addEventListener("click", () => void refresh());
+    $("content").prepend(h("div", { id: "refresh-error", role: "alert", class: "refresh-error" }, h("p", {}, "Could not refresh the analysis. The previous briefing remains available.", h("span", { class: "detail" }, (e as Error).message)), retry));
+  } finally {
+    refreshing = false;
+    ($("refresh") as HTMLButtonElement).disabled = false;
   }
 }
 

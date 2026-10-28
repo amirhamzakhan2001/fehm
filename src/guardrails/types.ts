@@ -13,11 +13,14 @@ export interface CheckEvidence {
   id: string; checkId: string; phase: Phase; status: CheckStatus; fingerprint: string;
   started: string; durationMs: number; exitCode: number | null; output: string;
   approved: boolean; argv: string[]; cwd: string; policyHash: string;
+  testOutcomes?: import('./test-outcomes.js').TestOutcomes;
+  testFingerprint?: string;
   expectedTest?: string; validRed?: boolean; baselineFailure?: boolean;
 }
 export interface GuardRun {
   version: 1; id: string; task: string; mode: 'agent-integration' | 'fehm-directed' | 'verification-only';
   created: string; policy: GuardPolicy; policyHash: string; requirements: Requirement[];
+  change?: import('./change.js').ChangeAnalysis;
   base: Snapshot; evidence: CheckEvidence[];
   security?: { fingerprint: string; at: string; findings: { id: string; severity: string; title: string; confidence: string; action: string; file?: string; line?: number }[]; limitations: string[] };
   securityHistory?: NonNullable<GuardRun['security']>[];

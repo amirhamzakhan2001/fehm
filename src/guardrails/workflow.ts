@@ -1,3 +1,5 @@
+import { parseTestOutcomes } from './test-outcomes.js';
+import { analyzeChange } from './change.js';
 import { optionalGit } from '../git-memory/git.js';
 import { randomUUID } from 'node:crypto';
 import { spawn } from 'node:child_process';
@@ -63,6 +65,25 @@ export class Guardrails {
     this.event(run, 'intake', 'Requirements and policy frozen. Commands require per-invocation approval.');
     return run;
   }
+  async verifyChange(approve = false) {
+    const change = analyzeChange(this.root);
+    if (!approve) return { analysis: change, report: null };
+    // Reuse only identical scope/policy and currently passing evidence.
+    const previous = this.history().map(h => this.load(h.id)).find(r => r.change?.fingerprint === change.fingerprint && r.change.head === change.head && digest(r.policy) === digest(change.policy) && digest(r.change.files) === digest(change.files));
+    const run = previous ?? this.start('Verify current working-tree change', [], change.policy);
+    if (!previous) { run.change = change; this.save(run); }
+    if (snapshot(this.root).fingerprint !== change.fingerprint) throw new Error('Change modified during planning; refresh verification');
+    for (const check of run.policy.checks) {
+      if (snapshot(this.root).fingerprint !== change.fingerprint) break;
+      const latest = [...this.load(run.id).evidence].reverse().find(e => e.checkId === check.id);
+      if (latest?.status === 'passed' && latest.fingerprint === change.fingerprint) continue;
+      await this.execute(run.id, check.id, 'green', true);
+      if (snapshot(this.root).fingerprint !== change.fingerprint) break;
+    }
+    const current = snapshot(this.root);
+    if (run.policy.security && !current.incomplete.length && current.fingerprint === change.fingerprint && this.load(run.id).security?.fingerprint !== current.fingerprint) this.assessSecurity(run.id);
+    return {analysis:change,report:this.report(run.id)};
+  }
   exception(id: string, reason: string): void { this.withLease(() => this.recordException(id, reason)); }
   private recordException(id: string, reason: string): void {
     if (!reason.trim()) throw new Error('A TDD exception requires a reason');
@@ -92,6 +113,7 @@ export class Guardrails {
     if (!check) throw new Error('Check is not allowlisted in this run');
     const before = snapshot(this.root);
     const e: GuardRun['evidence'][number] = { id: randomUUID(), checkId, phase, status: 'pending', fingerprint: before.fingerprint, started: new Date().toISOString(), durationMs: 0, exitCode: null, output: '', approved: approve, argv: [...check.argv], cwd: check.cwd, policyHash: run.policyHash, ...(expectedTest ? {expectedTest} : {}) };
+    e.testFingerprint = digest(before.tests);
     run.evidence.push(e);
     let blocked = '';
     if (!approve) blocked = 'Explicit approval required for exact argv, cwd and current revision';
@@ -117,6 +139,7 @@ export class Guardrails {
     });
     e.durationMs = Date.now() - start; e.exitCode = result.exit; e.output = redact(result.output);
     e.status = result.timeout ? 'blocked' : result.truncated ? 'inconclusive' : classify(result.exit, result.output, ['unit','integration','regression'].includes(check.category));
+    if (['unit','integration','regression'].includes(check.category)) e.testOutcomes = parseTestOutcomes(redact(result.output), result.truncated || result.output.length > 32_000);
     const after = snapshot(this.root);
     if (after.fingerprint !== before.fingerprint || after.incomplete.length) e.status = 'stale';
     e.baselineFailure = e.status === 'failed' && run.evidence.some(x => x.phase === 'baseline' && x.checkId === checkId && x.status === 'failed');
@@ -133,7 +156,7 @@ export class Guardrails {
     const report = buildSecurityReport({engine: FehmEngine.open(this.root, {dryRun:true}), dryRun:true});
     if (snapshot(this.root).fingerprint !== before.fingerprint || before.incomplete.length) throw new Error('Source changed or snapshot incomplete during security review');
     if (run.security) (run.securityHistory ??= []).push(run.security);
-    run.security = { fingerprint:before.fingerprint, at:new Date().toISOString(), findings:report.findings.map(f => ({id:f.id,severity:f.severity,title:f.title,confidence:f.confidence,action:f.action,...(f.line ? {line:f.line} : {}),...(f.file ? {file:f.file} : {})})), limitations:[...report.unknowns, ...report.analyzers.filter(a => a.status === 'error').map(a => `Analyzer error: ${a.id}`), 'Separate deterministic static analysis, not an independent model or penetration test.', 'Analyzer coverage and configuration remain subject to Feature 3.6 limitations; no dynamic/network scans performed.'] };
+    run.security = { fingerprint:before.fingerprint, at:new Date().toISOString(), findings:report.findings.filter(f => !run.change || [f.file, ...f.evidence.map(e => e.path)].some(p => p && run.change!.affected.includes(p)) || (!f.file && !f.evidence.some(e => e.path))).map(f => ({...f,id:f.id,severity:f.severity,title:f.title,confidence:f.confidence,action:f.action,...(f.line ? {line:f.line} : {}),...(f.file ? {file:f.file} : {})})), limitations:[...report.unknowns, ...report.analyzers.filter(a => a.status === 'error').map(a => `Analyzer error: ${a.id}`), 'Separate deterministic static analysis, not an independent model or penetration test.', 'Analyzer coverage and configuration remain subject to Security Review limitations; no dynamic/network scans performed.'] };
     this.event(run, 'security-assessed', `${report.findings.length} static findings`); return run;
   }
   async remediate(id: string, reason: string, approved: boolean, adapter: (context: ReturnType<Guardrails['report']>) => Promise<void>): Promise<ReturnType<Guardrails['report']>> {
@@ -171,7 +194,8 @@ export class Guardrails {
       return {...c,status,evidence:e};
     });
     for (const category of run.policy.requiredCategories) if (!checks.some(c => c.category === category && c.required && c.status === 'passed')) reasons.push(`Required ${category} evidence missing`);
-    if (!run.requirements.length) reasons.push('No acceptance criteria');
+    if (!run.requirements.length && !run.change) reasons.push('No acceptance criteria');
+    if (run.change) { reasons.push(...run.change.unknowns); if (run.change.fingerprint !== current.fingerprint) reasons.push('Change analysis stale; analyze the current change again'); }
     for (const r of run.requirements) if (!r.confirmed || !r.checks.length || r.checks.some(id => !checks.some(c => c.id === id && c.status === 'passed'))) reasons.push(`Requirement ${r.id} unverified`);
     if (run.policy.tdd && !run.exception && (!run.red || digest(run.red.tests) !== digest(current.tests) || !checks.some(c => c.id === run.red?.checkId && c.status === 'passed'))) reasons.push('Valid red-to-green evidence missing or tests changed after red');
     const securityCurrent = run.security?.fingerprint === current.fingerprint;
@@ -181,14 +205,14 @@ export class Guardrails {
     if (securityCurrent && run.security!.limitations.some(s => s.startsWith('Analyzer error:'))) reasons.push('Security analyzer failed');
     if (run.attempts.at(-1)?.outcome === 'running') reasons.push('Remediation is running or was interrupted');
     reasons.push(...current.incomplete);
-    const changed = changedFiles(run.base,current);
+    const changed = [...new Set([...(run.change?.files.map(f => f.path) ?? []), ...changedFiles(run.base,current)])];
     const engine = FehmEngine.open(this.root, {dryRun:true}), facts = new BriefingFacts(engine);
     const impacted = new Set(changed), queue = [...changed];
     for (let i = 0; i < queue.length && i < 10_000; i++) for (const p of facts.fileDeps.in.get(queue[i]!) ?? []) if (!impacted.has(p)) { impacted.add(p); queue.push(p); }
     const impact = { paths:[...impacted], suggestedTests:facts.testFiles.filter(p => impacted.has(p)), graphNodes:engine.graph.nodes().filter(n => n.path && impacted.has(n.path)).slice(0,100).map(n => ({id:n.id,name:n.name,path:n.path,href:`/graph#node=${encodeURIComponent(n.id)}`})), limitation:'Static reverse dependencies are advisory; dynamic relationships and test completeness are not established.' };
     const git = {head:optionalGit(this.root,['rev-parse','HEAD']), diff:redact(optionalGit(this.root,['diff','--no-ext-diff','--no-textconv','--no-color','HEAD','--','.']) ?? '')};
     // Changed existing tests/config warrant review; this is a heuristic, not an accusation.
-    const testChanges = changed.filter(p => run.base.tests[p] || /(^|\/)(package\.json|.*lock.*|.*test.*config.*)$/.test(p));
+    const testChanges = changedFiles(run.base,current).filter(p => run.base.tests[p] || /(^|\/)(package\.json|.*lock.*|.*test.*config.*)$/.test(p));
     const reviewNeeded = (testChanges.length > 0 || run.attempts.some(a => a.outcome.startsWith('requires_human_review'))) && run.review?.fingerprint !== current.fingerprint;
     if (reviewNeeded) reasons.push('Existing tests or test configuration changed; human review required');
     const readiness = checks.some(c => c.required && c.status === 'failed') ? 'failed' : securityBlock || reviewNeeded ? 'requires_human_review' : reasons.length ? 'not_verified' : run.exception || (securityCurrent && run.security!.findings.length) ? 'verified_warnings' : 'verified_required';

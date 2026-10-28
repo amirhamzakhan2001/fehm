@@ -26,6 +26,8 @@ table{width:100%;border-collapse:collapse;font-size:13px}td,th{text-align:left;p
 td.n{font-family:var(--mono);white-space:nowrap}.p{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
 pre{background:var(--panel);border:1px solid var(--line);padding:12px 14px;border-radius:8px;overflow:auto;white-space:pre-wrap;font:12px/1.5 var(--mono);color:var(--fg-2)}
 .muted{color:var(--muted)}.err{color:var(--err)}
+.guide-card{padding:16px;margin:12px 0;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+h1{font-size:24px;margin-bottom:6px}h3{font-size:16px;margin:0 0 8px}summary{cursor:pointer;padding:10px 0}details{margin:12px 0}li{margin:7px 0}p,a,code{overflow-wrap:anywhere}pre{max-height:420px}#guide h2{font-size:16px;text-transform:none;letter-spacing:0;color:var(--fg)}.diagnostics{overflow-x:auto}.guide-card .p{margin-bottom:10px}label{display:flex;gap:6px;align-items:center}#query>input{min-width:0;width:100%;flex-basis:100%}[hidden]{display:none!important}
 ${CHROME_CSS}
 </style></head><body>
 <header id="top">
@@ -35,20 +37,26 @@ ${CHROME_CSS}
   ${featureNav("engine")}
 </header>
 <main>
-  <h2>Index</h2>
-  <div class="grid" id="stats"></div>
-  <div class="row"><button id="rescan" type="button">⟳ Rescan</button><span class="muted" id="sync" role="status" aria-live="polite"></span></div>
-  <h2>Context query</h2>
+  <h1>Find your way through the code</h1>
+  <p class="muted">Ask a question to get a reading guide with source locations and indexed connections. Built locally, without an LLM.</p>
   <form id="query">
-    <input name="q" placeholder="e.g. how does authentication work" required aria-label="Query">
-    <input name="budget" type="number" value="4000" min="50" aria-label="Token budget">
-    <select name="intent" aria-label="Intent"><option value="">auto intent</option><option>locate</option><option>explain</option><option>change</option><option>debug</option><option>test</option><option>architecture</option></select>
-    <button>Build</button>
+    <input name="q" placeholder="e.g. how does authorization work" required aria-label="Your question">
+    <label>Context size <input name="budget" type="number" value="4000" min="50" max="50000" aria-label="Token budget"></label>
+    <select name="intent" aria-label="Task"><option value="">Detect task automatically</option><option value="locate">Find code</option><option value="explain">Understand code</option><option value="change">Plan a change</option><option value="debug">Investigate a failure</option><option value="test">Find tests</option><option value="architecture">Explore architecture</option></select>
+    <button id="build" type="submit">Find relevant code</button>
   </form>
-  <p class="muted" id="budget"></p>
-  <table id="nodes"></table>
-  <h2>Preview</h2>
-  <pre id="preview" class="muted">No query yet.</pre>
+  <p class="muted" id="budget" role="status" aria-live="polite">Enter a question to begin. Context size limits the exported text, not paid LLM usage.</p>
+  <div id="guide"></div>
+  <details id="export-panel" hidden><summary>Context for an AI assistant</summary>
+    <p class="muted">This is the compact evidence packet. Your assistant can inspect the original files for more detail.</p>
+    <button id="copy" type="button">Copy context</button> <button id="download" type="button">Download Markdown</button>
+    <p id="copy-status" role="status"></p><pre id="preview"></pre>
+  </details>
+  <details id="retrieval-panel" hidden><summary>Search diagnostics</summary><p id="diagnostics" class="muted"></p><div class="diagnostics"><table id="nodes"></table></div></details>
+  <details><summary>Repository index details</summary>
+    <div class="grid" id="stats"></div>
+    <div class="row"><button id="rescan" type="button">Rescan repository</button><span class="muted" id="sync" role="status" aria-live="polite"></span></div>
+  </details>
 </main>
 <script type="module" src="/engine/assets/engine/ui/main.js"></script>
 </body></html>`;

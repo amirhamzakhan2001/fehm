@@ -34,6 +34,10 @@ export interface PromptScore {
     band: string;
 }
 export interface PromptRecord {
+    environment?: 'production' | 'test' | 'example' | 'development';
+    referenceIds?: string[];
+    analysisStatus?: 'pending' | 'complete' | 'error';
+    analysisError?: string;
     id: string;
     name: string;
     path: string;
@@ -100,6 +104,7 @@ export interface PromptReport {
         staticTokens: number;
     };
     coverage: {
+        exclusions?: { directories: string[]; maxFileBytes: number; rules: string[] };
         astFiles: number;
         heuristicFiles: number;
         templateFiles: number;

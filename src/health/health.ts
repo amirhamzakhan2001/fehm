@@ -1,3 +1,5 @@
+import { engineeringReadiness } from './readiness.js';
+import { analyzeWebDelivery } from './web-delivery.js';
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { dirname, join, posix } from "node:path";
@@ -58,7 +60,8 @@ export const DIMENSIONS: { id: DimensionId; title: string }[] = [
   { id: "dependencies", title: "Dependencies" },
   { id: "reliability", title: "Reliability" },
   { id: "debt", title: "Technical debt" },
-  { id: "ai-code", title: "AI-code indicators" },
+  { id: "ai-code", title: "Implementation integrity" },
+  { id: "web-delivery", title: "Web Delivery & SEO" },
   { id: "ci", title: "CI" },
 ];
 
@@ -158,9 +161,9 @@ export function buildHealthReport(options: HealthOptions): HealthReport {
   timed("quality", "Quality and maintainability", () => {
     findings.push(...complexityFindings(functions.filter((f) => sources.has(f.path)), config.thresholds), ...classFindings(classes, config.thresholds), ...cycleFindings(facts, skip));
   });
-  const signals = timed("signals", "Engineering signals (3.4)", () => signalFindings(engine, facts, skip), (s) => ({ status: "complete", findings: s.findings.length }));
+  const signals = timed("signals", "Engineering signals", () => signalFindings(engine, facts, skip), (s) => ({ status: "complete", findings: s.findings.length }));
   findings.push(...signals.findings, ...hitFindings(results, skip));
-  findings.push(...timed("ai-code", "AI-code defect indicators", () => aiGraphFindings(engine, facts, sources, tsPathAliases(engine.root, facts)), (f) => ({ status: "complete", findings: f.length })));
+  findings.push(...timed("ai-code", "Implementation integrity", () => aiGraphFindings(engine, facts, sources, tsPathAliases(engine.root, facts)), (f) => ({ status: "complete", findings: f.length })));
   const dead = timed("dead-code", "Dead code", () => analyzeDeadCode({ engine, facts, results, skip }), (d) => ({ status: "complete", findings: d.findings.length }));
   findings.push(...dead.findings);
   const deps = timed("dependencies", "Dependencies and licenses", () => analyzeDependencies(engine.root, facts, config, signals.unusedDependencies), (d) => ({ status: d.report.manifests.length ? "complete" : "skipped", ...(d.report.manifests.length ? {} : { reason: "No supported manifest found." }), findings: d.findings.length }));
@@ -183,6 +186,9 @@ export function buildHealthReport(options: HealthOptions): HealthReport {
   const debt = timed("debt", "Technical debt", () => analyzeDebt({ findings, functions: functions.filter((f) => sources.has(f.path)), history: git.files, gitAvailable: git.available && !git.reason, changed: new Set(git.changed), coverage: coverageReport, sources }), (d) => ({ status: "complete", findings: d.findings.length }));
   findings.push(...debt.findings);
 
+  const web = timed('web-delivery', 'Web Delivery & SEO', () => analyzeWebDelivery(engine, config.readiness.profiles, skip), w => ({ status: 'partial', reason: w.report.limitations.join(' '), findings: w.findings.length }));
+  findings.push(...web.findings);
+
   // Unique ids (two findings can collide when a file has same-named functions).
   const seen = new Map<string, number>();
   for (const f of findings) {
@@ -202,6 +208,8 @@ export function buildHealthReport(options: HealthOptions): HealthReport {
 
   const quality = qualityReport(functions.filter((f) => sources.has(f.path)), classes.length, config.thresholds);
   const report: Omit<HealthReport, "status" | "statusReasons" | "dimensions" | "provenance" | "trend" | "durationMs" | "summary"> = {
+    readiness: engineeringReadiness(shown, build, web.report),
+    webDelivery: web.report,
     schemaVersion: HEALTH_SCHEMA,
     version: HEALTH_VERSION,
     repository: { name: facts.name, root: engine.root },
@@ -234,7 +242,7 @@ export function buildHealthReport(options: HealthOptions): HealthReport {
     ...(git.dirty !== undefined ? { dirty: git.dirty } : {}),
     digest: digest(engine, skip, [configHash(config), ...cov.hashes, ...build.checks.map((c) => (c.last ? `${c.id}@${c.last.at}` : "")), deps.report.advisories.checkedAt ?? "", scope]),
     inputs: [`${indexed.size} indexed files (content hashes)`, configFile ? `${configFile} (${configHash(config)})` : "default configuration", ...(cov.report ? [`coverage artifact ${cov.report.artifacts[0]!.path}`] : []), ...(build.checks.some((c) => c.last) ? ["build check results"] : []), ...(deps.report.advisories.checkedAt ? [`OSV.dev advisories (${deps.report.advisories.checkedAt})`] : []), `health rules v${HEALTH_VERSION}`],
-    excluded: ["files the Feature 1 scanner ignores (.gitignore, .fehmignore, node_modules, build output)", ...config.ignore.map((g) => `${g} (.fehm/health.json ignore)`)],
+    excluded: ["files the repository scanner ignores (.gitignore, .fehmignore, node_modules, build output)", ...config.ignore.map((g) => `${g} (.fehm/health.json ignore)`)],
     rulesDerivedFrom: "Skylos 4.x rule catalog (Apache-2.0), re-implemented in TypeScript; see THIRD_PARTY_NOTICES.md",
   };
   const trendMetrics = trendPoint(report as HealthReport, summary, structural);
@@ -289,6 +297,9 @@ function dimension(id: DimensionId, title: string, r: HealthReport, sourceFiles:
   let status = fromFindings(findings);
   let metric: HealthDimension["metric"];
   switch (id) {
+    case "web-delivery": {
+      return { id, title, status: mine.length ? status : 'unknown', findings, reasons: [...top, `${r.webDelivery.documents} static HTML documents checked; browser behavior remains unverified.`] };
+    }
     case "build": {
       const run = r.build.checks.filter((c) => c.last);
       if (!r.build.checks.length) return { id, title, status: "unknown", reasons: ["No build, test, lint or type-check command was detected."], findings };
@@ -467,6 +478,7 @@ export function renderHealthText(r: HealthReport, options: { all?: boolean } = {
   out.push(`Overall: ${ICON[r.status]} ${r.status.toUpperCase()}`);
   for (const reason of r.statusReasons) out.push(`  ${reason}`);
   out.push("");
+  out.push(`Engineering readiness: ${r.readiness.status} — ${r.readiness.summary}`, 'Authorship: unknown (no AI-use or developer-expertise classification).');
   for (const d of r.dimensions) {
     const m = d.metric ? `${d.metric.unit === "%" ? `${d.metric.value}%` : d.metric.value} ${d.metric.label}` : "";
     out.push(`  ${ICON[d.status]} ${d.title.padEnd(20)} ${d.status.padEnd(10)} ${m}`);

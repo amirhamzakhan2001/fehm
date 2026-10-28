@@ -12,10 +12,13 @@ test('guardrails dashboard serves history, revision-specific report and UI; exec
   const url = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
   try {
     const page = await fetch(`${url}/guardrails?embedded`);
-    assert.equal(page.status,200); assert.match(await page.text(),/Engineering Guardrails/);
+    assert.equal(page.status,200); assert.match(await page.text(),/Change Verification & Review/);
     assert.match(page.headers.get('content-security-policy') ?? '',/script-src 'self'/);
     const asset = await fetch(`${url}/guardrails/assets/guardrails/ui/main.js`);
     assert.equal(asset.status,200); assert.doesNotMatch(await asset.text(),/from ['"]node:/);
+    const change = await fetch(`${url}/api/guardrails/change`).then(r => r.json()) as {tdd:string; files:unknown[]};
+    assert.equal(change.tdd,'unknown'); assert.ok(change.files.length);
+    assert.equal((await fetch(`${url}/api/guardrails/change`,{method:'POST'})).status,405);
     const history = await fetch(`${url}/api/guardrails`).then(r => r.json()) as {id:string}[];
     assert.equal(history[0]?.id,run.id);
     const report = await fetch(`${url}/api/guardrails/report?id=${run.id}`).then(r => r.json()) as {readiness:string};

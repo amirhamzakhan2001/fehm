@@ -1,8 +1,10 @@
 import type { ConceptCandidate, ConceptFinding, ConceptReport, DetectionGuidance } from '../../../concepts/types.js';
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const el = <K extends keyof HTMLElementTagNameMap>(tag: K, text = '', className = '') => { const e = document.createElement(tag); e.textContent = text; e.className = className; return e; };
-const catalog = document.body.dataset.mode === 'catalog', form = $<HTMLFormElement>('filters'), results = $('results'), detail = $('detail');
-let serial = 0, detailSerial = 0;
+const form = $<HTMLFormElement>('filters'), results = $('results'), detail = $('detail');
+let serial = 0, detailSerial = 0, selectedId = '', page = 0;
+let concepts: ConceptCandidate[] = [], report: ConceptReport | undefined;
+import { conceptTier, tierNames, evidenceLabel, orderConcepts } from './ordering.js';
 const params = () => new URLSearchParams([...new FormData(form).entries()].filter(([, v]) => String(v)).map(([k, v]) => [k, String(v)]));
 async function api<T>(action: string, p = new URLSearchParams(), post = false): Promise<T> { const r = await fetch(`/api/concepts${action}?${p}`, post ? { method: 'POST', headers: { 'x-fehm': '1' } } : {}); const data = await r.json(); if (!r.ok)
     throw new Error(data.error ?? 'Request failed'); return data as T; }
@@ -12,6 +14,8 @@ function link(text: string, url: string) { const a = el('a', text); a.href = url
 function disclosure(title: string, value: unknown) { const d = el('details'); d.append(el('summary', title), el('pre', JSON.stringify(value, null, 2))); return d; }
 async function openConcept(id: string) {
     const token = ++detailSerial;
+    selectedId = id;
+    renderInventory();
     detail.replaceChildren(el('p', 'Loading concept…'));
     const p = new URLSearchParams({ id });
     const d = await api<{
@@ -33,7 +37,7 @@ async function openConcept(id: string) {
             evidence: string;
         }[];
         components?: unknown[];
-    }>(catalog ? '/knowledge' : '/detail', p);
+    }>(report ? '/detail' : '/knowledge', p);
     if (token !== detailSerial)
         return;
     const c = d.concept;
@@ -43,11 +47,9 @@ async function openConcept(id: string) {
     detail.append(chips);
     if (d.unverified)
         detail.append(el('p', `${d.unverified.status} · ${d.unverified.scope}: ${d.unverified.reason}`, 'warning'));
-    if (catalog)
-        detail.append(el('p', 'Catalog knowledge only. No repository implementation is implied.', 'muted'), link('Inspect repository evidence', `/concepts?id=${encodeURIComponent(id)}`));
-    else {
+    {
         const actions = el('div', '', 'actions');
-        actions.append(link('Highlight in code graph', `/graph#concept=${encodeURIComponent(id)}`), link('Architecture', '/architecture'), link('Security', '/security'), link('Prompt intelligence', '/prompts'));
+        if (d.findings?.some(f => f.evidence.some(e => e.nodeId))) actions.append(link('Highlight in code graph', `/graph#concept=${encodeURIComponent(id)}`));
         actions.append(button('Related Git changes', async () => { const history = await api<unknown>('/history', p); if (token === detailSerial)
             detail.append(disclosure('File change history · association only', history)); }));
         actions.append(button('Export selected context', async () => { const data = await api<{
@@ -57,10 +59,10 @@ async function openConcept(id: string) {
         }>('/context', new URLSearchParams({ q: c.name })); const blob = new Blob([data.serialized], { type: 'application/json' }), url = URL.createObjectURL(blob), a = link('download', url); a.download = 'fehm-concept-context.json'; a.click(); URL.revokeObjectURL(url); $('status').textContent = `Exported ${data.bytes} bytes · token count ${data.tokens ?? 'unavailable'}`; }));
         detail.append(actions, el('h3', 'Repository evidence'));
         if (!d.findings?.length)
-            detail.append(el('p', 'No supported evidence in the current indexed scope.'));
-        for (const f of (d.findings ?? []).slice(0, 60)) {
+            detail.append(el('p', report ? 'No supported evidence in the current indexed scope. This definition is reference knowledge only.' : 'Repository analysis is unavailable. This definition does not establish use in the project.'));
+        for (const f of (d.findings ?? [])) {
             const box = el('article', '', 'evidence');
-            box.append(el('strong', f.status), el('span', ` · ${f.scope}`, 'chip'), el('p', f.rationale));
+            box.append(el('strong', f.status.replaceAll('_', ' ')), el('span', ` · ${f.scope}`, 'chip'), el('p', f.rationale));
             for (const e of f.evidence) {
                 const row = el('div', '', 'actions');
                 row.append(button(`${e.path}:${e.line}`, async () => { const source = await api<{
@@ -81,92 +83,84 @@ async function openConcept(id: string) {
     const ids = [...(c.parent ? [c.parent] : []), ...c.related].slice(0, 20);
     detail.append(el('h3', 'Related concepts · no implication'));
     for (const relatedId of ids)
-        related.append(button(relatedId, () => openConcept(relatedId)));
+        related.append(button(concepts.find(c => c.id === relatedId)?.name ?? relatedId, () => openConcept(relatedId)));
     detail.append(related, disclosure('Detection guidance and anti-signals', d.guidance), el('p', `Stable ID: ${c.id}`, 'muted'));
     const u = new URL(location.href);
     u.searchParams.set('id', id);
     history.replaceState(null, '', u);
+    if (matchMedia('(max-width:850px)').matches) detail.scrollIntoView({block:'start'});
+    detail.focus({preventScroll:true});
+}
+
+function renderInventory() {
+    const p = params(), q = (p.get('q') ?? '').trim().toLowerCase();
+    const findings = (report?.findings ?? []).filter(f =>
+        (!p.get('status') || f.status === p.get('status')) &&
+        (!p.get('scope') || f.scope === p.get('scope')) &&
+        (!p.get('path') || f.evidence.some(e => e.path.includes(p.get('path')!))));
+    const grouped = new Map<string, ConceptFinding[]>();
+    for (const f of findings) grouped.set(f.concept_id, [...(grouped.get(f.concept_id) ?? []), f]);
+    const filtered = concepts.filter(c =>
+        (!p.get('section') || c.section === p.get('section')) &&
+        (!p.get('tier') || conceptTier(c) === Number(p.get('tier'))) &&
+        ((p.get('view') === 'all' && !p.get('status') && !p.get('scope') && !p.get('path')) || grouped.has(c.id)) &&
+        (!q || [c.name,c.definition,...c.aliases,...(grouped.get(c.id) ?? []).flatMap(f => f.evidence.map(e => e.path))].some(s => s.toLowerCase().includes(q))));
+    const ordered = orderConcepts(filtered, findings, q), size = 30;
+    page = Math.min(page, Math.max(0, Math.ceil(ordered.length / size)-1));
+    results.replaceChildren();
+    let tier = -1;
+    for (const c of ordered.slice(page*size,(page+1)*size)) {
+        const current = conceptTier(c);
+        if (tier !== current) { results.append(el('h2',tierNames[current], 'tier')); tier = current; }
+        const fs = grouped.get(c.id) ?? [], row = el('article', '', 'card');
+        const select = button(c.name, () => openConcept(c.id));
+        select.setAttribute('aria-pressed',String(selectedId === c.id));
+        row.append(select, el('p', c.definition), el('p', evidenceLabel(fs) + ' · ' + c.sectionName, 'muted'));
+        results.append(row);
+    }
+    if (!ordered.length) results.append(el('p','No matching concepts. Choose All concepts to explore definitions, or broaden your filters.'));
+    const pager = el('div','','pager');
+    const previous = button('Previous',async()=>{page--;renderInventory();});
+    const more = button('Next',async()=>{page++;renderInventory();});
+    previous.disabled = page === 0; more.disabled = (page+1)*size >= ordered.length;
+    pager.append(previous,el('span',ordered.length ? `${page*size+1}–${Math.min((page+1)*size,ordered.length)} of ${ordered.length}` : '0 results'),more);
+    results.append(pager);
 }
 async function load(refresh = false) {
     const token = ++serial;
-    $('status').textContent = catalog ? 'Searching local catalog…' : 'Analyzing indexed evidence…';
+    $('status').textContent = 'Analyzing repository evidence…';
     $('status').className = '';
-    const p = params();
-    p.set('limit', '60');
-    results.replaceChildren();
-    if (catalog) {
-        const d = await api<{
-            ambiguous: boolean;
-            total: number;
-            candidates: ConceptCandidate[];
-        }>('/lookup', p);
-        if (token !== serial)
-            return;
-        $('coverage').textContent = `${d.total} matching catalog entries${d.ambiguous ? ' · Ambiguous term: multiple reviewed meanings. Select one.' : ''}`;
-        for (const c of d.candidates) {
-            const card = el('article', '', 'card');
-            card.append(button(c.name, () => openConcept(c.id)), el('p', `${c.sectionName} · ${c.type}`, 'muted'), el('p', c.definition));
-            results.append(card);
-        }
+    try {
+        const d = await api<ConceptReport>(refresh ? '/refresh' : '/report', new URLSearchParams(), refresh);
+        if (token !== serial) return;
+        report = d;
+        $('coverage').textContent = `${new Set(d.findings.map(f=>f.concept_id)).size} concepts with repository signals · ${concepts.length} definitions · ${d.coverage.files} indexed files. Static evidence does not verify runtime behavior.`;
+        renderInventory();
+        results.append(disclosure('Analysis limitations',d.coverage.limitations));
+        $('status').textContent = 'Ready · local and offline';
+        if (selectedId) await openConcept(selectedId);
+    } catch(e) {
+        if (token !== serial) return;
+        $('status').textContent = 'Repository analysis unavailable. Definitions remain accessible. ' + (e as Error).message;
+        $('status').className = 'error';
+        (form.elements.namedItem('view') as HTMLSelectElement).value = 'all';
+        renderInventory();
     }
-    else {
-        const d = await api<ConceptReport & {
-            concepts: ConceptCandidate[];
-            resolution: {
-                ambiguous: boolean;
-            } | null;
-        }>(refresh ? '/refresh' : '/report', p, refresh);
-        if (token !== serial)
-            return;
-        const grouped = new Map<string, ConceptFinding[]>();
-        d.findings.forEach(f => grouped.set(f.concept_id, [...(grouped.get(f.concept_id) ?? []), f]));
-        const supported = d.findings.filter(f => ['explicitly_observed', 'structurally_supported'].includes(f.status) && f.scope !== 'documented_claim');
-        const values = [[d.concepts.length, 'Concept candidates'], [new Set(supported.map(f => f.concept_id)).size, 'Direct / structural evidence'], [d.findings.filter(f => ['weakly_indicated', 'contextually_inferred'].includes(f.status)).length, 'Findings needing review'], ['—', 'Runtime verification unavailable']] as const;
-        $('stats').replaceChildren(...values.map(([n, label]) => { const card = el('div', '', 'stat'); card.append(el('strong', String(n)), el('span', label)); return card; }));
-        $('coverage').textContent = `${d.coverage.files} indexed files · ${d.coverage.analyzed} analyzed / ${d.coverage.reused} reused · revision ${d.repositoryRevision?.slice(0, 10) ?? 'uncommitted'}${d.dirty ? ' + working tree changes' : ''}. Missing evidence is not absence.${d.resolution?.ambiguous ? ' Query is ambiguous; multiple meanings are shown.' : ''}`;
-        for (const c of d.concepts.slice(0, 100)) {
-            const findings = grouped.get(c.id) ?? [], card = el('article', '', 'card');
-            card.append(button(c.name, () => openConcept(c.id)), el('p', `${c.sectionName} · ${c.type}`, 'muted'));
-            const chips = el('div', '', 'chips');
-            if (!findings.length)
-                chips.append(el('span', 'not_verifiable · no supported evidence', 'chip'));
-            [...new Set(findings.map(f => `${f.status} · ${f.scope}`))].forEach(s => chips.append(el('span', s, 'chip')));
-            card.append(chips, el('p', `${findings.length} evidence records · ${[...new Set(findings.flatMap(f => f.evidence.map(e => e.path)))].slice(0, 2).join(', ')}`, 'muted'));
-            results.append(card);
-        }
-        results.append(disclosure('Analysis coverage and limitations', d.coverage.limitations));
-    }
-    if (!results.children.length)
-        results.append(el('p', 'No matches. Explore the ontology or broaden your filters.'));
-    $('status').textContent = 'Ready · local and offline';
 }
-form.onsubmit = e => { e.preventDefault(); run(() => load()); };
+form.onsubmit = e => { e.preventDefault(); page=0;renderInventory(); };
+form.onchange = () => {page=0;renderInventory();};
+let debounce: ReturnType<typeof setTimeout>;
+form.oninput = e => {if (!(e.target instanceof HTMLInputElement)) return; clearTimeout(debounce);debounce=setTimeout(()=>{page=0;renderInventory();},150);};
 document.getElementById('refresh')?.addEventListener('click', () => run(() => load(true)));
 run(async () => {
-    const summary = await api<{
-        concepts: number;
-        sections: {
-            id: string;
-            name: string;
-        }[];
-        types: string[];
-        ambiguities: unknown[];
-        version: string;
-    }>('/catalog');
+    const data = await api<{concepts:ConceptCandidate[]}>('/inventory');
+    concepts = data.concepts;
     const sections = form.elements.namedItem('section') as HTMLSelectElement;
-    summary.sections.forEach(s => sections.append(new Option(s.name, s.id)));
-    const types = form.elements.namedItem('type') as HTMLSelectElement;
-    summary.types.forEach(t => types.append(new Option(t, t)));
-    if (catalog)
-        for (const [n, label] of [[summary.concepts, 'Concept entries'], [summary.sections.length, 'Domains'], [summary.ambiguities.length, 'Ambiguous terms'], [summary.version, 'Catalog version']]) {
-            const card = el('div', '', 'stat');
-            card.append(el('strong', String(n)), el('span', String(label)));
-            $('stats').append(card);
-        }
+    [...new Map(concepts.map(c=>[c.section,c.sectionName])).entries()].sort((a,b)=>a[1].localeCompare(b[1])).forEach(([id,name])=>sections.append(new Option(name,id)));
     const incoming = new URLSearchParams(location.search);
-    if (incoming.has('path') && !catalog)
-        (form.elements.namedItem('path') as HTMLInputElement).value = incoming.get('path')!;
+    if (location.pathname.startsWith('/ontology')) (form.elements.namedItem('view') as HTMLSelectElement).value = 'all';
+    if (incoming.has('path')) (form.elements.namedItem('path') as HTMLInputElement).value = incoming.get('path')!;
+    renderInventory();
     await load();
-    if (incoming.get('id'))
-        await openConcept(incoming.get('id')!);
+    if (incoming.get('id')) await openConcept(incoming.get('id')!);
 });

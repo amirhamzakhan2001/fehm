@@ -1,9 +1,11 @@
+import { changeSummary } from '../../shared/ui/assessment.js';
 import type { MemorySnapshot, compareMemorySnapshots } from '../../../git-memory/snapshots.js';
-import type { GitMemoryReport, MemoryCommit, MemoryEvent } from '../../../git-memory/types.js';
+import type { FileChange, GitMemoryReport, MemoryCommit, MemoryEvent } from '../../../git-memory/types.js';
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const el = <K extends keyof HTMLElementTagNameMap>(tag: K, text = '', className = '') => { const e = document.createElement(tag); e.textContent = text; e.className = className; return e; };
 const results = $('results'), detail = $('detail'), form = $<HTMLFormElement>('filters');
-let report: GitMemoryReport | undefined, tab = 'timeline', serial = 0;
+let report: GitMemoryReport | undefined, tab = 'timeline', serial = 0, selectionSerial = 0, loadSerial = 0;
+function graphLink(name: string, id: string) { const a = el('a', name); a.href = `/graph#node=${encodeURIComponent(id)}`; return a; }
 function params() { return new URLSearchParams([...new FormData(form).entries()].filter(([, v]) => typeof v === 'string' && v.length).map(([k,v]) => [k, String(v)])); }
 async function api<T>(action: string, p = params(), post = false): Promise<T> {
   const response = await fetch(`/api/git-memory${action}?${p}`, post ? { method: 'POST', headers: { 'x-fehm': '1' } } : {});
@@ -11,7 +13,7 @@ async function api<T>(action: string, p = params(), post = false): Promise<T> {
   return response.json() as Promise<T>;
 }
 function run(fn: () => Promise<void>) { void fn().catch(e => { $('status').textContent = e.message; $('status').className = 'error'; }); }
-function button(text: string, action: () => Promise<void>) { const b = el('button', text); b.type = 'button'; b.onclick = () => run(action); return b; }
+function button(text: string, action: () => Promise<void>) { const b = el('button', text); b.type = 'button'; b.onclick = () => { b.disabled = true; b.setAttribute('aria-busy', 'true'); run(async () => { try { await action(); } finally { b.disabled = false; b.removeAttribute('aria-busy'); } }); }; return b; }
 function json(value: unknown) { return el('pre', JSON.stringify(value, null, 2)); }
 function events(items: MemoryEvent[]) {
   const box = el('div');
@@ -55,7 +57,11 @@ function comparisonView(data: ReturnType<typeof compareMemorySnapshots>) {
   return box;
 }
 async function showCommit(c: MemoryCommit) {
-  detail.replaceChildren(el('h2', c.message.split('\n')[0] ?? 'Commit'), el('p', `${c.id}\n${c.author} · ${c.at}`), el('pre', c.message), el('h3', 'Parent relationships'));
+  const selection = ++selectionSerial;
+  const current = () => selection === selectionSerial;
+  document.querySelectorAll<HTMLElement>('[data-commit]').forEach(e => e.setAttribute('aria-current', String(e.dataset.commit === c.id)));
+  detail.dataset.commit = c.id;
+  detail.replaceChildren(el('h2', c.message.split('\n')[0] ?? 'Commit'), el('p', `${c.id}\n${c.author} · ${c.at}`), el('p', changeSummary(c)), el('h3', 'Author’s stated intent'), el('pre', c.message), el('p', 'This is the recorded message, not an independently verified explanation of why the change was needed.', 'muted'), el('h3', 'Parent relationships'));
   for (const parent of c.parents) {
     const cached = report?.commits.find(x => x.id === parent);
     detail.append(cached ? button(`← ${parent.slice(0, 12)}`, () => showCommit(cached)) : el('p', `${parent.slice(0, 12)} · outside indexed window`));
@@ -64,43 +70,54 @@ async function showCommit(c: MemoryCommit) {
   if (c.revertOf) detail.append(el('p', `Message declares revert of ${c.revertOf}`));
   for (const w of c.warnings) detail.append(el('p', w, 'warning'));
   const actions = el('div', '', 'toolbar');
-  if (c.parents[0]) actions.append(button('Raw diff', async () => {
-    const p = new URLSearchParams({ from: c.parents[0]!, to: c.id });
+  actions.append(button('Raw diff', async () => {
+    const p = new URLSearchParams({ commit: c.id });
     const r = await fetch(`/api/git-memory/diff?${p}`); if (!r.ok) throw new Error('Diff unavailable');
-    detail.append(el('h3', 'Raw Git diff'), el('pre', await r.text()));
+    const text = await r.text(); if (!current()) return;
+    detail.append(el('h3', 'Raw Git diff'), el('pre', text));
   }));
   actions.append(button('Analyze this revision', async () => {
     $('status').textContent = 'Analyzing committed state…';
     const snapshot = await api<MemorySnapshot>('/snapshot', new URLSearchParams({ ref: c.id }), true);
-    detail.replaceChildren(snapshotView(snapshot)); $('status').textContent = 'Snapshot ready';
+    if (!current()) return;
+    detail.replaceChildren(button('Back to commit', () => showCommit(c)), snapshotView(snapshot)); $('status').textContent = 'Snapshot ready';
   }), button('Current graph references', async () => {
     const p = params(); p.set('id', c.id);
-    const data = await api<{ currentGraphImpact: unknown }>('/commit', p);
-    detail.append(el('h3', 'Current graph references'), json(data.currentGraphImpact));
+    const data = await api<{ currentGraphImpact: { nodes: {id: string; name: string; path: string}[]; dependents: string[]; interpretation: string } }>('/commit', p);
+    if (!current()) return;
+    const impact = data.currentGraphImpact;
+    detail.append(el('h3', 'Affected code in the current checkout'), el('p', impact.interpretation, 'muted'));
+    for (const n of impact.nodes) { const row = el('p'); row.append(graphLink(`${n.name} · ${n.path}`, n.id)); detail.append(row); }
+    if (!impact.nodes.length) detail.append(el('p', 'No matching nodes in the current index; files may have moved or been deleted.'));
+    detail.append(el('h3', 'Current dependents'));
+    for (const id of impact.dependents) { const row = el('p'); row.append(graphLink(id, id)); detail.append(row); }
   }));
   detail.append(actions, el('h3', `${c.files.length} changed files`));
   for (const f of c.files) detail.append(button(`${f.status} ${f.oldPath ? `${f.oldPath} → ` : ''}${f.path}  +${f.additions ?? '?'}/−${f.deletions ?? '?'}`, async () => {
+    const fileSelection = ++selectionSerial;
+    const current = () => fileSelection === selectionSerial;
     const p = params(); p.set('path', f.path);
     const data = await api<{ commits: MemoryCommit[]; lineage: string[]; reason: string }>('/entity', p);
-    detail.replaceChildren(el('h2', f.path), el('p', data.reason, 'muted'), el('p', `Lineage: ${data.lineage.join(' ← ')}`));
+    if (!current()) return;
+    detail.replaceChildren(button('Back to commit', () => showCommit(c)), el('h2', f.path), el('p', data.reason, 'muted'), el('p', `Lineage: ${data.lineage.join(' ← ')}`));
     for (const item of data.commits) detail.append(button(`${item.id.slice(0, 8)} ${item.message.split('\n')[0]}`, () => showCommit(item)));
     detail.append(button('Blame first 50 lines', async () => {
       const q = new URLSearchParams({ ref: c.id, path: f.path });
       const r = await fetch(`/api/git-memory/blame?${q}`); if (!r.ok) throw new Error('Blame unavailable for this file/range');
-      detail.append(el('pre', await r.text()));
+      const text = await r.text(); if (current()) detail.append(el('pre', text));
     }));
   }));
-  detail.append(el('h3', 'FEHM analysis'), el('p', 'Path-based categories are hints. They do not prove a security fix or architectural change.', 'muted'), events(c.events));
+  const technical = el('details'); technical.append(el('summary', 'Inspect detected changes and their evidence'), el('p', 'Path-based categories are hints. They do not prove a security fix or architectural change.', 'muted'), events(c.events)); detail.append(technical);
 }
 async function timeline() {
   const token = ++serial;
   const data = await api<{ commits: MemoryCommit[] }>('/search');
   if (token !== serial) return;
-  results.replaceChildren(el('h2', 'Change timeline'));
+  results.replaceChildren(el('h2', 'Change timeline'), el('p', `${data.commits.length} matching commits. Open a change to inspect its stated intent, affected files and actual diff. Categories are analysis hints, not verified milestones.`, 'muted'));
   if (!data.commits.length) results.append(el('p', 'No commits match these filters.'));
   for (const c of data.commits) {
-    const row = el('article', '', 'event');
-    row.append(el('p', `${c.at.slice(0, 10)} · ${c.author}`, 'muted'), button(c.message.split('\n')[0] || '(no commit message)', () => showCommit(c)), el('p', `${c.id.slice(0, 8)} · ${c.files.length} files · ${c.events.filter(e => e.type.startsWith('SYMBOL_')).length} symbol events`));
+    const row = el('article', '', 'event'); row.dataset.commit = c.id;
+    row.append(el('p', `${c.at.slice(0, 10)} · ${c.author}`, 'muted'), button(c.message.split('\n')[0] || '(no commit message)', () => showCommit(c)), el('p', changeSummary(c)));
     const chips = el('div', '', 'chips');
     c.classifications.forEach(k => chips.append(el('span', k, 'chip'))); row.append(chips); results.append(row);
   }
@@ -118,9 +135,13 @@ function comparison() {
   const a = el('label', 'Before revision'), b = el('label', 'After revision'); a.append(from); b.append(to);
   controls.append(a, b);
   for (const [title, action, post] of [['Compare changes','/compare',false], ['Compare analyzer snapshots','/snapshot-compare',true]] as const) controls.append(button(title, async () => {
+    const selection = ++selectionSerial;
     $('status').textContent = post ? 'Analyzing both revisions…' : 'Comparing…';
     const data = await api<unknown>(action, new URLSearchParams({ from: from.value, to: to.value }), post);
-    detail.replaceChildren(el('h2', title), post ? comparisonView(data as ReturnType<typeof compareMemorySnapshots>) : json(data)); $('status').textContent = 'Comparison ready';
+    if (selection !== selectionSerial) return;
+    const readable = el('div');
+    if (!post) { const changes = data as {files: FileChange[]; interpretation: string}; readable.append(el('p', `${changes.files.length} file${changes.files.length === 1 ? '' : 's'} differ between the selected revisions.`), el('p', changes.interpretation, 'muted')); for (const f of changes.files) readable.append(el('p', `${f.status} ${f.oldPath ? f.oldPath + ' → ' : ''}${f.path} (+${f.additions ?? '?'}/−${f.deletions ?? '?'})`)); const evidence = el('details'); evidence.append(el('summary', 'Full comparison evidence'), json(data)); readable.append(evidence); }
+    detail.replaceChildren(el('h2', title), post ? comparisonView(data as ReturnType<typeof compareMemorySnapshots>) : readable); $('status').textContent = 'Comparison ready';
   }));
   results.append(controls);
 }
@@ -130,24 +151,30 @@ async function render() {
   if (tab === 'timeline') await timeline();
   else if (tab === 'activity') activity();
   else if (tab === 'compare') comparison();
-  else { results.replaceChildren(el('h2', 'Recorded measurements'), el('p', 'Observations retain their dirty-state and candidate status. They are separate from reconstructed committed snapshots.', 'muted'), json(await api<unknown>('/observations'))); }
+  else { const token = ++serial; const observations = await api<unknown>('/observations'); if (token !== serial) return; results.replaceChildren(el('h2', 'Recorded measurements'), el('p', 'Observations retain their dirty-state and candidate status. They are separate from reconstructed committed snapshots.', 'muted'), json(observations)); }
 }
 async function load() {
   $('status').textContent = 'Indexing local history…'; $('status').className = '';
-  report = await api<GitMemoryReport>('/report');
+  const token = ++loadSerial;
+  const next = await api<GitMemoryReport>('/report');
+  if (token !== loadSerial) return;
+  report = next;
+  selectionSerial++;
+  detail.replaceChildren(el('h2', 'Choose a change'), el('p', 'Select a timeline entry to inspect its evidence.'));
   const select = form.elements.namedItem('ref') as HTMLSelectElement;
   const value = select.value;
   select.replaceChildren(new Option('HEAD', 'HEAD'), ...report.refs.map(r => new Option(r.name.replace(/^refs\/(heads|tags|remotes)\//, ''), r.name)));
   select.value = value; if (!select.value) select.value = 'HEAD';
   const summary = $('summary'), stats = el('div', '', 'stats'); summary.replaceChildren();
   for (const [n, label] of [[report.totalCommits, 'Reachable commits'], [new Set(report.commits.map(c => c.email)).size, 'Contributors in window'], [report.refs.filter(r => r.name.startsWith('refs/heads/')).length, 'Local branches'], [report.commits.reduce((n,c) => n+c.events.length,0), 'Indexed events']] as const) { const card = el('div', '', 'stat'); card.append(el('strong', String(n)), el('span', label)); stats.append(card); }
-  summary.append(stats, el('p', `${report.branch ?? 'Detached / no branch'} · ${report.coverage.indexed} commits indexed · ${report.coverage.reused} reused${report.dirty ? ' · Working tree has uncommitted changes; history shows committed state' : ''}`, 'muted'));
+  const counts = el('details'); counts.append(el('summary', 'History scope and counts'), stats);
+  summary.append(el('h2', report.available ? 'What changed in this project?' : 'No repository history is available'), el('p', report.commits.length ? `The indexed window contains ${report.commits.length} commits. ${report.churn[0] && report.churn[0].changes > 1 ? `${report.churn[0].path} changed ${report.churn[0].changes} times in this window.` : `Latest recorded change: ${report.commits[0]!.message.split('\n')[0]}.`} Commit messages provide stated intent; undocumented motivations remain unknown.` : 'There are no commits in this window. Check the selected revision or create a commit to start a history.'), counts, el('p', `${report.branch ?? 'Detached / no branch'} · ${report.coverage.indexed} commits indexed · ${report.coverage.reused} reused${report.dirty ? ' · Working tree has uncommitted changes; history shows committed state' : ''}`, 'muted'));
   report.coverage.warnings.forEach(w => summary.append(el('p', w, 'warning')));
   $('status').textContent = report.available ? 'Local history ready' : 'No Git repository'; await render();
 }
 form.onsubmit = e => { e.preventDefault(); run(load); };
 $('refresh').onclick = () => run(load);
-document.querySelectorAll<HTMLButtonElement>('[data-tab]').forEach(b => { b.onclick = () => { tab = b.dataset.tab!; serial++; run(render); }; });
+document.querySelectorAll<HTMLButtonElement>('[data-tab]').forEach(b => { b.onclick = () => { tab = b.dataset.tab!; serial++; selectionSerial++; run(render); }; });
 const incoming = new URLSearchParams(location.search);
 for (const key of ['path','query','category']) if (incoming.has(key)) (form.elements.namedItem(key) as HTMLInputElement).value = incoming.get(key)!;
 run(load);

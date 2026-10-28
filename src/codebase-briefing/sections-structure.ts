@@ -59,7 +59,7 @@ export const overview: SectionBuilder = ({ facts, upstream, archetype }) => {
 
   const langs = languagesOf(facts);
   const stats = facts.graph.stats();
-  const sizeClaim = set.observed(`${plural(facts.sourceFiles.length, "source file")}, ${plural(facts.testFiles.length, "test file")}, ${stats.nodes - stats.files} graph entities and ${stats.edges} relationships.`, [ev(".", undefined, { source: "index", provenance: "filesystem", detail: "Feature 1 index" })]);
+  const sizeClaim = set.observed(`${plural(facts.sourceFiles.length, "source file")}, ${plural(facts.testFiles.length, "test file")}, ${stats.nodes - stats.files} graph entities and ${stats.edges} relationships.`, [ev(".", undefined, { source: "index", provenance: "filesystem", detail: "repository index" })]);
   const arch = upstream.get("architecture");
   const features = upstream.get("features");
   const rows = [
@@ -285,12 +285,17 @@ export const architecture: SectionBuilder = ({ facts }) => {
   blocks.push({
     type: "list",
     title: "Modules",
-    items: mods.map((m) => ({
-      title: facts.label(m.name),
-      detail: `${m.name} · ${plural(m.files.length, "file")} · used by ${plural(m.dependents.size, "module")} · uses ${plural(m.dependsOn.size, "module")}`,
-      path: m.files[0]!,
-      nodeId: m.files.length === 1 ? `file:${m.files[0]}` : `directory:${posix.dirname(m.files[0]!)}`,
-    })),
+    items: mods.map((m) => {
+      const documented = m.files.map((path) => ({ path, text: facts.describe(path) })).find((file) => file.text);
+      const representative = documented?.path ?? m.files[0]!;
+      const relationship = `The module contains ${plural(m.files.length, "source file")}; ${plural(m.dependents.size, "module")} depend on it and it depends on ${plural(m.dependsOn.size, "module")}.`;
+      const detail = documented ? `Source documentation in \`${documented.path}\`: ${documented.text} ${relationship}` : `${relationship} Its business responsibility is not documented in the indexed source comments.`;
+      return {
+        title: facts.label(m.name), detail, path: representative,
+        nodeId: m.files.length === 1 ? `file:${representative}` : `directory:${posix.dirname(representative)}`,
+        claim: documented ? set.declared(`Source documentation: ${documented.text}`, [ev(documented.path, undefined, { source: "documentation", provenance: "filesystem" })], "A representative file's documentation is not proof that every file has this responsibility.") : set.observed(relationship, m.files.slice(0, 4).map((path) => ev(path, undefined, { provenance: "filesystem" }))),
+      };
+    }),
   });
   return {
     id: "architecture",

@@ -1,4 +1,23 @@
-# Feature 3.10 — Engineering Guardrails
+# Feature 3.10 — Change Verification & Review
+
+## Change-derived workflow
+
+```sh
+fehm guardrails analyze --root .
+fehm guardrails verify --root . --approve
+```
+
+`analyze` is read-only. `verify` without approval also only analyzes. With batch approval, FEHM freezes the discovered commands, runs them through the existing bounded runner, and records results in the same ledger. No task file, acceptance mapping or TDD exception is required. `/guardrails` shows current working-tree scope even before a run exists; Refresh updates it. Execution stays in CLI/API. Existing strict workflows below remain supported.
+
+The audit found reusable graph/BriefingFacts relationships (3.1–3.2), architecture and drift views (3.3–3.4), Health command discovery (3.5), static Security findings (3.6), prompt workflows (3.7), Git wrappers (3.8), and concept evidence (3.9). The coordinator reuses graph relationships, Health commands, Git and Security directly. Architecture, prompt and concept analysis remain separate views; no duplicate engines were added.
+
+Working-tree detection includes staged, unstaged, untracked and deleted paths. Renames become deletion/addition pairs to preserve both impact roots. FEHM runtime ledgers are excluded. Without Git, inventory scope is conservative and explicitly unknown. Reverse dependencies identify affected files and connected tests. Existing package checks are selected by affected package directories; full suites remain selected because graph links cannot establish a safe runner-specific subset. Documentation-only changes skip executable checks. Risk categories explain path and dependency evidence without a numeric score. Every executable change receives static security analysis, with relevant findings retaining original evidence, confidence and remediation. Static findings are concerns, not confirmed exploits.
+
+Successful evidence is reused only for the same content fingerprint, discovered policy and Git scope. Subsequent edits stale the analysis and results. TDD is unknown for already-written changes. Missing tests and absent connected tests remain explicit gaps even if discovered checks pass. Security analysis still scans through Feature 3.6 and filters findings to the affected scope; it does not claim incremental scanner execution. No agent statements or unbound CI results are accepted.
+
+Limitations: changed-symbol and API-contract comparison, automatic CI ingestion, native IDE hooks, framework-specific test result adapters, automatic baseline execution, and continuous background watching are not implemented. Integrators may invoke the CLI or `Guardrails.verifyChange(approved)` at checkpoints. Non-TAP test successes remain inconclusive. Installed dependency and environment changes are outside content attestation. Risk heuristics cannot prove compatibility or security. Historical failures require the existing explicit baseline workflow. No new dependencies, model calls, network scanners or autonomous remediation were introduced.
+
+## Optional strict workflow (existing)
 
 FEHM now supports an explicit, local change-verification workflow through `fehm guardrails`, the exported `Guardrails` API, and the `/guardrails` dashboard. It records evidence from approved commands rather than accepting a coding agent's assertion that tests passed.
 

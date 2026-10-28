@@ -73,7 +73,7 @@ test("project convention mining: every planted deviation, measured against the p
   assert.equal(auth.category, "security-boundary");
   assert.ok(auth.attention === "high" || auth.attention === "critical");
   assert.equal(find(r, "src/services/reports.service.ts|tests").category, "testing");
-  assert.equal(find(r, "src/utils/helperFinal.ts|naming").category, "naming");
+  assert.ok(!r.findings.some(f => f.category === "naming"), "Naming preferences belong to health, not architecture drift");
 
   // Conforming units produce nothing, and the database client the repositories build on is part of the boundary.
   assert.ok(!r.findings.some((f) => f.unit?.path === "src/controllers/users.controller.ts"));

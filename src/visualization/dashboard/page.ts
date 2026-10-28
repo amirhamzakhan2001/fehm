@@ -35,7 +35,7 @@ function navItem(f: FeatureEntry): string {
 }
 
 function card(f: FeatureEntry): string {
-  return `<a class="card" href="${dashboardHref(f.id)}"><div class="card-top"><span class="card-ic">${icon(f.icon)}</span><span class="code">${f.group === "tool" ? "Feature " : ""}${escapeHtml(f.code)}</span></div>` +
+  return `<a class="card" href="${dashboardHref(f.id)}"><div class="card-top"><span class="card-ic">${icon(f.icon)}</span></div>` +
     `<h3>${escapeHtml(f.title)}</h3><p>${escapeHtml(f.summary)}</p><span class="open">Open <span aria-hidden="true">→</span></span></a>`;
 }
 
@@ -72,7 +72,6 @@ nav{flex:1;overflow:auto;padding:10px 8px;display:flex;flex-direction:column;gap
 .item[aria-current=page]::before{content:"";position:absolute;left:-8px;top:8px;bottom:8px;width:3px;border-radius:0 3px 3px 0;background:var(--accent)}
 .item .ic{flex:none;color:var(--muted)}.item[aria-current=page] .ic{color:var(--accent)}
 .item .t{overflow:hidden;text-overflow:ellipsis;flex:1}
-.code{font-family:var(--mono);font-size:10.5px;color:var(--muted);border:1px solid var(--line-2);border-radius:4px;padding:0 5px}
 #index-status{flex:none;display:flex;align-items:center;gap:8px;padding:12px 16px;border-top:1px solid var(--line);font-size:12px;color:var(--muted);min-width:0}
 #index-status span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .dot{width:8px;height:8px;border-radius:50%;flex:none;background:var(--faint)}

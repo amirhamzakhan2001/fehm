@@ -17,7 +17,7 @@ import type { ArchNodeType, DiagramLayout, DriftMark } from "../architecture/typ
 
 export const DRIFT_SCHEMA = "2.0";
 /** Bump when findings change for the same code (invalidates cached history points). */
-export const DRIFT_VERSION = "2";
+export const DRIFT_VERSION = "3";
 export const CONTRACT_VERSION = 1;
 
 // ─── vocabulary ─────────────────────────────────────────────────────
@@ -394,6 +394,7 @@ export interface DriftSummary {
 }
 
 export interface DriftReport {
+  areas?: import('./scope.js').ArchitectureArea[];
   schemaVersion: string;
   version: string;
   repository: { name: string; root: string };
@@ -442,6 +443,7 @@ export interface SourceExcerpt {
 }
 
 export interface CommitDetail {
+  diffTruncated?: boolean;
   ref: string;
   short: string;
   subject: string;

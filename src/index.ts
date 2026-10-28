@@ -67,3 +67,10 @@ export * from "./concepts/context.js";
 
 export { Guardrails, suggestedPolicy, validatePolicy, classify } from "./guardrails/workflow.js";
 export type { GuardRun, GuardPolicy, GuardCheck, Requirement, CheckEvidence, CheckStatus, Phase } from "./guardrails/types.js";
+
+export { analyzeChange, type ChangeAnalysis } from './guardrails/change.js';
+
+export { investigate } from './debugging/investigate.js';
+export { InvestigationStore } from './debugging/store.js';
+export { investigationContext } from './debugging/context.js';
+export type { Investigation, FailureInput, Hypothesis, DiagnosticAction, Reproduction } from './debugging/types.js';

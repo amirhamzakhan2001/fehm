@@ -811,10 +811,10 @@ function separateStubs(rows: string[][], items: Map<string, Item>, hops: Hop[], 
   for (const st of stubs) byChannel.set(st.channel, [...(byChannel.get(st.channel) ?? []), st]);
   const ofItem = new Map<string, Stub[]>();
   for (const st of stubs) ofItem.set(st.item, [...(ofItem.get(st.item) ?? []), st]);
-  // A descending stub near a rising one is resolved by track order (see assignTracks); only
-  // same-side stubs and straight runs (which span the whole channel) need distinct x.
+  // Opposite-side stubs also need separation: cyclic track-order constraints
+  // can force a crossing next to a bend even when their preferred order is known.
   const clashAt = (st: Stub, x: number, ignore: Set<Stub>): boolean =>
-    (byChannel.get(st.channel) ?? []).some((o) => !ignore.has(o) && o.edge !== st.edge && Math.abs(o.get() - x) < MIN && (o.side === st.side || o.straight() || st.straight()));
+    (byChannel.get(st.channel) ?? []).some((o) => !ignore.has(o) && o.edge !== st.edge && Math.abs(o.get() - x) < MIN);
   const rowIndex = new Map<string, number>();
   rows.forEach((r) => r.forEach((id, i) => rowIndex.set(id, i)));
   const neighbourRoom = (it: Item, x: number): boolean => {
@@ -960,7 +960,13 @@ function placeLabel(edge: LayoutEdge, w: number, obstacles: Rect[], placed: Rect
       }
     }
   }
-  return candidates.find(
+  // Crowded channels can block the nearest offset while leaving space a few
+  // pixels farther away. Keep these as fallbacks and retain every collision check.
+  const nearby = candidates.flatMap(c => [6, 12].flatMap(offset => [
+    {...c, x:c.x + offset}, {...c, x:c.x - offset},
+    {...c, y:c.y + offset}, {...c, y:c.y - offset},
+  ]));
+  return [...candidates, ...nearby].find(
     (c) =>
       !obstacles.some((o) => overlaps(c, o)) &&
       !placed.some((p) => overlaps(inflate(c, 4), p)) &&

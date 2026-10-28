@@ -1,3 +1,4 @@
+import type { ReadinessProfile } from './readiness.js';
 import { createHash } from "node:crypto";
 import { join } from "node:path";
 import { matchesAny } from "../drift/contract.js";
@@ -33,6 +34,7 @@ export interface Thresholds {
 }
 
 export interface HealthConfig {
+  readiness: { profiles: ReadinessProfile[] };
   ignore: string[];
   thresholds: Thresholds;
   coverage: string[];
@@ -46,7 +48,7 @@ export const DEFAULT_THRESHOLDS: Thresholds = { cyclomatic: 10, cognitive: 15, n
 export const DEFAULT_LICENSES = { deny: [] as string[], review: ["GPL-*", "AGPL-*", "LGPL-*", "SSPL-*", "EUPL-*", "OSL-*", "CPAL-*", "BUSL-*", "Elastic-*", "CC-BY-NC-*", "CC-BY-SA-*"] };
 
 export function defaultConfig(): HealthConfig {
-  return { ignore: [], thresholds: { ...DEFAULT_THRESHOLDS }, coverage: [], licenses: { deny: [...DEFAULT_LICENSES.deny], review: [...DEFAULT_LICENSES.review] } };
+  return { readiness: { profiles: [] }, ignore: [], thresholds: { ...DEFAULT_THRESHOLDS }, coverage: [], licenses: { deny: [...DEFAULT_LICENSES.deny], review: [...DEFAULT_LICENSES.review] } };
 }
 
 export function readHealthConfig(root: string): { config: HealthConfig; file?: string; issues: string[] } {
@@ -63,8 +65,17 @@ export function parseHealthConfig(raw: unknown): { ok: true; config: HealthConfi
   const config = defaultConfig();
   if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return { ok: false, issues: ["$: expected an object"] };
   const o = raw as Record<string, unknown>;
-  const known = new Set(["$schema", "ignore", "thresholds", "coverage", "licenses"]);
+  const known = new Set(["$schema", "ignore", "thresholds", "coverage", "licenses", "readiness"]);
   for (const k of Object.keys(o)) if (!known.has(k)) issues.push(`$.${k}: unknown setting`);
+  if (o.readiness !== undefined) {
+    const r = o.readiness as { profiles?: unknown };
+    if (!r || typeof r !== 'object' || Array.isArray(r) || Object.keys(r).some(k => k !== 'profiles') || !Array.isArray(r.profiles) || r.profiles.length > 50) issues.push('$.readiness: expected profiles array (maximum 50)');
+    else for (const value of r.profiles) {
+      const p = value as ReadinessProfile;
+      if (!p || typeof p !== 'object' || Object.keys(p).some(k => !['include', 'audience'].includes(k)) || !strings(p.include) || !p.include.length || p.include.some(g => g.startsWith('/') || g.split('/').includes('..')) || !['public','private','local','unknown'].includes(p.audience)) issues.push('$.readiness.profiles: each profile requires relative include globs and public/private/local/unknown audience');
+      else config.readiness.profiles.push({ include: p.include, audience: p.audience });
+    }
+  }
   if (o.ignore !== undefined) {
     if (!strings(o.ignore)) issues.push("$.ignore: expected an array of glob strings");
     else config.ignore = o.ignore;

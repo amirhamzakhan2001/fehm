@@ -216,7 +216,7 @@ function testFindings(report: TestReport, facts: BriefingFacts, sources: Set<str
         why: "Without tests, every change relies on manual checking, and refactoring is unsafe.",
         action: "Add tests for the entry points and the most-used modules first (see Critical test gaps once tests exist).",
         confidence: "strong",
-        evidence: [{ type: "absence", detail: "No file is classified as a test by the Feature 1 scanner (test/ folders, *.test.*, *_test.*, test_*.py …)." }],
+        evidence: [{ type: "absence", detail: "No file is classified as a test by the repository scanner (test/ folders, *.test.*, *_test.*, test_*.py …)." }],
         missing: ["Test files named or located by a recognised convention."],
       }),
     );

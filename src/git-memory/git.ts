@@ -50,6 +50,9 @@ export function blob(root: string, commit: string | null, path: string): string 
   if (text.includes('\0')) throw new Error('Binary content');
   return text;
 }
+export function commitHistoryDiff(root: string, ref: string): string {
+  return git(root, ['show', '--format=', '--root', '--no-ext-diff', '--no-textconv', '--no-color', revision(root, ref), '--']);
+}
 export function rawHistoryDiff(root: string, before: string, after: string): string {
   return git(root, ['diff', '--no-ext-diff', '--no-textconv', '--no-color', revision(root, before), revision(root, after), '--']);
 }

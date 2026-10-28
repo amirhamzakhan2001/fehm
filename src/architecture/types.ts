@@ -14,9 +14,9 @@ import type { EdgeKind, Provenance } from "../model.js";
 
 export const ARCHITECTURE_SCHEMA = "1.0";
 /** Bump when the semantic model's output changes shape or meaning. */
-export const ARCHITECTURE_VERSION = "3";
+export const ARCHITECTURE_VERSION = "4";
 /** Bump when layout geometry changes for the same semantic input. */
-export const LAYOUT_VERSION = "2";
+export const LAYOUT_VERSION = "3";
 
 /**
  * How strongly the code supports a claim.

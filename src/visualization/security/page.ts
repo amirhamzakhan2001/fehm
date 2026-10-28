@@ -56,7 +56,7 @@ ${REPORT_RESPONSIVE_CSS}
   <nav id="toc" aria-label="Sections"></nav>
   <main id="content" aria-live="polite"></main>
 </div>
-<div id="overlay"><div class="box"><h2 id="overlay-title">Reviewing security…</h2><p id="overlay-text">Data flow, secrets, routes, pipelines, infrastructure and AI integrations, from Feature 1's index. No model calls.</p><button id="overlay-action" hidden>Retry</button></div></div>
+<div id="overlay"><div class="box"><h2 id="overlay-title">Reviewing security…</h2><p id="overlay-text">Data flow, secrets, routes, pipelines, infrastructure and AI integrations, from the repository index. No model calls.</p><button id="overlay-action" hidden>Retry</button></div></div>
 <div id="toast" role="status" aria-live="polite" hidden></div>
 <script type="module" src="/security/assets/security/ui/main.js"></script>
 </body></html>`;

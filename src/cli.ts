@@ -1,4 +1,9 @@
 #!/usr/bin/env node
+import { investigate } from './debugging/investigate.js';
+import { InvestigationStore } from './debugging/store.js';
+import { investigationContext } from './debugging/context.js';
+import type { FailureInput } from './debugging/types.js';
+import { analyzeChange } from './guardrails/change.js';
 import { Guardrails, suggestedPolicy, type GuardPolicy, type Requirement, type Phase } from "./guardrails/workflow.js";
 import { OntologyIndex } from "./concepts/catalog.js";
 import { ConceptService } from "./visualization/concepts/service.js";
@@ -29,7 +34,7 @@ import { dashboardHref, FEATURES } from "./visualization/features.js";
 import { buildCodebaseBriefing, withFreshness } from "./codebase-briefing/briefing.js";
 import { DEPTH_BUDGET, renderBriefing, type BriefingDepth } from "./codebase-briefing/render.js";
 import { SECTION_IDS, type SectionId } from "./codebase-briefing/types.js";
-import { readFileSync } from "node:fs";
+import { readFileSync, statSync } from "node:fs";
 import { VIEW_TYPES, type ViewType } from "./architecture/types.js";
 import { renderArchitectureText } from "./architecture/text-report.js";
 import { ArchitectureService } from "./visualization/architecture/service.js";
@@ -47,7 +52,10 @@ const HELP = `fehm — local codebase understanding & context engine
 
 Usage: fehm <command> [args] [--root DIR] [--json]
 
-  guardrails plan | start --file TASK.json | history
+  debug --input FILE | --location PATH --line N | --run-id ID --evidence-id ID [--save]
+  debug report|context|delete --id ID
+  debug run --id ID --action-id ID --approve
+  guardrails analyze | verify [--approve] | plan | start --file TASK.json | history
   guardrails run --run-id ID --check-id ID --phase baseline|red|green|refactor --approve
   guardrails security|report|exception|review --run-id ID [--reason TEXT] [--gate]
                                      explicit local verification workflow; plan shows policy template
@@ -97,7 +105,7 @@ Usage: fehm <command> [args] [--root DIR] [--json]
                                      prompt inventory, evidence, candidate revisions and recorded-output evaluation
   serve [--port 4317]                localhost dashboard: graph, briefing, architecture, drift, health, security and engine views
 
-Skills (Feature 2 — skill routing; nothing is installed unless you ask):
+Skills (Skill Routing — skill routing; nothing is installed unless you ask):
   skills index [--force]             build/refresh the skill registry (incremental)
   skills list [--category C] [--source S] [--kind K]
   skills search "<query>" [--limit N]
@@ -109,7 +117,7 @@ Skills (Feature 2 — skill routing; nothing is installed unless you ask):
   skills freshness [--upstream REPO=DIR]...  local changes since indexing / upstream changes
   skills eval [--file eval/skills-bench.json]
   agent-context "<task>" [--total-budget N] [--skill-budget N] [--code-budget N] [--no-skills]
-                                     skill context + Feature 1 code context in one budget
+                                     skill context + Context Engine code context in one budget
 
 Common: --intent locate|explain|change|debug|test|architecture  --depth 0-3
 Skills: --skills DIR (catalog, default: bundled skills/)  --skill-source NAME=DIR (extra SKILL.md tree)
@@ -122,6 +130,7 @@ interface Args {
 }
 
 const VALUE_FLAGS = new Set([
+  "input", "location", "evidence-id", "failure-revision", "id", "action-id", "tokens",
   "run-id", "check-id", "phase", "expected-test", "reason",
   "concept-id", "bytes", "ref", "from", "to", "path", "entity", "author", "since", "until", "line",
   "prompt-id", "prompt-mode", "prompt-eval", "prompt-comparison", "prompt-check",
@@ -206,10 +215,44 @@ async function main(argv: string[]): Promise<number> {
   };
 
   switch (command) {
+    case "debug": {
+      const store = new InvestigationStore(root, stateDirectory), action = rest[0] ?? "analyze";
+      if (action === "delete") {
+        store.remove(flag(args,"id") ?? ""); out({deleted:true},json,()=>"Investigation deleted"); return 0;
+      }
+      if (action === "run") {
+        const result = await store.run(flag(args,"id") ?? "",flag(args,"action-id") ?? "",args.bools.has("approve"));
+        if (args.bools.has("save")) store.save(result);
+        out(result,json,()=>JSON.stringify(result,null,2)); return 0;
+      }
+      if (!["analyze","report","context"].includes(action)) throw new Error("Unknown debugging action");
+      const engine = FehmEngine.open(root,{...indexOptions,dryRun:true});
+      if (action === "report" || action === "context") {
+        const report=store.current(flag(args,"id") ?? "",engine);
+        const result=action === "context" ? investigationContext(report,num(args,"tokens") ?? 4000) : report;
+        out(result,json,()=>action === "context" ? (result as {text:string}).text : JSON.stringify(result,null,2));return 0;
+      }
+      const input:FailureInput={};
+      const file=flag(args,"input"), location=flag(args,"location"), runId=flag(args,"run-id"), evidenceId=flag(args,"evidence-id"), revision=flag(args,"failure-revision");
+      if (file) {if (statSync(resolve(file)).size>128*1024) throw new Error("Failure input exceeds 128 KiB");input.text=readFileSync(resolve(file),"utf8");}
+      if (location) input.location={path:location,line:num(args,"line") ?? 1};
+      if (runId) input.runId=runId;
+      if (evidenceId) input.evidenceId=evidenceId;
+      if (revision) input.failureRevision=revision;
+      const report=investigate(engine,input);
+      if (args.bools.has("save")) store.save(report);
+      out(report,json,()=>JSON.stringify(report,null,2));return 0;
+    }
     case "guardrails": {
       const service = new Guardrails(root), action = rest[0] ?? "history";
       let result: unknown;
-      if (action === "plan") result = { task: "Describe the change", requirements: [{ id: "acceptance-1", text: "Describe observable acceptance criteria", origin: "user", confirmed: false, checks: [] }], policy: suggestedPolicy(root) };
+      if (action === "analyze") result = analyzeChange(root);
+      else if (action === "verify") {
+        const verification = await service.verifyChange(args.bools.has("approve"));
+        out(verification, json, () => JSON.stringify(verification, null, 2));
+        return args.bools.has("gate") && !verification.report?.readiness.startsWith("verified_") ? 1 : 0;
+      }
+      else if (action === "plan") result = { task: "Describe the change", requirements: [{ id: "acceptance-1", text: "Describe observable acceptance criteria", origin: "user", confirmed: false, checks: [] }], policy: suggestedPolicy(root) };
       else if (action === "start") {
         const path = flag(args, "file"); if (!path) throw new Error("start requires --file TASK.json");
         const input = JSON.parse(readFileSync(resolve(path), "utf8")) as { task: string; requirements: Requirement[]; policy: GuardPolicy; mode?: "agent-integration" | "fehm-directed" | "verification-only" };

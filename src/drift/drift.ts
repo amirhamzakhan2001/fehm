@@ -1,3 +1,4 @@
+import { architectureAreas } from './scope.js';
 import { buildArchitectureModel } from "../architecture/model.js";
 import type { ArchitectureModel } from "../architecture/types.js";
 import { BriefingFacts } from "../codebase-briefing/facts.js";
@@ -9,7 +10,6 @@ import { assemble } from "./group.js";
 import { minePatterns } from "./mining.js";
 import { evaluateRules } from "./rules.js";
 import { ATTENTION_ORDER } from "./signal.js";
-import { aiSignals } from "./signals.js";
 import { DRIFT_SCHEMA, DRIFT_VERSION, type Attention, type BaselineSummary, type Confidence, type DriftGroup, type DriftReport, type PracticeComparison, type RuleResult } from "./types.js";
 import { extractUnits } from "./units.js";
 
@@ -51,8 +51,9 @@ export function analyzeDrift({ engine, facts = new BriefingFacts(engine), model 
   const mined = minePatterns({ units, facts, model, context, files: inv, decisions: patternDecisions });
   const outsideName = (id: string): string => model.nodes.find((n) => n.id === id)?.name ?? id;
   const rules: { results: RuleResult[]; signals: typeof mined.signals } = contract ? evaluateRules(contract, units, outsideName) : { results: [], signals: [] };
-  const ai = aiSignals(engine, facts, skip);
-  const signals = [...rules.signals, ...mined.signals, ...ai];
+  // General lint/quality signals belong to Health; they do not establish architecture drift.
+  const ai: typeof mined.signals = [];
+  const signals = [...rules.signals, ...mined.signals.filter(s => s.category !== "naming" && !(s.kind === "tests" && s.attention === "informational")), ...ai];
   const { findings, decided, clusters } = assemble(signals, { units, model, practices: mined.practices, context, decisions });
 
   const byGroup = Object.fromEntries((["structure", "dependencies", "responsibilities", "patterns", "runtime", "engineering", "historical", "ai"] as DriftGroup[]).map((g) => [g, 0])) as Record<DriftGroup, number>;
@@ -95,8 +96,9 @@ export function analyzeDrift({ engine, facts = new BriefingFacts(engine), model 
   const deps: Record<string, string[]> = {};
   for (const u of units) deps[u.path] = [...u.fileDeps, ...u.outside.keys()].sort();
 
-  const unknowns = [...context.unknowns];
+  const unknowns = [...context.unknowns, ...(decisions.issues ?? [])];
   unknowns.push("Relationships are static (imports, calls, SQL, SDK imports). Runtime-only coupling — dependency-injection containers, reflection, message topics, HTTP between services — is not observed.");
+  unknowns.push("General naming, TODO, unused-code and duplication signals are evaluated in Project Health, not treated as architectural deviations. Authentication analysis follows up to four import steps (100 files); it does not prove middleware order, authorization coverage or runtime enforcement. Deployment controls, password storage and rate limiting require dedicated evidence; absence from this report is not a pass.");
   unknowns.push("Responsibilities are detected from code signals (routes, SQL, SDK imports, env reads, validation and auth calls). Business logic as such is not classified.");
   if (mined.patterns.length && !established.length) unknowns.push("No project pattern is strong enough to be called a convention yet (too few comparable units, or they disagree).");
   if (baseline.explicit.rejected) unknowns.push(`${CONTRACT_FILE} could not be used (${baseline.explicit.rejected.issues.length} problems); explicit rules were skipped.`);
@@ -109,6 +111,7 @@ export function analyzeDrift({ engine, facts = new BriefingFacts(engine), model 
     fingerprint: model.fingerprint,
     generatedAt: new Date().toISOString(),
     context,
+    areas: architectureAreas(context, units),
     baseline,
     patterns: mined.patterns,
     practices: mined.practices,

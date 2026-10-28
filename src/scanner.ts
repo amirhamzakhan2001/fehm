@@ -56,11 +56,13 @@ export function classifyRole(path: string, language: Language): FileRole {
     if (/\.config\.[cm]?[jt]s$/.test(name) || /^\.?[a-z]+rc\.[cm]?js$/.test(name)) return "config";
     return "source";
   }
-  if (language === "markdown") return "docs";
+  if (language === "markdown" || /\.txt$/i.test(name)) return "docs";
   if (language === "json" || language === "yaml" || language === "toml" || EXTRA_CONFIG_NAMES.has(name)) return "config";
   // Infrastructure as code and build/CI definitions without a language of their own (read by 3.3's deployment view and 3.6).
   if (/\.(?:tf|tfvars|hcl)$/.test(name) || /^Dockerfile\.|\.dockerfile$|^Jenkinsfile$|^Containerfile$/i.test(name)) return "config";
   if (/\.(?:prompt|jinja2?|prompt\.txt)$/.test(name) || /(?:^|\/)(?:prompts?|templates?)\/.*\.txt$/.test(path)) return "config";
+  // Literal HTML is indexed as a delivery asset, not executable source.
+  if (/\.html?$/i.test(name)) return "config";
   return "other";
 }
 

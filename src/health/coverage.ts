@@ -10,7 +10,7 @@ import type { CoverageArtifact, CoverageFile, CoverageFormat, CoverageReport, Pr
  * describes is still read, but those files are marked stale.
  */
 
-const CANDIDATES: [string, CoverageFormat][] = [
+export const COVERAGE_CANDIDATES: [string, CoverageFormat][] = [
   ["coverage/lcov.info", "lcov"],
   ["lcov.info", "lcov"],
   ["coverage/lcov/lcov.info", "lcov"],
@@ -52,7 +52,7 @@ export function readCoverage(root: string, indexed: readonly string[], extra: st
   const found: { path: string; format: CoverageFormat }[] = [];
   const dirs = ["", ...manifestDirs.filter((d) => d && d !== ".")];
   for (const dir of dirs) {
-    for (const [rel, format] of CANDIDATES) {
+    for (const [rel, format] of COVERAGE_CANDIDATES) {
       const p = dir ? posix.join(dir, rel) : rel;
       if (existsSync(join(root, p)) && !found.some((f) => f.path === p)) found.push({ path: p, format });
     }

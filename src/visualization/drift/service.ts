@@ -155,7 +155,10 @@ export class DriftService {
       });
       const out: CommitDetail = { ref: commit, short: commit.slice(0, 7), subject, author, date, files };
       // The path goes after `--`, so git treats it as a path, never an option.
-      if (path && !path.includes("..") && !path.startsWith("/")) out.diff = git(["show", "--format=", commit, "--", path]).split("\n").slice(0, 240);
+      if (path && (path.includes("..") || path.startsWith("/"))) return {error:"Invalid source path"};
+      const diff = git(["show", "--no-ext-diff", "--no-textconv", "--no-color", "--format=", commit, "--", ...(path ? [path] : [])]).split("\n");
+      out.diff = diff.slice(0, 240);
+      out.diffTruncated = diff.length > 240;
       return out;
     } catch (e) {
       return { error: (e as Error).message.split("\n")[0]! };

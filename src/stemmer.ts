@@ -3,7 +3,7 @@
  *
  * Upstream: rohitg00/agentmemory @ bcf4f0d00d1c71e9221287a4778e4122ce2d7574
  * File:     src/state/stemmer.ts  (Apache-2.0; attribution in THIRD_PARTY_NOTICES.md)
- * Changes:  none to the algorithm; this header added and three `!` non-null
+ * Changes: authorization terms are protected from author/authority collisions; three `!` non-null
  *           assertions for Fehm's `noUncheckedIndexedAccess` compiler setting.
  */
 const step2map: Record<string, string> = {
@@ -41,6 +41,8 @@ function endsCVC(s: string): boolean {
 }
 
 export function stem(word: string): string {
+  // Permission checks are a different concept from authors and authority notices.
+  if (/^authori[sz](?:e|es|ed|ing|ation|ations)$/.test(word)) return "authz";
   if (word.length <= 2) return word;
 
   let w = word;

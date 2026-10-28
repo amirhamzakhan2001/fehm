@@ -7,7 +7,7 @@ import type { AddressInfo } from 'node:net';
 import { test } from 'node:test';
 import { makeRepo, tempDir, writeFile } from './helpers.js';
 import { compareGitMemory, entityGitHistory, indexGitMemory, renderGitMemory, searchGitMemory } from '../src/git-memory/history.js';
-import { historyBlame, rawHistoryDiff } from '../src/git-memory/git.js';
+import { commitHistoryDiff, historyBlame, rawHistoryDiff } from '../src/git-memory/git.js';
 import { compareMemorySnapshots, historicalSnapshot } from '../src/git-memory/snapshots.js';
 import { startServer } from '../src/server.js';
 const git = (root: string, ...args: string[]) => execFileSync('git', args, { cwd: root, encoding: 'utf8', stdio: ['ignore','pipe','pipe'] }).trim();
@@ -119,4 +119,11 @@ test('Git memory CLI and HTTP serve real history, validate methods and expose br
     assert.equal((await request('/api/git-memory?limit=bad')).status, 400);
     assert.match((await request('/api/git-memory/context')).body, /FEHM project memory/);
   } finally { await new Promise<void>(r => server.close(() => r())); }
+});
+
+ test('root commit diff is available without inventing a parent revision', () => {
+  const root = repository();
+  const diff = commitHistoryDiff(root, 'HEAD');
+  assert.match(diff, /new file mode/); assert.match(diff, /authenticate/);
+  assert.throws(() => commitHistoryDiff(root, '--help'));
 });

@@ -11,7 +11,8 @@ import type { Practice, ProjectType } from "./types.js";
  * a research notebook repository is not a layered backend.
  */
 
-const BACKEND: ProjectType[] = ["backend-service", "microservice", "monorepo"];
+// Repository packaging alone does not establish a server deployment.
+const BACKEND: ProjectType[] = ["backend-service", "microservice"];
 const SERVER: ProjectType[] = [...BACKEND, "data-pipeline"];
 const APPS: ProjectType[] = [...BACKEND, "web-application", "mobile"];
 const CODEBASES: ProjectType[] = [...APPS, "cli", "library", "data-pipeline", "ml-project", "game", "infrastructure"];

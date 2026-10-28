@@ -32,7 +32,9 @@ export function createConceptRoutes(options: ConceptServiceOptions = {}): ViewRo
                 const engine = action === '/refresh' ? ctx.reindex() : ctx.engine();
                 if (action === '/refresh')
                     service.refreshCatalog(engine);
-                if (action === '/catalog')
+                if (action === '/inventory')
+                    reply(200, { concepts: service.index(engine).all() });
+                else if (action === '/catalog')
                     reply(200, service.index(engine).summary());
                 else if (action === '/lookup')
                     reply(200, service.index(engine).lookup(p.get('q') ?? '', { ...(p.get('section') ? { section: p.get('section')! } : {}), ...(p.get('type') ? { type: p.get('type')! } : {}), limit: Number(p.get('limit') ?? 30) }));
