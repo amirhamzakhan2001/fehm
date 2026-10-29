@@ -1,6 +1,6 @@
 # Assistant integrations
 
-These guides target FEHM **1.0.0**, the first release. Public registry publication is pending; begin with the reviewed wheel.
+These guides target FEHM **1.0.0**, the first release. FEHM is available on PyPI; begin with `uv tool install fehm`. npm publication is pending.
 
 Install the CLI first using [installation](guides/installation.md). Register the first-party Fehm skill using `fehm install --platform <client>` (personal) or add `--project` at the intended project root. `fehm integrations` reports status; `fehm uninstall` removes the selected scope's managed entrypoint. Add `--dry-run` to preview writes; customized files require explicit force with backup. The same lifecycle implementation serves selected catalog skills.
 

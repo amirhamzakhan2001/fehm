@@ -54,8 +54,9 @@ test('all static pages have meaningful SEO, resolvable local links and current r
   const install=await readFile(path.join(output,'getting-started/index.html'),'utf8');
   assert.match(install,/uv tool install/);
   assert.match(install,/fehm doctor/);
-  assert.match(install,/publication is pending/);
-  assert.doesNotMatch(install,/uv tool install fehm(?:\s|$)|py3-none-PLATFORM/);
+  assert.match(install,/Available on PyPI|Install from PyPI/);
+  assert.match(install,/uv tool install fehm(?:\s|$)/);
+  assert.doesNotMatch(install,/py3-none-PLATFORM|supplied wheel/);
   assert.match(await readFile(path.join(output,'robots.txt'),'utf8'),/Disallow: \//);
   const server=createServer();
   try {
@@ -185,7 +186,7 @@ test('public examples use current command families and supported assistant desti
   const content = pages('1.0.0');
   for(const page of content) for(const [,example] of page.body.matchAll(/<pre><code>([\s\S]*?)<\/code><\/pre>/g)) {
     for(const [,command] of example.matchAll(/\bfehm ([a-z][a-z-]*)/g)) assert.ok(commands.has(command),`${page.path}: unsupported ${command}`);
-    assert.doesNotMatch(example,/uv tool install fehm(?:\s|$)|py3-none-PLATFORM|--watch|fehm serve \.fehm/);
+    assert.doesNotMatch(example,/py3-none-PLATFORM|--watch|fehm serve \.fehm/);
   }
   const codex = content.find(p=>p.path==='/integrations/codex/').body;
   assert.match(codex,/\.agents\/skills\/fehm\/SKILL\.md/);

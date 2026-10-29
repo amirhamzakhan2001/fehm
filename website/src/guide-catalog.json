@@ -7,7 +7,7 @@
   {
     "id": "installation",
     "title": "Installation",
-    "description": "Install a supplied wheel with uv, verify its private runtime, and preserve project state across upgrades."
+    "description": "Install FEHM from PyPI with uv, verify its private runtime, and preserve project state across upgrades."
   },
   {
     "id": "quickstart",

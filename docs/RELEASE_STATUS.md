@@ -1,6 +1,6 @@
 # FEHM 1.0.0 release status
 
-FEHM 1.0.0 is the first release, prepared for publication. Public PyPI/npm publication and website deployment are pending. Install a reviewed wheel supplied by the maintainer using the [installation guide](guides/installation.md).
+FEHM 1.0.0 is the first release and is available on PyPI. The public website is deployed. npm publication and the GitHub release remain pending. Install FEHM with `uv tool install fehm`; see the [installation guide](guides/installation.md).
 
 ## Recorded validation
 
@@ -23,11 +23,10 @@ Same-version reinstall preserved project state and skills. Public-registry upgra
 
 ## Before public publication
 
-- Confirm package-name ownership and configure registry authentication or trusted publishing.
+- Confirm npm package-name ownership and configure npm authentication or trusted publishing if an npm release is desired.
 - Review source, artifact contents, licenses and checksums for the release commit.
 - Run platform and client acceptance tests for every additional support claim.
 - Review the Karpathy skill snapshot's missing standalone license text; its MIT declaration is retained, but no missing upstream license was invented.
-- Publish approved artifacts, then verify a fresh public-registry installation before advertising registry commands.
-- Deploy the reviewed website and verify live routes, version, canonical URLs and hosting behavior.
+- Verify the live website routes, version, canonical URLs and hosting behavior after each deployment.
 
 See [maintainer release instructions](DEPLOYMENT.md). Source publication, package publication and website deployment are separate operations.

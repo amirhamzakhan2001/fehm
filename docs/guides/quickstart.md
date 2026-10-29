@@ -1,6 +1,6 @@
 # Quickstart
 
-Install the maintainer-supplied wheel using [installation](installation.md). These steps need no AI assistant, provider key or FEHM source checkout.
+Install FEHM from PyPI using [installation](installation.md). These steps need no AI assistant, provider key or FEHM source checkout.
 
 ## Scan your project
 

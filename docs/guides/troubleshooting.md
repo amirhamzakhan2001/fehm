@@ -2,11 +2,11 @@
 
 ## Command or package not found
 
-FEHM is not publicly released on PyPI/npm yet. Obtain the reviewed wheel and follow [installation](installation.md). Run uv tool update-shell and open a new terminal. Use uv tool dir --bin to locate the launcher. A registry 404 is not a reason to install an unrelated similarly named package.
+Install FEHM from PyPI with `uv tool install fehm`, then run `uv tool update-shell` and open a new terminal. Use `uv tool dir --bin` to locate the launcher. npm publication remains pending, so do not install an unrelated similarly named npm package.
 
 ## Runtime assets or wrong version
 
-Run fehm --version and fehm doctor. The doctor reports the runtime directory, private Node version and required assets. Reinstall the reviewed wheel with dependencies if assets are missing. Stop older server processes before upgrading. Do not copy the generated executable without its uv environment.
+Run fehm --version and fehm doctor. The doctor reports the runtime directory, private Node version and required assets. If assets are missing, run `uv tool install --reinstall fehm`. Stop older server processes before upgrading. Do not copy the generated executable without its uv environment.
 
 ## Skill not discovered
 
