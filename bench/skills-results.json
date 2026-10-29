@@ -1,0 +1,268 @@
+{
+  "generatedAt": "2026-09-26T18:20:19.608Z",
+  "node": "v26.0.0",
+  "catalog": {
+    "skills": 1018,
+    "fullTokens": 2339721
+  },
+  "registry": {
+    "fullIndexMs": 2216.6,
+    "cacheHitMs": 31.2,
+    "incrementalMs": 53.2,
+    "incrementalReindexed": 1,
+    "lexicalIndexBuildMs": 156.6
+  },
+  "quality": {
+    "seed": {
+      "cases": 39,
+      "recall": 0.914,
+      "precision": 0.957,
+      "f1": 0.935,
+      "recallAt": {
+        "1": 0.886,
+        "3": 1,
+        "5": 1
+      },
+      "precisionAt": {
+        "1": 0.971,
+        "3": 0.762,
+        "5": 0.583
+      },
+      "top": {
+        "1": 0.886,
+        "3": 1,
+        "5": 1
+      },
+      "forbiddenRate": 0,
+      "overSelection": 0.051,
+      "meanSelected": 1.026,
+      "abstention": {
+        "cases": 4,
+        "correct": 4
+      },
+      "ambiguity": {
+        "cases": 0,
+        "correct": 0
+      },
+      "tokens": {
+        "mean": 1481,
+        "max": 2486
+      },
+      "latencyMs": {
+        "p50": 3.464,
+        "p95": 12.942,
+        "max": 18.763
+      }
+    },
+    "heldout1": {
+      "cases": 24,
+      "recall": 0.944,
+      "precision": 0.917,
+      "f1": 0.93,
+      "recallAt": {
+        "1": 0.917,
+        "3": 1,
+        "5": 1
+      },
+      "precisionAt": {
+        "1": 1,
+        "3": 0.778,
+        "5": 0.633
+      },
+      "top": {
+        "1": 0.944,
+        "3": 1,
+        "5": 1
+      },
+      "forbiddenRate": 0,
+      "overSelection": 0.125,
+      "meanSelected": 1.167,
+      "abstention": {
+        "cases": 2,
+        "correct": 2
+      },
+      "ambiguity": {
+        "cases": 4,
+        "correct": 4
+      },
+      "tokens": {
+        "mean": 1408,
+        "max": 2474
+      },
+      "latencyMs": {
+        "p50": 2.518,
+        "p95": 7.907,
+        "max": 10.052
+      }
+    },
+    "heldout2": {
+      "cases": 14,
+      "recall": 0.7,
+      "precision": 0.7,
+      "f1": 0.7,
+      "recallAt": {
+        "1": 0.65,
+        "3": 0.8,
+        "5": 0.8
+      },
+      "precisionAt": {
+        "1": 0.8,
+        "3": 0.633,
+        "5": 0.6
+      },
+      "top": {
+        "1": 0.7,
+        "3": 0.8,
+        "5": 0.8
+      },
+      "forbiddenRate": 0,
+      "overSelection": 0.286,
+      "meanSelected": 1,
+      "abstention": {
+        "cases": 2,
+        "correct": 2
+      },
+      "ambiguity": {
+        "cases": 2,
+        "correct": 2
+      },
+      "tokens": {
+        "mean": 1393,
+        "max": 2500
+      },
+      "latencyMs": {
+        "p50": 1.896,
+        "p95": 7.236,
+        "max": 7.236
+      }
+    },
+    "heldout3": {
+      "cases": 10,
+      "recall": 0.667,
+      "precision": 0.714,
+      "f1": 0.69,
+      "recallAt": {
+        "1": 0.667,
+        "3": 0.667,
+        "5": 0.667
+      },
+      "precisionAt": {
+        "1": 0.833,
+        "3": 0.556,
+        "5": 0.4
+      },
+      "top": {
+        "1": 0.667,
+        "3": 0.667,
+        "5": 0.667
+      },
+      "forbiddenRate": 0.1,
+      "overSelection": 0.3,
+      "meanSelected": 0.8,
+      "abstention": {
+        "cases": 3,
+        "correct": 2
+      },
+      "ambiguity": {
+        "cases": 1,
+        "correct": 1
+      },
+      "tokens": {
+        "mean": 1469,
+        "max": 2456
+      },
+      "latencyMs": {
+        "p50": 2.075,
+        "p95": 6.922,
+        "max": 6.922
+      }
+    }
+  },
+  "ablation": {
+    "note": "Held-out sets 1–3 combined (48 cases). Routing-level only: no agent was run, so completion/tests/tool calls/errors/rework are not measured.",
+    "A_noSkills": {
+      "recall": 0,
+      "precision": 0,
+      "f1": 0,
+      "skillTokensMean": 0
+    },
+    "B_allSkills": {
+      "recall": 1,
+      "precisionNote": "every skill loaded; precision ≈ relevant/1018",
+      "skillTokens": 2339721,
+      "fitsBudget": false
+    },
+    "C_manual": {
+      "recall": 1,
+      "precision": 1,
+      "f1": 1,
+      "skillTokensMean": 1388,
+      "note": "oracle: first labelled skill per required group"
+    },
+    "D_auto": {
+      "recall": 0.824,
+      "precision": 0.814,
+      "f1": 0.819,
+      "top1": 0.824,
+      "top3": 0.882,
+      "skillTokensMean": 1416,
+      "forbiddenRate": 0.021,
+      "latencyP50Ms": 1.677,
+      "latencyP95Ms": 7.268
+    },
+    "E_autoPlusFeature1": {
+      "runs": [
+        {
+          "task": "Fix the authentication bug in token validation and add tests",
+          "ms": 21.4,
+          "skills": 2461,
+          "code": 2858,
+          "total": 5341,
+          "selected": [
+            "debugging/systematic-debugging",
+            "testing/test-driven-development"
+          ]
+        },
+        {
+          "task": "How does payment processing work?",
+          "ms": 5.4,
+          "skills": 1098,
+          "code": 3070,
+          "total": 4182,
+          "selected": [
+            "code-intelligence/code-explorer"
+          ]
+        },
+        {
+          "task": "Refactor the user repository to remove duplication",
+          "ms": 5.3,
+          "skills": 1218,
+          "code": 2469,
+          "total": 3705,
+          "selected": [
+            "workflows/refactoring"
+          ]
+        },
+        {
+          "task": "Add rate limiting to the API routes",
+          "ms": 6.4,
+          "skills": 2451,
+          "code": 2717,
+          "total": 5182,
+          "selected": [
+            "workflows/feature-development"
+          ]
+        }
+      ],
+      "note": "combined context on bench/corpus; routing quality equals D (Feature 1 contributes the repository profile and code context)"
+    },
+    "F_autoPlusHistory": {
+      "recall": 0.824,
+      "precision": 0.814,
+      "f1": 0.819,
+      "top1": 0.824,
+      "forbiddenRate": 0.021,
+      "note": "feedback derived from seed-set labels only"
+    }
+  }
+}

@@ -1,323 +1,155 @@
 <p align="center">
-  <img src="assets/brand/readme-banner.svg" alt="Fehm — Know the code. Understand the change. Local codebase intelligence for you and your AI assistant." width="100%">
+  <img src="assets/brand/readme-banner.svg" alt="FEHM — Know the code. Understand the change." width="100%">
 </p>
 
-<h1 align="center">Fehm</h1>
+# FEHM
 
-<p align="center">
-  <a href="https://github.com/amirhamzakhan2001/fehm/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/amirhamzakhan2001/fehm/ci.yml?branch=main&amp;style=flat-square&amp;label=CI%20%26%20tests" alt="CI and tests"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-22977a?style=flat-square" alt="License: MIT"></a>
-  <a href="https://github.com/amirhamzakhan2001/fehm/pulls"><img src="https://img.shields.io/github/issues-pr/amirhamzakhan2001/fehm?style=flat-square&amp;label=pull%20requests" alt="Open pull requests"></a>
-  <a href="https://github.com/amirhamzakhan2001/fehm/releases"><img src="https://img.shields.io/badge/release-not%20published-64748b?style=flat-square" alt="Release: not published"></a>
-  <a href="https://github.com/amirhamzakhan2001/fehm/releases"><img src="https://img.shields.io/badge/release%20downloads-not%20available-64748b?style=flat-square" alt="Release downloads: not available"></a>
-</p>
-<p align="center">
-  <a href="src/"><img src="https://img.shields.io/badge/engine-TypeScript-3178c6?style=flat-square&amp;logo=typescript&amp;logoColor=white" alt="TypeScript engine"></a>
-  <a href="python/"><img src="https://img.shields.io/badge/installer-Python%20%2B%20uv-7057c7?style=flat-square" alt="Python and uv installer"></a>
-  <a href="#security-and-badge-status"><img src="https://img.shields.io/badge/SLSA-not%20assessed-64748b?style=flat-square" alt="SLSA: not assessed"></a>
-  <a href="#security-and-badge-status"><img src="https://img.shields.io/badge/OpenSSF-not%20assessed-64748b?style=flat-square" alt="OpenSSF: not assessed"></a>
-</p>
+**Local codebase intelligence for developers and coding agents.**
 
-**Understand your codebase. Give your AI assistant better context. Review changes with evidence.**
+FEHM turns a repository into a searchable graph of files, symbols, imports and calls. Explore the code in a local dashboard, give your assistant focused source context, and investigate changes with evidence linked to the code.
 
-Fehm builds a persistent local graph of your repository’s files, symbols and relationships. Explore it from the terminal, connect it to your coding assistant, or open the localhost cockpit. Use the same graph to assemble source context, inspect change impact and detect drift from your approved architecture and engineering practices.
+[Documentation](docs/README.md) · [Quickstart](docs/guides/quickstart.md) · [Assistant integrations](docs/INTEGRATIONS.md) · [MCP](docs/guides/mcp.md) · [Contributing](#development) · [License](LICENSE)
 
-Source scanning and ordinary graph queries run locally. Model-based features use a provider only when configured and invoked.
+> **First release: 1.0.0.** Prepared for publication; PyPI and npm publication are pending. Use a reviewed wheel supplied by the maintainer. See [release status](docs/RELEASE_STATUS.md) for validation and remaining gates.
 
-## Contents
+## Why FEHM?
 
-- [About](#about)
-- [Releases and packages](#releases-and-packages)
-- [Capabilities](#capabilities)
-- [Get started](#get-started)
-- [Connect your assistant](#connect-your-assistant)
-- [Everyday workflows](#everyday-workflows)
-- [Open-source foundations](#open-source-foundations)
-- [Scope and limits](#scope-and-limits)
-- [Build and contribute](#build-and-contribute)
-- [Contributors and acknowledgments](#contributors-and-acknowledgments)
-- [Resources](#resources)
-- [Security and badge status](#security-and-badge-status)
-- [Brand assets](#brand-assets)
-- [Documentation](#documentation)
-- [License](#license)
+- **Understand unfamiliar code.** Follow symbols and relationships, inspect architecture, and read explanations tied to source locations.
+- **Give agents relevant context.** Retrieve focused code under an estimated token budget and select useful workflows from the bundled skill catalog.
+- **Review changes with evidence.** Inspect architectural drift, static security findings, project health, Git history and verification records.
+- **Work locally.** Core indexing and retrieval run without a model provider. Use the CLI, localhost dashboard or optional MCP server.
 
-## About
+FEHM reports what static analysis can establish. Dynamic behavior and incomplete language coverage remain explicit limitations.
 
-Local codebase intelligence for AI coding assistants: source graphs, focused context, architecture drift and evidence-linked code review.
+## Installation
 
-Fehm is built for developers understanding unfamiliar repositories, teams reviewing changes and AI assistants that need source-backed context. One repository graph supports terminal exploration, assistant tools and a private browser workspace.
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/), then install the supplied wheel:
 
-### How it works
-
-```mermaid
-flowchart LR
-    A[Repository source] --> B[Local graph with evidence]
-    B --> C[Budgeted context]
-    B --> D[Architecture and practice checks]
-    B --> E[Change impact]
-    C --> F[CLI · MCP · cockpit]
-    D --> F
-    E --> F
-    C -. Explicit provider opt-in .-> G[Open Code Review]
-```
-
-## Releases and packages
-
-The source version is **1.4.0**. A source version is not a published release.
-
-| Distribution | Current availability | Where to find it |
-| --- | --- | --- |
-| GitHub Releases | No releases published | [Releases](https://github.com/amirhamzakhan2001/fehm/releases) |
-| Release downloads | No release assets available yet | Build a wheel using the [developer guide](docs/DEPLOYMENT.md) |
-| GitHub Packages | No packages published | [Packages](https://github.com/users/amirhamzakhan2001/packages?repo_name=fehm) |
-| Python distribution | Local or maintainer-supplied wheels; public PyPI publication pending | [Install with uv](#get-started) |
-
-<details>
-<summary>Maintainer publishing links</summary>
-
-- [Create a new release](https://github.com/amirhamzakhan2001/fehm/releases/new)
-- [Publish your first GitHub package](https://github.com/amirhamzakhan2001/fehm/packages)
-- [Release and deployment instructions](docs/DEPLOYMENT.md)
-
-GitHub Releases, GitHub Packages and PyPI are separate distribution channels. Fehm’s uv installation workflow uses Python wheels; publishing a GitHub package alone does not make `uv tool install fehm` available. Before publication, run the release checks and validate each wheel on its target platform.
-
-</details>
-
-## Capabilities
-
-Fehm’s features are grouped into ten connected workflows. The [feature guide](docs/FEATURES.md) explains their full scope and limits.
-
-| Workflow | What you can do |
-| --- | --- |
-| **Understand the codebase** | Explore symbols, imports, callers, dependencies, entry points and execution paths, with source locations and relationship evidence. |
-| **Build focused context** | Assemble relevant code, tests, architecture, decisions and history under an estimated token budget. Keep strong matches while giving related files space. |
-| **Detect architecture drift** | Propose and approve project boundaries, inspect dependency violations and identify new violations as code changes. |
-| **Maintain engineering practices** | Review 31 checks spanning development, testing, security, AI, delivery and operations. Choose required or advisory controls and compare evidence against a saved baseline. |
-| **Review changes** | Inspect Git diffs and blast radius, run preflight checks, or invoke the bundled Open Code Review engine with repository context and source-linked findings. |
-| **Verify behavior** | Select affected tests, execute supported project checks and use explicit mutation-testing or historical bug-replay workflows. |
-| **Inspect quality and reliability** | Review dependency risk, dead code, security flows, coverage gaps, API compatibility, infrastructure and supplied runtime evidence. |
-| **Engineer AI systems** | Analyze prompts and tool contracts, evaluate model behavior, compare models, optimize against held-out cases and retain evaluation evidence. |
-| **Preserve project knowledge** | Explore ownership and history, retain decisions, generate onboarding notes and export linked Obsidian-compatible Markdown. |
-| **Work across tools and projects** | Use the CLI, TypeScript library, MCP or local HTTP cockpit. Watch source changes and explore multiple indexed projects. |
-
-## Get started
-
-Install Fehm with **uv**. The platform-specific wheel contains the compiled engine and Open Code Review; a pinned dependency supplies its private Node runtime. End users do not need a separate npm or Node installation.
-
-The current distribution workflow uses a supplied or locally built wheel. Replace the example path and `PLATFORM` with the actual wheel filename:
-
-```bash
-uv tool install /path/to/fehm-1.4.0-py3-none-PLATFORM.whl
+```sh
+uv tool install /absolute/path/to/fehm-1.0.0-py3-none-any.whl
 uv tool update-shell
 fehm --version
+fehm doctor
+```
 
-cd /absolute/path/to/your/project
+The wheel includes the compiled engine and its JavaScript dependencies. A pinned dependency supplies private Node.js, so end users need neither a FEHM checkout nor a separate Node/npm installation.
+
+Installed-artifact testing currently covers **macOS ARM64 with Python 3.11**. Other platforms remain unverified. Your project's dependencies, Git and test tools are separate. See [installation](docs/guides/installation.md) for prerequisites, updates and removal.
+
+## Quickstart
+
+Run FEHM in your own repository:
+
+```sh
+cd /path/to/your/project
 fehm scan .
-fehm query "authentication flow"
-fehm serve .fehm/graph.json --watch
+fehm search "authentication"
+fehm context "authentication flow" --budget 4000
+fehm serve --port 7332
 ```
 
-Open **http://127.0.0.1:7331** to explore the cockpit. Stop the server with Ctrl+C. Graph state is stored in `.fehm/` by default.
+Open **http://127.0.0.1:7332** to explore the graph and analysis views. Stop the server with Ctrl+C. Project state is stored in `.fehm/`.
 
-The repository’s release workflow has not yet published the public PyPI package. Use the wheel workflow above; `uv tool install fehm` is intended for the official registry release. See [installation, building and deployment](docs/DEPLOYMENT.md) for the complete steps.
+## What you can do
 
-Git workflows need Git, and executing your project’s tests or builds needs that project’s own toolchain. Fehm does not install project dependencies.
-
-## Connect your assistant
-
-After installing the CLI, choose a platform:
-
-| Assistant | Registration command |
+| Workflow | Capability |
 | --- | --- |
-| Claude Code | `fehm install --platform claude` |
-| Cursor | `fehm install --platform cursor` |
-| Codex | `fehm install --platform codex` |
-| Gemini CLI | `fehm install --platform gemini` |
-| GitHub Copilot CLI | `fehm install --platform copilot` |
-| VS Code / Copilot Chat | `fehm install --platform vscode` |
-| Other compatible clients | `fehm install --platform generic` |
+| Understand source | Search files and symbols, inspect relationships, trace outgoing calls and explore the codebase graph. |
+| Explain architecture | Read source-linked briefings and architecture views that distinguish observed evidence from inference. |
+| Prepare assistant context | Select relevant source and optional workflow skills within estimated token budgets. |
+| Route and install skills | Discover the bundled catalog and install selected workflows with customization protection. |
+| Inspect architectural drift | Compare structure with explicit constraints and detected conventions. |
+| Review health and security | Inspect tests, supplied coverage, dependencies, static security signals and engineering readiness. |
+| Analyze prompts | Inventory prompts and tool contracts; evaluate supplied cases and outputs. |
+| Explore Git history | Search changes, compare revisions and inspect historical analysis snapshots. |
+| Explore engineering concepts | Look up concepts and their supporting evidence in the codebase. |
+| Verify changes | Analyze working-tree impact and record explicitly approved checks in the verification ledger. |
+| Investigate failures | Connect errors and source locations to evidence, tentative hypotheses and diagnostic actions. |
 
-Registration defaults to personal scope. Add `--project` from your repository root for a project-scoped skill. The installer reports its destination and protects customized files. Reload your assistant if needed, select the Fehm skill, and ask:
+See the [guides](docs/README.md) for each workflow and its limitations. A standalone revision-aware Change Impact Engine is not part of 1.0.0.
 
-> Use Fehm to explain the authentication flow. Cite source files and distinguish explicit relationships from inferred ones.
+## Connect your coding assistant
 
-In Codex, invoke the skill with `$fehm`. Actual skill discovery depends on the client and its configuration. See [assistant setup and troubleshooting](docs/INTEGRATIONS.md).
+Install FEHM first, scan your project, then add the entry skill:
 
-### Connect through MCP
-
-Scan the repository first, then configure your client to launch Fehm. Find the executable directory with `uv tool dir --bin`:
-
-```json
-{
-  "mcpServers": {
-    "fehm": {
-      "command": "/absolute/path/to/bin/fehm",
-      "args": ["mcp", "/absolute/path/to/project/.fehm/graph.json"]
-    }
-  }
-}
+```sh
+fehm install --platform claude --project
+fehm integrations --platform claude --project
 ```
 
-Use your client’s configuration schema and actual executable path. Skill registration and MCP configuration are separate options. MCP exposes graph context and analysis tools; tools that execute commands or call providers require deliberate invocation.
+Choose `claude`, `cursor`, `codex`, `gemini`, `copilot`, `vscode` or `generic`. Omit `--project` for personal scope. Preview with `--dry-run`; remove with `fehm uninstall --platform claude --project`. Customized files are protected.
 
-## Everyday workflows
+For optional direct tool access, generate the configuration for your client:
 
-```bash
-# Assemble context and follow relationships
-fehm context "change authentication" --budget 4000
-fehm relationships authenticate --direction both
-
-# Inspect a change against an existing Git revision
-fehm impact --base HEAD~1
-fehm preflight --base HEAD~1 --understand "change authentication"
-
-# Inspect verification without executing project commands
-fehm verify --no-commands
-fehm practices audit
-fehm health
-
-# Preserve and share knowledge
-fehm onboarding --out .fehm/onboarding.md
-fehm export-obsidian --out .fehm/obsidian
+```sh
+fehm mcp-config --platform claude --root /absolute/path/to/your/project
 ```
 
-Replace symbol names and Git revisions with ones in your repository. Remove `--no-commands` from `verify` when you want to execute detected project checks. Run `fehm --help` for the complete CLI reference.
+This prints configuration for review; it does not change assistant settings. The read-only MCP server exposes context, search, focus, relationships, a system map and static project-health findings. It requires a fresh saved graph.
 
-### Architecture and engineering drift
+CLI installation, skill installation and MCP setup are separate steps. Follow the [client guides](docs/INTEGRATIONS.md) and [compatibility matrix](docs/REAL_TESTING.md). Claude Code connection is verified; Codex configuration is accepted. Full assistant sessions and other clients remain unverified.
 
-Architecture drift measures changes against **your project’s approved boundaries**. Engineering-practice drift identifies changes in repository evidence, such as a previously detected CI or testing control disappearing. Fehm does not prescribe one universal architecture or certify compliance.
+### Select workflow skills
 
-```bash
-fehm architecture propose .fehm/graph.json
-# Review and edit .fehm/architecture.proposed.json before approval.
-fehm architecture approve .fehm/graph.json
+The entry skill teaches an assistant how to use FEHM. Catalog skills provide additional workflows and are installed separately:
 
-fehm practices propose .fehm/graph.json --profile auto
-# Review and edit .fehm/practices.proposed.json before approval.
-fehm practices approve .fehm/graph.json
-fehm practices baseline .fehm/graph.json
-fehm practices audit .fehm/graph.json
+```sh
+fehm skills list --source superpowers
+fehm skills route "Debug a failing authentication test" --budget 2500
+fehm agent-context "Debug authentication" --skill debugging/systematic-debugging
+fehm skills install debugging/systematic-debugging --platform codex --project --dry-run
+fehm skills install debugging/systematic-debugging --platform codex --project
 ```
 
-Approved required practice gaps participate in preflight checks. Advisory findings remain advisory. Read the [practice policy and drift guide](docs/ENGINEERING_PRACTICES.md) before choosing enforcement rules.
+[Superpowers workflows](docs/integrations/superpowers.md) include planning, TDD, debugging and verification resources. Use `--exclude-source superpowers` on routing/context requests to exclude that source, or `--no-skills` with `agent-context` for code-only context. Hosts control discovery and invocation; installing files does not guarantee an assistant follows them. See [skill routing](docs/guides/skills.md).
 
-### Optional model-based review
+## Evidence and privacy
 
-Fehm bundles **Open Code Review** in its platform-specific wheel. Configure your provider and model, then preview the review plan:
+TypeScript and JavaScript analysis uses the TypeScript compiler. Python, Go, Rust and Java have shallower heuristic coverage. Graph edges do not prove runtime behavior, and context budgets estimate tokens rather than billing usage.
 
-```bash
-fehm review engine-version
-fehm review configure provider
-fehm review configure model
-fehm review --context "authentication changes" --profile code-review --graph-report
-```
+Ordinary scanning, retrieval and skill routing do not call an LLM. Explicitly configured summaries, reranking and external lookups can use network services. Project-command execution requires approval through the supported verification workflow; host execution is not sandbox isolation. Static findings do not certify security or production readiness. A discovered test is not a passing test result; strict TDD evidence currently supports Node TAP assertions.
 
-Add `--allow-provider` to execute the review. Provider configuration may test connectivity; reviews can transmit source and incur provider charges. Context handoff and the guidance profile apply to diff reviews, not full-file scans.
+Read [security and privacy](docs/guides/security.md), [verification](docs/guides/verification.md) and the [security policy](SECURITY.md).
 
-The graph report links findings to indexed locations and compares indexed source before and after review. Model findings remain unverified, and freshness checks exclude new files outside the index. Fehm does not automatically apply suggestions or post comments. See the [Open Code Review guide](docs/OPEN_CODE_REVIEW.md).
+## Build from source
 
-## Open-source foundations
+For contributors or users who prefer a source checkout, use Node.js 22.13 or newer. The release workflow targets Node 24. Git is needed to clone the repository and use history workflows.
 
-These components strengthen existing Fehm workflows:
-
-| Project | Contribution to Fehm |
-| --- | --- |
-| **Open Code Review** | Bundled model-based review engine, with optional Fehm context and graph-linked findings. |
-| **Graft** | Adapted file-first selection: keep the three strongest context anchors, then rotate remaining candidates across files. |
-| **Everything Claude Code** | Adapted memory relevance ranking for query and detected-technology matches. |
-| **Codebase Memory** | Adapted identifier splitting for acronym names such as `HTTPServer` and `XMLParser`. |
-| **gstack** | Adapted review-freshness classification using indexed-source snapshots. |
-| **Agency Agents** | Adapted optional review guidance covering correctness, security, maintainability, performance and testing. |
-
-Open Code Review is a bundled engine; the other five are selected source adaptations, not installations of their full products. They require no additional user setup. Exact source pins, licenses, modifications and limitations are recorded in [integration decisions](docs/OPEN_SOURCE_INTEGRATIONS.md) and [`third_party/`](third_party/).
-
-## Scope and limits
-
-- **Language depth:** TypeScript and JavaScript use compiler-backed analysis. Python, Go, Rust and Java use shallower deterministic extraction. Project TypeScript aliases and references need deeper support.
-- **Evidence:** Inferred relationships, risk scores and practice signals are review aids, not guarantees of correctness. Unresolved or dynamic relationships may be missing.
-- **Context:** Token budgets estimate rendered Markdown size from character counts. They are not model-specific token counts. Small budgets can omit relevant files.
-- **Operation:** The cockpit serves local or trusted private use. Remote binding normally requires authentication; use a trusted TLS proxy for private remote access. Public multi-tenant hosting is outside the current design.
-- **State:** Keep one active writer per project state directory. Back up approved policies, baselines, decisions and evaluation history.
-- **Validation:** Real assistant discovery, provider behavior, browser interactions, other operating systems and large-repository performance need environment-specific testing. See the [feature audit](docs/FEATURE_AUDIT.md) and [real-test guide](docs/REAL_TESTING.md).
-
-## Build and contribute
-
-Contributors need Node.js 20 or newer and npm. Building the user distribution also requires uv; the packaging step fetches the pinned Open Code Review binary for the build platform.
-
-```bash
+```sh
 git clone https://github.com/amirhamzakhan2001/fehm.git
 cd fehm
 npm ci
-npm run check
-npm test
-npm run release:check
-npm run build:python
-python3 scripts/python-smoke.py python-dist/fehm-1.4.0-py3-none-PLATFORM.whl
+npm run build
+node dist/cli.js help
+
+# Optional: make the fehm command available on PATH
+npm link
 ```
 
-Use the actual generated wheel filename. The release checks cover types, tests, build, API/localhost behavior and npm packaging. The isolated wheel smoke test checks installation and core workflows without system Node/npm. These commands do not publish or deploy.
+Then use the quickstart from your target repository. Without `npm link`, run `node /absolute/path/to/fehm/dist/cli.js scan --root /absolute/path/to/project`.
 
-For changes, preserve evidence and attribution, add meaningful regression coverage and update the affected documentation. See [system design](docs/SYSTEM_DESIGN.md), [roadmap](docs/ROADMAP.md) and [security policy](SECURITY.md).
+## Development
 
-### Website
-
-The public website lives in [`website/`](website/README.md), in the same repository with a separate build and deployment target:
-
-```bash
-npm --prefix website run dev
+```sh
+npm ci
+npm run check
+npm run build
+npm test
 npm --prefix website run check
 ```
 
-Preview at **http://127.0.0.1:4321**. The site includes capability groups, assistant setup and thirteen documentation guides. Production indexing requires a configured public URL; Google Analytics is optional and consent-based. Hosting and live analytics require deployment configuration. See the [website setup guide](website/README.md).
+For wheel construction and installed-artifact validation, install Python and uv, then run `npm run release:check`. Some checks need network access and localhost listeners.
 
-## Contributors and acknowledgments
+The CLI and engine live in `src/`; the dashboard is in `src/visualization/`. The public website lives in `website/` and shares guides with `docs/`. It is excluded from distributable packages.
 
-- **[Amir Hamza Khan](https://github.com/amirhamzakhan2001)** — project maintainer.
-- **Claude and OpenAI Codex** — AI development assistance. These are tool acknowledgments, not human maintainers or endorsements by their providers.
-- **Open-source authors and contributors** — the projects credited in [Open-source foundations](#open-source-foundations), with original notices retained in `third_party/`.
+Contributions should include a concrete problem, a focused change and relevant validation. Start with an issue for substantial changes. See [architecture references](docs/README.md#implementation-references), [documentation maintenance](docs/maintenance.md) and [release instructions](docs/DEPLOYMENT.md).
 
-Human contributors remain responsible for reviewing changes and their test evidence. GitHub’s contributor list is generated from commit authorship; README credits do not modify that list.
+## Open-source acknowledgments
 
-To contribute, open an issue describing the problem, make a focused change with relevant tests and documentation, then submit a pull request. For security reports, follow [SECURITY.md](SECURITY.md).
+FEHM builds on selected algorithms, rules and workflows from AgentMemory, Codebase Memory MCP, Graft, Skylos, Superpowers, Caveman, Ponytail, Matt Pocock's skills and other attributed sources. Archify and Open Code Review also informed research and earlier development.
 
-## Resources
-
-- [Documentation](#documentation) and [quick setup](#get-started)
-- [Report a bug or request a feature](https://github.com/amirhamzakhan2001/fehm/issues)
-- [Review pull requests](https://github.com/amirhamzakhan2001/fehm/pulls)
-- [CI and test runs](https://github.com/amirhamzakhan2001/fehm/actions/workflows/ci.yml)
-- [Releases](https://github.com/amirhamzakhan2001/fehm/releases) and [Packages](https://github.com/users/amirhamzakhan2001/packages?repo_name=fehm)
-- [Roadmap](docs/ROADMAP.md), [security policy](SECURITY.md) and [license](LICENSE)
-- [Logo and brand assets](assets/brand/README.md)
-
-## Security and badge status
-
-The CI badge reads the actual GitHub workflow, which includes engine tests, website checks, platform wheel smoke tests and a container build. Release and download badges currently state that no release or downloadable release assets are published. After the first release, update the availability table and replace the unpublished badges with live GitHub release and asset-download badges. Remote CI and pull-request badges require a publicly accessible repository; they do not represent locally run checks.
-
-SLSA and OpenSSF are marked **not assessed**. This repository does not currently establish a SLSA level, publish build-provenance attestations, or include an OpenSSF Best Practices registration or Scorecard result. These labels are status disclosures, not certification badges. See [SLSA](https://slsa.dev/), [OpenSSF Best Practices](https://www.bestpractices.dev/en) and the [security policy](SECURITY.md).
-
-## Brand assets
-
-<p align="center"><img src="assets/brand/fehm-icon.svg" width="80" alt="Fehm app icon">&nbsp;&nbsp;<img src="assets/brand/fehm-logo.svg" width="290" alt="Fehm wordmark"></p>
-
-The aperture mark brings two folded ribbons together around a diagonal opening, representing connected understanding. Use the [brand kit](assets/brand/README.md) for SVG logos, light/dark and monochrome variants, a PNG app icon, favicon setup and Vite usage. The SVG wordmark uses vector paths rather than an external font.
-
-## Documentation
-
-| Guide | Purpose |
-| --- | --- |
-| [Features](docs/FEATURES.md) | Capability details and boundaries |
-| [Deployment and installation](docs/DEPLOYMENT.md) | Developer release steps, user installation and private deployment |
-| [Assistant integrations](docs/INTEGRATIONS.md) | Registration, scopes and MCP setup |
-| [Architecture](docs/ARCHITECTURE.md) | Boundaries and ownership |
-| [Engineering practices](docs/ENGINEERING_PRACTICES.md) | Approved policies, baselines and drift |
-| [Open Code Review](docs/OPEN_CODE_REVIEW.md) | Provider setup, review scopes and reports |
-| [Open-source integrations](docs/OPEN_SOURCE_INTEGRATIONS.md) | Adopted components, attribution and limits |
-| [System design](docs/SYSTEM_DESIGN.md) | Internal architecture and data flow |
-| [Feature audit](docs/FEATURE_AUDIT.md) | Verification evidence and remaining gaps |
-| [Roadmap](docs/ROADMAP.md) | Implemented work and next priorities |
+The [third-party notices](THIRD_PARTY_NOTICES.md) distinguish adapted code, bundled instructions and references, with source revisions and retained licenses. Upstream projects are not implied to endorse FEHM.
 
 ## License
 
-Fehm is [MIT licensed](LICENSE). Bundled components retain their own licenses and notices, including Apache-2.0 for Open Code Review and MIT for the selected source adaptations. See [`third_party/`](third_party/).
+FEHM is available under the [MIT License](LICENSE). Third-party material retains its own licenses and notices.

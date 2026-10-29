@@ -1,105 +1,76 @@
-export { createConfig, type FehmConfig } from "./config.js";
-export {
-  analyzeChangeImpact,
-  collectGitDiff,
-  formatImpactReport,
-  formatVerificationReport,
-  parseUnifiedDiff,
-  readDiffFile,
-  verifyChange,
-  type GitDiffOptions,
-  type ImpactOptions,
-} from "./change.js";
-export {
-  buildContextPacket,
-  classifyIntent,
-  estimateTokens,
-  formatContextPacket,
-  retrieveContext,
-  tokenize,
-  type ContextOptions,
-  type RetrievalOptions,
-} from "./context.js";
-export { exploreRelationships, focusGraph } from "./graph.js";
-export { buildIndex, readIndex, writeIndex } from "./indexer.js";
-export {
-  approveArchitecture,
-  formatArchitectureProposal,
-  inferArchitecture,
-  readArchitectureState,
-  writeArchitectureProposal,
-} from "./architecture.js";
-export { createCockpitServer, sliceGraph, type CockpitProject, type CockpitServerOptions } from "./server.js";
-export { startProjectSynchronizer, type ProjectSynchronizer, type SynchronizerOptions } from "./synchronizer.js";
-export {
-  buildProphecies,
-  buildSystemMap,
-  detectEntryPoints,
-  explainLikeSenior,
-  exploreExecutionFlow,
-  findSystemUnknowns,
-  formatExecutionFlow,
-  formatSeniorExplanation,
-  formatSystemMap,
-} from "./system-map.js";
-export {
-  analyzePrompt,
-  comparePrompts,
-  evaluatePromptBehavior,
-  formatPromptAnalysis,
-  formatPromptDiff,
-  listPromptEvolutions,
-  readPromptEvolution,
-  savePromptVersion,
-  savePromptExecution,
-} from "./prompt-engine.js";
-export {
-  buildCodeArchaeology,
-  buildEngineeringIntelligence,
-  collectArchitectureMemory,
-  collectGitHistory,
-  compareArchitectureDrift,
-  detectPerformanceFindings,
-  formatEngineeringIntelligence,
-} from "./intelligence.js";
-export {
-  checkArchitecture,
-  detectVerificationCommands,
-  formatVerification,
-  runBuiltInStaticAnalysis,
-  runDetectedCommands,
-  runVerification,
-  scanSecurity,
-  type VerificationOptions,
-} from "./verification.js";
-export { detectHiddenDependencies, readAgentPolicy, runAgentPreflight, runFixTestVerify, whatBreaks } from "./agent-control.js";
-export { buildCoverageIntelligence, buildTestQuality, runSelectedTests, selectAffectedTests } from "./testing-intelligence.js";
-export { buildChangeDigest, buildTeamKnowledgeGraph, generateAdr, maintainAdrDrafts, readArchitectureTimeline, recordArchitectureSnapshot, saveDeveloperCheckpoint } from "./history-intelligence.js";
-export { analyzeRuntimeTrace } from "./runtime-intelligence.js";
-export { buildUnifiedHealth, detectProject, searchEverything } from "./project-intelligence.js";
-export { buildAiSystemGraph, buildPromptToolContracts, callPromptModel, executePromptAcrossModels, executePromptSuite } from "./prompt-runtime.js";
-export { refreshSemanticSummaries } from "./semantic-summary.js";
-export { buildApiContractIntelligence, buildInfrastructureGraph } from "./contract-intelligence.js";
-export { buildSecurityGraph } from "./security-graph.js";
-export { buildDeadCodeIntelligence, buildDependencyRiskIntelligence, buildHistoricalBugIntelligence } from "./code-risk-intelligence.js";
-export { buildCrossRepositoryGraph } from "./cross-repository.js";
-export { buildMutationPlan, readLatestMutationReport, runMutationTesting, type MutationTestingOptions } from "./mutation-testing.js";
-export { reproduceHistoricalBug, verifyBugFix, type BugFixVerificationOptions, type BugReproductionOptions } from "./bug-lifecycle.js";
-export { buildAgentAnalytics, buildAiEvaluationGraph, recordAgentMistake, recordAgentRun, verifyHallucinations, type AgentMistakeInput, type AgentRunInput } from "./ai-governance.js";
-export { optimizePromptWithHeldOutValidation, type PromptOptimizationOptions } from "./prompt-optimizer.js";
-export { runMcpServer } from "./mcp.js";
-export { auditEngineeringPractices, proposePracticesPolicy, approvePracticesPolicy, savePracticesBaseline, formatPracticesReport, validatePracticesPolicy, PRACTICE_RULES, type PracticesReport, type PracticesPolicy, type PracticeFinding, type PracticeProfile } from "./engineering-practices.js";
-export { backgroundServiceStatus, installBackgroundService, uninstallBackgroundService, type ServiceStatus } from "./service-manager.js";
-export {
-  analyzeGraphConnectivity,
-  assessEngineeringCapabilities,
-  auditArchitectureIntent,
-  auditProductionReadiness,
-  buildOnboardingDocument,
-  exportObsidianVault,
-  formatArchitectureIntent,
-  formatCapabilities,
-  formatProductionReadiness,
-  writeOnboardingDocument,
-} from "./project-readiness.js";
-export type * from "./model.js";
+export * from "./model.js";
+export { FehmEngine, commandProvider } from "./engine.js";
+export type { EngineStatus, ExplainResult, FlowStep, FocusResult, RelatedNode, Resolution } from "./engine.js";
+export { scanRepository, diffScan, detectLanguage, isTestPath, classifyRole, IgnoreMatcher, EXCLUDED_DIRECTORIES } from "./scanner.js";
+export { indexRepository, buildGraph, loadGraph } from "./indexer.js";
+export type { IndexOptions, IndexResult } from "./indexer.js";
+export { CodeGraph, MAX_TRAVERSAL_DEPTH } from "./graph.js";
+export type { TraversalOptions, TraversalStep } from "./graph.js";
+export { retrieve, detectIntent, buildLexicalIndex, DEFAULT_WEIGHTS } from "./retrieval.js";
+export type { RetrievalOptions, RetrievalWeights } from "./retrieval.js";
+export { buildContextPacket, renderContextPacket } from "./context.js";
+export type { ContextOptions, ContextSources } from "./context.js";
+export { diversifyHits, fileFirstRoundRobin } from "./context-selection.js";
+export { estimateTokens, compressSource, focusedExcerpt, fitToBudget, TOKEN_ESTIMATOR } from "./compression.js";
+export { deterministicSummary } from "./summary.js";
+export { generateSemanticSummaries, loadSummaries, summaryStatus, staleSummaryNodes } from "./semantic-summary.js";
+export type { SummaryProvider, SemanticSummary } from "./semantic-summary.js";
+export { addMemory, loadMemory, removeMemory, rankMemory } from "./memory.js";
+export { systemMap, connectivity } from "./system-map.js";
+export { LexicalIndex } from "./lexical-index.js";
+export { splitIdentifier, tokenize } from "./text.js";
+
+// Feature 2 — skill intelligence and routing
+export * from "./skill-model.js";
+export { SkillRegistry, StaleSkillError, BUNDLED_CATALOG, checkUpstreamFreshness } from "./skill-registry.js";
+export type { RegistrySource, RegistryReport, LoadOptions, UpstreamFreshness } from "./skill-registry.js";
+export { catalogAdapter, directoryAdapter, normalizeSkill, parseFrontmatter } from "./skill-adapters.js";
+export type { SkillAdapter, SkillEntry, RawSkill, DirectorySourceOptions } from "./skill-adapters.js";
+export { profileTask, repositoryProfile, repositoryProfileFromEngine } from "./skill-profile.js";
+export { routeSkills, routeSkillsWithReranker, commandReranker, resolveDependencies, skillOverlap, DEFAULT_SKILL_WEIGHTS, DEFAULT_SKILL_BUDGET } from "./skill-router.js";
+export type { RouteOptions, SkillReranker, SkillWeights } from "./skill-router.js";
+export { composeSkillContext, AUTHORITY_NOTICE } from "./skill-compose.js";
+export { loadSkillFeedback, recordSkillFeedback, historicalSignals } from "./skill-feedback.js";
+export { runSkillBench, scoreCase, summarize } from "./skill-eval.js";
+export type { SkillBenchCase, BenchSummary } from "./skill-eval.js";
+export { buildAgentContext } from "./agent-context.js";
+export type { AgentContext, AgentContextOptions } from "./agent-context.js";
+export { manageSkill, integrationPlatforms, installedSkillName } from "./integrations.js";
+
+// Feature 3.2 — codebase briefing (deterministic, evidence-backed)
+export * from "./codebase-briefing/types.js";
+export { buildCodebaseBriefing, withFreshness, briefingFreshness, affectedSections, SECTION_DEPENDENCIES, BUILD_ORDER } from "./codebase-briefing/briefing.js";
+export type { BriefingOptions } from "./codebase-briefing/briefing.js";
+export { renderBriefing, DEPTH_BUDGET } from "./codebase-briefing/render.js";
+export type { BriefingDepth, RenderOptions } from "./codebase-briefing/render.js";
+
+// Feature 3.7 — Prompt Intelligence
+export * from "./prompts/types.js";
+export * from "./prompts/report.js";
+export * from "./prompts/analysis.js";
+export * from "./prompts/evaluation.js";
+export * from "./prompts/optimization.js";
+export * from "./prompts/revisions.js";
+export * from "./prompts/experiment.js";
+
+// Feature 3.8 — Git Memory & Logs
+export * from "./git-memory/types.js";
+export * from "./git-memory/history.js";
+export * from "./git-memory/snapshots.js";
+export { historyBlame, rawHistoryDiff } from "./git-memory/git.js";
+
+// Feature 3.9 — Engineering concepts and ontology
+export * from "./concepts/types.js";
+export * from "./concepts/catalog.js";
+export * from "./concepts/analysis.js";
+export * from "./concepts/context.js";
+
+export { Guardrails, suggestedPolicy, validatePolicy, classify } from "./guardrails/workflow.js";
+export type { GuardRun, GuardPolicy, GuardCheck, Requirement, CheckEvidence, CheckStatus, Phase } from "./guardrails/types.js";
+
+export { analyzeChange, type ChangeAnalysis } from './guardrails/change.js';
+
+export { investigate } from './debugging/investigate.js';
+export { InvestigationStore } from './debugging/store.js';
+export { investigationContext } from './debugging/context.js';
+export type { Investigation, FailureInput, Hypothesis, DiagnosticAction, Reproduction } from './debugging/types.js';

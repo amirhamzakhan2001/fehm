@@ -5,8 +5,23 @@ import subprocess
 import sys
 
 
+def launcher_path():
+    launcher = Path(sys.argv[0]).absolute()
+    # Windows console-script wrappers can strip .exe from sys.argv[0].
+    # MCP clients need the real executable, not that extensionless name.
+    if sys.platform == "win32" and not launcher.is_file():
+        executable = launcher.with_name(launcher.name + ".exe")
+        if executable.is_file():
+            launcher = executable
+    return launcher
+
+
 def main():
-    import nodejs_wheel
+    try:
+        import nodejs_wheel
+    except ImportError:
+        print("Fehm's private Node runtime is missing. Reinstall the wheel with dependencies.", file=sys.stderr)
+        return 1
 
     runtime = Path(nodejs_wheel.__file__).resolve().parent
     node = runtime / ("node.exe" if os.name == "nt" else "bin/node")
@@ -14,11 +29,16 @@ def main():
     if not node.is_file() or not cli.is_file():
         print("Fehm installation is incomplete. Reinstall the Fehm wheel with uv tool install --reinstall.", file=sys.stderr)
         return 1
+    os.environ["FEHM_LAUNCHER"] = str(launcher_path())
     args = [str(node), str(cli), *sys.argv[1:]]
     # POSIX exec preserves stdin/stdout, the exit code, and SIGTERM/SIGINT for
     # long-running MCP and cockpit processes without leaving a wrapper behind.
     if os.name != "nt":
-        os.execv(str(node), args)
+        try:
+            os.execv(str(node), args)
+        except OSError as error:
+            print(f"Cannot launch Fehm's private Node runtime: {error}. Reinstall the wheel.", file=sys.stderr)
+            return 1
     try:
         return subprocess.call(args)
     except KeyboardInterrupt:

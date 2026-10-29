@@ -1,25 +1,15 @@
-import { createHash } from 'node:crypto';
-import { readFile, writeFile, mkdir, chmod, rename } from 'node:fs/promises';
-import { fileURLToPath } from 'node:url';
+import { readFile, access, readdir } from 'node:fs/promises';
 import path from 'node:path';
-const root = fileURLToPath(new URL('../third_party/open-code-review/', import.meta.url));
-const manifest = JSON.parse(await readFile(path.join(root, 'manifest.json'), 'utf8'));
-const platform = `${process.platform}-${process.arch}`;
-const asset = manifest.assets[platform];
-if (!asset) throw new Error(`Open Code Review does not have a pinned engine for ${platform}`);
-const target = path.join(root, 'bin', platform, process.platform === 'win32' ? 'ocr.exe' : 'ocr');
-const digest = bytes => createHash('sha256').update(bytes).digest('hex');
-if (digest(await readFile(path.join(root, 'source.tar.gz'))) !== manifest.sourceSha256) throw new Error('Vendored source archive checksum mismatch');
-let bytes;
-try { bytes = await readFile(target); } catch (e) { if (e.code !== 'ENOENT') throw e; }
-if (!bytes || digest(bytes) !== asset.sha256) {
-  const response = await fetch(asset.url, { signal: AbortSignal.timeout(180000) });
-  if (!response.ok) throw new Error(`Engine download failed (${response.status})`);
-  bytes = Buffer.from(await response.arrayBuffer());
-  if (digest(bytes) !== asset.sha256) throw new Error('Open Code Review checksum mismatch; refusing engine');
-  await mkdir(path.dirname(target), { recursive: true });
-  await writeFile(target + '.tmp', bytes, { mode: 0o755 });
-  await rename(target + '.tmp', target);
+const runtime=path.resolve('build/fehm-runtime');
+const manifest=JSON.parse(await readFile(path.join(runtime,'runtime-manifest.json'),'utf8'));
+const lock=JSON.parse(await readFile(path.join(runtime,'package-lock.json'),'utf8'));
+const entries=[];
+for(const [name,pkg] of Object.entries(lock.packages)){
+ if(!name || pkg.dev)continue;
+ const dir=path.join(runtime,name);await access(dir);
+ const files=await readdir(dir);const notices=files.filter(f=>/^(licen[sc]e|copying|notice)/i.test(f));
+ if(!pkg.license || !notices.length)throw new Error(`Review missing license/notice: ${name}`);
+ entries.push({name,version:pkg.version,license:pkg.license,notices});
 }
-await chmod(target, 0o755);
-console.log(`Verified Open Code Review ${manifest.version} for ${platform}`);
+for(const name of ['THIRD_PARTY_NOTICES.md','skills/licenses/superpowers-LICENSE.txt','skills/source-map.json','third_party/licenses/agentmemory-LICENSE.txt','third_party/licenses/codebase-memory-mcp-LICENSE.txt','third_party/licenses/Graft-LICENSE.txt','third_party/licenses/skylos-LICENSE.txt'])if(!manifest.files[name])throw new Error('Missing attribution: '+name);
+console.log(JSON.stringify({dependencies:entries.length,entries},null,2));

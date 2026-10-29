@@ -5,6 +5,7 @@ import path from 'node:path';
 import vm from 'node:vm';
 import { build, configuration, root } from '../scripts/build.mjs';
 import { createServer } from '../scripts/serve.mjs';
+import { guideCatalog, guidePages, renderGuide } from '../src/guides.mjs';
 
 test('production configuration prevents accidental preview indexing and invalid metadata',()=>{
   assert.equal(configuration({}).indexable,false);
@@ -51,8 +52,10 @@ test('all static pages have meaningful SEO, resolvable local links and current r
   assert.equal((homepage.match(/class="capability-card"/g)||[]).length,10);
   assert.doesNotMatch(homepage,/Trace a request|request map|Pause motion|Analytics settings|data-scene/);
   const install=await readFile(path.join(output,'getting-started/index.html'),'utf8');
-  assert.ok(install.includes(`fehm-${config.version}-py3-none-PLATFORM.whl`));
-  assert.match(install,/Install with uv/);
+  assert.match(install,/uv tool install/);
+  assert.match(install,/fehm doctor/);
+  assert.match(install,/publication is pending/);
+  assert.doesNotMatch(install,/uv tool install fehm(?:\s|$)|py3-none-PLATFORM/);
   assert.match(await readFile(path.join(output,'robots.txt'),'utf8'),/Disallow: \//);
   const server=createServer();
   try {
@@ -159,4 +162,55 @@ test('documentation search and visibility handling work with reduced motion',asy
   input.value='no-such-guide';handlers.search();assert.ok(cards.every(c=>c.hidden));assert.equal(status.textContent,'0 guides found.');
   input.value='';handlers.search();assert.ok(cards.every(c=>!c.hidden));
   document.hidden=true;handlers.visibilitychange();assert.ok(classes.has('page-hidden'));
+});
+
+
+test('public guides share maintained Markdown and escape unsupported HTML', async () => {
+  const pages = guidePages();
+  for (const {id,title} of guideCatalog) {
+    const markdown = await readFile(new URL(`../../docs/guides/${id}.md`,import.meta.url),'utf8');
+    assert.ok(markdown.startsWith(`# ${title}\n`));
+    assert.equal(pages.find(p=>p.path===`/docs/${id}/`).body,renderGuide(markdown));
+  }
+  assert.match(renderGuide('# Guide\n\n<script>alert(1)</script>'), /&lt;script&gt;/);
+  assert.match(renderGuide('- first\n- second\n\n## Next'), /<ul><li>first<\/li><li>second<\/li><\/ul>/);
+  assert.throws(()=>renderGuide('[missing](nonexistent-guide.md)'), /Unknown guide/);
+  assert.throws(()=>renderGuide('```sh\ncommand'), /Unclosed/);
+});
+
+test('public examples use current command families and supported assistant destinations', async () => {
+  const {pages} = await import('../src/content.mjs');
+  const cli = await readFile(new URL('../../src/cli.ts',import.meta.url),'utf8');
+  const commands = new Set([...cli.matchAll(/case "([a-z][a-z-]*)":/g)].map(m=>m[1]));
+  const content = pages('1.0.0');
+  for(const page of content) for(const [,example] of page.body.matchAll(/<pre><code>([\s\S]*?)<\/code><\/pre>/g)) {
+    for(const [,command] of example.matchAll(/\bfehm ([a-z][a-z-]*)/g)) assert.ok(commands.has(command),`${page.path}: unsupported ${command}`);
+    assert.doesNotMatch(example,/uv tool install fehm(?:\s|$)|py3-none-PLATFORM|--watch|fehm serve \.fehm/);
+  }
+  const codex = content.find(p=>p.path==='/integrations/codex/').body;
+  assert.match(codex,/\.agents\/skills\/fehm\/SKILL\.md/);
+  assert.match(content.find(p=>p.path==='/integrations/vscode/').body,/\.github\/skills\//);
+  assert.match(content.find(p=>p.path==='/docs/mcp/').body,/fehm mcp-config/);
+});
+
+test('maintained repository documentation has no broken local file links', async () => {
+  const {readdir} = await import('node:fs/promises');
+  const repo = path.resolve(root,'..');
+  const files = [path.join(repo,'README.md')];
+  async function walk(dir) {
+    for(const entry of await readdir(dir,{withFileTypes:true})) {
+      const file=path.join(dir,entry.name);
+      if(entry.isDirectory()) await walk(file);
+      else if(entry.name.endsWith('.md')) files.push(file);
+    }
+  }
+  await walk(path.join(repo,'docs'));
+  for(const file of files) {
+    const text=(await readFile(file,'utf8')).replace(/```[\s\S]*?```/g,'');
+    for(const [,target] of text.matchAll(/\[[^\]\n]*\]\(([^)]+)\)/g)) {
+      const local=target.split('#')[0];
+      if(!local || /^[a-z]+:/i.test(local) || local.startsWith('/')) continue;
+      await assert.doesNotReject(stat(path.resolve(path.dirname(file),local)),`${file}: ${target}`);
+    }
+  }
 });

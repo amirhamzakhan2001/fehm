@@ -1,6 +1,15 @@
-// Adapted from trailhq/Graft src/ask/file-selection.ts (MIT).
-// Original source, copyright, license and pinned hash: third_party/graft/.
-// Modification: omit the unused roundRobinQueues helper; assert the bounds-checked index.
+import type { RetrievalHit } from "./model.js";
+
+/*
+ * ── Upstream adaptation ───────────────────────────────────────────────────
+ * Upstream: trailhq/Graft @ 8c05769618d413041ea2c8891f82d566f0461b3c
+ * File:     src/ask/file-selection.ts (MIT; attribution in THIRD_PARTY_NOTICES.md)
+ * Copied:   FileFirstCandidate, fileFirstRoundRobin — algorithm unchanged.
+ * Changed:  `queue[depth]` → `queue[depth]!` for Fehm's noUncheckedIndexedAccess.
+ * Omitted:  roundRobinQueues (unused), and all of Graft's CLI, hooks, daemon,
+ *           graph, ranking and visualization.
+ */
+
 /** One already-ranked result and the file/partition whose output queue owns it. */
 export interface FileFirstCandidate<T> {
   group: string;
@@ -47,3 +56,38 @@ export function fileFirstRoundRobin<T>(
   return out;
 }
 
+// ── Fehm adapter ──────────────────────────────────────────────────────────
+
+export interface DiversifyOptions {
+  /**
+   * Hits kept in their original rank order before diversification. A hit is an
+   * anchor if it is within the first `maxAnchors` and scores at least
+   * `anchorRatio` × the top score.
+   */
+  maxAnchors?: number;
+  anchorRatio?: number;
+  limit?: number;
+}
+
+/**
+ * Preserve the strongest anchors, then diversify the rest across files before
+ * taking a second item from any file. Hits without a path (packages) get a
+ * singleton group, as Graft does for concepts. Duplicate node ids keep their
+ * first (best-ranked) occurrence.
+ */
+export function diversifyHits(hits: readonly RetrievalHit[], options: DiversifyOptions = {}): { ordered: RetrievalHit[]; anchors: Set<string> } {
+  const maxAnchors = options.maxAnchors ?? 3;
+  const ratio = options.anchorRatio ?? 0.75;
+  const seen = new Set<string>();
+  const unique = hits.filter((h) => (seen.has(h.nodeId) ? false : (seen.add(h.nodeId), true)));
+  const top = unique[0]?.score ?? 0;
+  const anchors: RetrievalHit[] = [];
+  const rest: RetrievalHit[] = [];
+  for (const hit of unique) {
+    if (anchors.length < maxAnchors && hit.score >= top * ratio && anchors.length === unique.indexOf(hit)) anchors.push(hit);
+    else rest.push(hit);
+  }
+  const diversified = fileFirstRoundRobin(rest.map((h) => ({ group: h.path ?? `@${h.nodeId}`, value: h })));
+  const ordered = [...anchors, ...diversified];
+  return { ordered: options.limit !== undefined ? ordered.slice(0, options.limit) : ordered, anchors: new Set(anchors.map((a) => a.nodeId)) };
+}

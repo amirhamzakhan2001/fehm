@@ -19,6 +19,36 @@
       }
     });
   }
+  // The brand glyph separates and reassembles gently as its edges are traced.
+  // Only render on scroll/resize; no perpetual animation loop.
+  const orbit = document.querySelector?.('.art-mark');
+  if (orbit) {
+    let frame = 0;
+    const paintOrbit = () => {
+      frame = 0;
+      if (reduced.matches) {
+        orbit.removeAttribute('style');
+        return;
+      }
+      const phase = Math.max(0, window.scrollY) / Math.max(1, window.innerHeight * 2.4) * Math.PI * 2;
+      const separation = (1 - Math.cos(phase)) / 2;
+      orbit.style.setProperty('--piece-x', `${separation * -7}px`);
+      orbit.style.setProperty('--piece-y', `${separation * -5}px`);
+      orbit.style.setProperty('--trace-offset', `${-phase * 24}`);
+      [[40, 24, 1], [37, 29, -.8], [43, 34, .65]].forEach(([rx, ry, speed], index) => {
+        const angle = phase * speed + index * Math.PI * 2 / 3;
+        orbit.style.setProperty(`--particle-${index + 1}-x`, `${Math.cos(angle) * rx}px`);
+        orbit.style.setProperty(`--particle-${index + 1}-y`, `${Math.sin(angle) * ry}px`);
+      });
+    };
+    const scheduleOrbit = () => {
+      if (!frame) frame = requestAnimationFrame(paintOrbit);
+    };
+    window.addEventListener('scroll', scheduleOrbit, { passive: true });
+    window.addEventListener('resize', scheduleOrbit);
+    reduced.addEventListener('change', scheduleOrbit);
+    paintOrbit();
+  }
   document.addEventListener('visibilitychange',()=>document.body.classList.toggle('page-hidden',document.hidden));
   const input=document.getElementById('docs-search');
   input?.addEventListener('input',()=>{

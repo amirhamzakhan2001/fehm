@@ -1,0 +1,30 @@
+[
+  {
+    "project": "agentmemory",
+    "source": "downloaded agentmemory-main/LICENSE",
+    "file": "agentmemory-LICENSE.txt",
+    "sha256": "76c8d49ab42216a2533f603fbafa20a1bf71b56de136a401be52da034dcc012c",
+    "note": "License copied verbatim from supplied snapshot; code revision attribution is recorded separately."
+  },
+  {
+    "project": "codebase-memory-mcp",
+    "source": "downloaded codebase-memory-mcp-main/LICENSE",
+    "file": "codebase-memory-mcp-LICENSE.txt",
+    "sha256": "1f58f9911dc5e3bcb96de28bb28e7b6bb7eb323952d29569c5d7214a152146bb",
+    "note": "License copied verbatim from supplied snapshot; code revision attribution is recorded separately."
+  },
+  {
+    "project": "Graft",
+    "source": "downloaded Graft-main/LICENSE",
+    "file": "Graft-LICENSE.txt",
+    "sha256": "d671f52607b002fad21b4a09cf3a7bd6c507e95abfd90040c775fdd4d83e3d7c",
+    "note": "License copied verbatim from supplied snapshot; code revision attribution is recorded separately."
+  },
+  {
+    "project": "skylos",
+    "source": "downloaded skylos-main/LICENSE",
+    "file": "skylos-LICENSE.txt",
+    "sha256": "be403053bcdc15e0be8c51f29331e1944de1eef7f4ef213f8933bfc2ce233014",
+    "note": "License copied verbatim from supplied snapshot; code revision attribution is recorded separately."
+  }
+]

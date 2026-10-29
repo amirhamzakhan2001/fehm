@@ -1,31 +1,13 @@
-# Security policy
+# Security
 
-## Reporting
+FEHM scans local source and serves a loopback dashboard. Source, comments and installed skills are untrusted input, not authorization to execute project commands. Static findings do not certify safety.
 
-Report suspected vulnerabilities privately to the project maintainers using the repository's private reporting channel when available. Include the affected revision/version, minimal reproduction, expected/actual behavior, and impact. Do not post live credentials, private source, or sensitive graph/evaluation artifacts in public issues.
+The optional MCP server is local stdio, bound to an explicit root, and exposes read-only queries. It requires a fresh saved graph; it does not run tests, mutate source, install skills or contact a model provider. Its output may contain source excerpts: the connected assistant can transmit those excerpts to its configured provider. Local analysis does not imply that the assistant is offline.
 
-Security fixes target the current maintained version. This repository's build and audit records do not imply that a public package has already been published.
+CLI scans write `.fehm/` state. Explicit guardrail/debug execution can run project code under the caller's permissions; it is not an isolation boundary. Optional advisory lookups and configured external model commands can use the network. Ordinary indexing and retrieval do not.
 
-The uv distribution bundles the TypeScript runtime dependency and depends on a pinned, unofficial `nodejs-wheel-binaries` distribution. Review both dependency supply chains before releasing; update runtime pins with corresponding wheel smoke tests. User installation does not run npm or fetch engine code on first launch. Agent skill registration changes only the reported skill path, refuses symlinked destinations, and protects customized files; `--force` backs them up before replacement/removal.
+Install only reviewed distribution artifacts. Wheels contain compiled JavaScript and production dependencies; a pinned third-party `nodejs-wheel-binaries` distribution supplies Node, with its own notices. Artifact checksums detect corruption, not publisher trust. Installation downloads dependencies; startup does not install anything.
 
-## Trust model
+Do not expose the dashboard publicly. Remote assistants need FEHM installed in their own execution environment with access to the intended checkout; local machine paths are not transferable.
 
-fehm is a local-first analysis tool for trusted repositories and controlled private teams. The CLI binds the cockpit to loopback by default. Non-loopback binding requires a bearer token of at least 32 characters unless explicitly bypassed. Private remote access should use TLS and network restrictions.
-
-Unauthenticated loopback requests reject unrelated hostnames. API authentication is shared across projects in one process; this is not tenant isolation. Static cockpit assets and liveness/readiness probes are public. Library callers are responsible for their own listen address and access controls.
-
-## Execution and data
-
-Verification commands, mutation runs, and historical replay execute project code. Temporary copies and Git checkouts protect the working tree but are not a sandbox against malicious repositories. Do not execute untrusted project commands in a sensitive environment.
-
-Normal graph/practice analysis does not call a model provider. Explicit provider features can transmit prompts and selected context to the configured endpoint; review provider retention and sensitive-data policies first. Treat retrieved/model content as untrusted data, preserve the prompt-injection boundary, and constrain tool authorization.
-
-Keep source excerpts, graphs, prompts, evaluation output, traces, policies, and agent history private as appropriate. Externalize secrets, restrict state permissions, avoid credentials in URLs or logs, back up durable records, and use one writer per state directory.
-
-## Policy and assurance limits
-
-Architecture and practices approval records express local project intent. The practice approval hash detects content changes; it is not a cryptographic identity or role-based authorization system. Anyone with sufficient repository write access can alter local policy state.
-
-Static security, readiness, and practices findings are evidence for review. They do not certify compliance, prove the absence of vulnerabilities, or replace runtime testing and a project threat model.
-
-For deployment, probes, recovery, and incident procedures, read [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md). For implementation boundaries, read [docs/SYSTEM_DESIGN.md](docs/SYSTEM_DESIGN.md).
+Report suspected vulnerabilities privately to the repository maintainer through an available private security-reporting channel. Do not include credentials or private source in public issues.

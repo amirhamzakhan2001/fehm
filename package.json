@@ -1,7 +1,7 @@
 {
   "name": "fehm",
-  "version": "1.4.0",
-  "description": "A local-first, provenance-aware codebase intelligence graph for AI agents.",
+  "version": "1.0.0",
+  "description": "Local-first codebase understanding, context engine and skill router for AI coding agents.",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -16,54 +16,45 @@
   },
   "files": [
     "dist",
-    "docs",
-    "examples",
-    "public",
-    "README.md",
     "LICENSE",
-    "SECURITY.md",
+    "skills",
+    "assets/ontology",
+    "THIRD_PARTY_NOTICES.md",
     "integrations",
-    "third_party/open-code-review",
-    "third_party/ecc",
-    "third_party/gstack",
-    "third_party/agency",
-    "third_party/memory",
-    "third_party/graft"
+    "SECURITY.md",
+    "third_party/licenses"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "node scripts/build.mjs",
     "check": "tsc -p tsconfig.json --noEmit",
     "test": "node --import tsx --test test/*.test.ts",
-    "test:coverage": "node --import tsx --test --experimental-test-coverage test/*.test.ts",
-    "smoke": "npm run build && node scripts/api-smoke.mjs && node scripts/localhost-smoke.mjs",
-    "release:check": "npm run check && npm test && npm run smoke && npm pack --dry-run",
-    "prepack": "npm run build",
+    "bench": "node --import tsx bench/run.ts",
     "start": "node dist/cli.js",
-    "cockpit": "node dist/cli.js serve .fehm/graph.json",
-    "cockpit:watch": "node dist/cli.js serve .fehm/graph.json --watch",
-    "package:python": "npm run build && npm run vendor:review && node scripts/package-python.mjs",
+    "bench:skills": "node --import tsx bench/skills.ts",
+    "prepack": "npm run build",
+    "package:python": "npm run build && node scripts/package-python.mjs",
     "build:python": "npm run package:python && uv build --out-dir python-dist",
-    "vendor:review": "node scripts/vendor-review.mjs"
+    "smoke": "python3 scripts/python-smoke.py",
+    "vendor:review": "node scripts/vendor-review.mjs",
+    "release:check": "npm run check && npm test && npm --prefix website run check && npm run build:python && npm run vendor:review && npm run smoke && npm run smoke:npm && python3 scripts/artifact-check.py",
+    "smoke:npm": "node scripts/npm-smoke.mjs"
   },
   "engines": {
-    "node": ">=20"
-  },
-  "publishConfig": {
-    "access": "public"
+    "node": ">=22.13"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/amirhamzakhan2001/fehm.git"
   },
-  "homepage": "https://github.com/amirhamzakhan2001/fehm#readme",
-  "bugs": {
-    "url": "https://github.com/amirhamzakhan2001/fehm/issues"
-  },
   "dependencies": {
-    "typescript": "^5.9.2"
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "three": "^0.186.1",
+    "typescript": "^5.9.2",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@types/node": "^24.3.0",
+    "@types/three": "^0.186.0",
     "tsx": "^4.20.5"
   },
   "license": "MIT"

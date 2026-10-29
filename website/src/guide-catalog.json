@@ -1,0 +1,92 @@
+[
+  {
+    "id": "overview",
+    "title": "Introduction",
+    "description": "Understand how FEHM turns local source into graph evidence, focused context and review workflows."
+  },
+  {
+    "id": "installation",
+    "title": "Installation",
+    "description": "Install a supplied wheel with uv, verify its private runtime, and preserve project state across upgrades."
+  },
+  {
+    "id": "quickstart",
+    "title": "Quickstart",
+    "description": "Find relevant code, inspect relationships and create a bounded context packet before changing a repository."
+  },
+  {
+    "id": "cli",
+    "title": "CLI reference",
+    "description": "Use the implemented FEHM command families for source context, skills, evidence and local analysis."
+  },
+  {
+    "id": "skills",
+    "title": "Skills and assistant setup",
+    "description": "Select and install optional workflow skills without replacing FEHM\u2019s context engine or your assistant configuration."
+  },
+  {
+    "id": "superpowers",
+    "title": "Superpowers workflows",
+    "description": "Use detailed planning, TDD, debugging and verification instructions with FEHM\u2019s existing repository evidence tools."
+  },
+  {
+    "id": "architecture",
+    "title": "Architecture and drift",
+    "description": "Explore source-backed architecture views and compare evidence with explicit rules and detected conventions."
+  },
+  {
+    "id": "verification",
+    "title": "Change verification",
+    "description": "Inspect working-tree impact and record actual approved checks through FEHM\u2019s existing guardrail ledger."
+  },
+  {
+    "id": "debugging",
+    "title": "Failure investigation",
+    "description": "Use failure output and code locations to collect bounded evidence and choose a useful next diagnostic action."
+  },
+  {
+    "id": "health",
+    "title": "Health, readiness and security",
+    "description": "Review engineering safeguards, supplied coverage and static security evidence without inferring code authorship."
+  },
+  {
+    "id": "git-memory",
+    "title": "Git memory and concepts",
+    "description": "Explore historical source changes and engineering concepts with explicit evidence and uncertainty."
+  },
+  {
+    "id": "cockpit",
+    "title": "Local dashboard",
+    "description": "Open FEHM\u2019s browser workspace for source exploration, engineering reports and readable context."
+  },
+  {
+    "id": "ai",
+    "title": "Prompts and model use",
+    "description": "Understand which FEHM workflows are deterministic and where optional external commands may use an LLM."
+  },
+  {
+    "id": "mcp",
+    "title": "MCP connection",
+    "description": "Connect the installed local Fehm engine using client-specific stdio configuration and fresh graph evidence."
+  },
+  {
+    "id": "open-code-review",
+    "title": "Review boundaries",
+    "description": "Use current guardrail and security evidence; a bundled Open Code Review engine is not included in this checkout."
+  },
+  {
+    "id": "open-source",
+    "title": "Open-source foundations",
+    "description": "Find the provenance and licenses for selected source adaptations and optional workflow instructions."
+  },
+  {
+    "id": "security",
+    "title": "Security and privacy",
+    "description": "Understand local processing, retained evidence and the separate boundaries for commands and external services."
+  },
+  {
+    "id": "troubleshooting",
+    "title": "Troubleshooting",
+    "description": "Resolve local setup, stale context, missing skills and incomplete verification without assuming unsupported features."
+  }
+]

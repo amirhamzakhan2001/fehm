@@ -1,0 +1,16 @@
+[
+  { "query": "Where is authentication implemented?", "relevant": ["function:src/auth/authenticate.ts#authenticateUser", "file:src/auth/authenticate.ts"] },
+  { "query": "What calls processPayment?", "relevant": ["function:src/api/routes.ts#checkoutRoute", "function:test/payments.test.ts#testCheckoutCharges"] },
+  { "query": "Where is the database connection created?", "relevant": ["function:src/db/connection.ts#createConnection", "class:src/db/connection.ts#DatabaseConnection"] },
+  { "query": "What tests cover login?", "relevant": ["file:test/auth.test.ts", "function:test/auth.test.ts#testLoginSucceeds"] },
+  { "query": "What files handle API requests?", "relevant": ["file:src/api/server.ts", "file:src/api/routes.ts", "function:src/api/routes.ts#registerRoutes", "function:src/api/server.ts#handleRequestError"] },
+  { "query": "How are bearer tokens validated?", "relevant": ["function:src/auth/token.ts#validateToken", "class:src/auth/token.ts#TokenError"] },
+  { "query": "error handling", "relevant": ["class:src/util/errors.ts#AppError", "function:src/util/errors.ts#handleError", "function:src/api/server.ts#handleRequestError"] },
+  { "query": "refund a payment", "relevant": ["function:src/payments/processor.ts#refundPayment", "method:src/payments/gateway.ts#StripeGateway.refund", "function:src/api/routes.ts#refundRoute"] },
+  { "query": "HTTPServer", "relevant": ["class:src/util/xml.ts#HTTPServer"] },
+  { "query": "how is the nightly revenue report built", "relevant": ["function:scripts/report.py#build_report", "class:scripts/report.py#ReportBuilder"] },
+  { "query": "which payment gateway charges cards", "relevant": ["class:src/payments/gateway.ts#StripeGateway", "interface:src/payments/gateway.ts#PaymentGateway", "method:src/payments/gateway.ts#StripeGateway.charge"] },
+  { "query": "how are invoices issued in the billing service", "relevant": ["class:services/billing/main.go#Invoice", "function:services/billing/main.go#NewInvoice", "interface:services/billing/main.go#Biller"] },
+  { "query": "where are sessions stored", "relevant": ["class:src/auth/session.ts#SessionStore", "function:src/auth/session.ts#createSession"] },
+  { "query": "load plugins at runtime", "relevant": ["function:src/plugins/loader.ts#loadPlugin"] }
+]

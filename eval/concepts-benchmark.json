@@ -1,0 +1,204 @@
+{
+  "scope": "Twelve small labelled rule fixtures; not representative production detection accuracy. Negative labels test conservative abstention, including languages without executable concept rules.",
+  "ontologyHash": "c845161771f6656ec99b1faf5bbe3a96f4da4c8e057e4becb343dcaa9211de71",
+  "fixtures": 12,
+  "passed": 12,
+  "precision": 1,
+  "recall": 1,
+  "falsePositiveRate": 0,
+  "modelTokenMeasurement": "Unavailable: no target-model tokenizer configured. Context bytes are measured; no token-saving percentage is claimed.",
+  "rows": [
+    {
+      "name": "typescript-await",
+      "label": {
+        "concept": "p-flow.asynchronous-execution",
+        "status": "explicitly_observed",
+        "scope": "implementation"
+      },
+      "expected": true,
+      "actual": true,
+      "pass": true,
+      "coldMs": 47.45,
+      "warmMs": 14.08,
+      "reusedFiles": 1,
+      "contextBytes": 731,
+      "modelTokens": null
+    },
+    {
+      "name": "javascript-await",
+      "label": {
+        "concept": "p-flow.asynchronous-execution",
+        "status": "explicitly_observed",
+        "scope": "implementation"
+      },
+      "expected": true,
+      "actual": true,
+      "pass": true,
+      "coldMs": 14.91,
+      "warmMs": 14.56,
+      "reusedFiles": 1,
+      "contextBytes": 731,
+      "modelTokens": null
+    },
+    {
+      "name": "unused-dependency",
+      "label": {
+        "concept": "s22.circuit-breaker",
+        "status": "structurally_supported",
+        "scope": "implementation"
+      },
+      "expected": false,
+      "actual": false,
+      "pass": true,
+      "coldMs": 13.39,
+      "warmMs": 12.11,
+      "reusedFiles": 1,
+      "contextBytes": 639,
+      "modelTokens": null
+    },
+    {
+      "name": "misleading-class",
+      "label": {
+        "concept": "s22.circuit-breaker",
+        "status": "structurally_supported",
+        "scope": "implementation"
+      },
+      "expected": false,
+      "actual": false,
+      "pass": true,
+      "coldMs": 13.86,
+      "warmMs": 12.12,
+      "reusedFiles": 1,
+      "contextBytes": 675,
+      "modelTokens": null
+    },
+    {
+      "name": "documented-architecture",
+      "label": {
+        "concept": "s24.microservices",
+        "status": "explicitly_observed",
+        "scope": "documented_claim"
+      },
+      "expected": true,
+      "actual": true,
+      "pass": true,
+      "coldMs": 13.63,
+      "warmMs": 12.8,
+      "reusedFiles": 1,
+      "contextBytes": 680,
+      "modelTokens": null
+    },
+    {
+      "name": "docs-not-production",
+      "label": {
+        "concept": "s24.microservices",
+        "status": "structurally_supported",
+        "scope": "implementation"
+      },
+      "expected": false,
+      "actual": false,
+      "pass": true,
+      "coldMs": 12.38,
+      "warmMs": 11.82,
+      "reusedFiles": 1,
+      "contextBytes": 680,
+      "modelTokens": null
+    },
+    {
+      "name": "retry-candidate",
+      "label": {
+        "concept": "s27.retry-mechanism",
+        "status": "contextually_inferred",
+        "scope": "implementation"
+      },
+      "expected": true,
+      "actual": true,
+      "pass": true,
+      "coldMs": 15.55,
+      "warmMs": 12.14,
+      "reusedFiles": 1,
+      "contextBytes": 779,
+      "modelTokens": null
+    },
+    {
+      "name": "loop-not-retry",
+      "label": {
+        "concept": "s27.retry-mechanism",
+        "status": "contextually_inferred",
+        "scope": "implementation"
+      },
+      "expected": false,
+      "actual": false,
+      "pass": true,
+      "coldMs": 13.87,
+      "warmMs": 11.72,
+      "reusedFiles": 1,
+      "contextBytes": 260,
+      "modelTokens": null
+    },
+    {
+      "name": "python-name-only",
+      "label": {
+        "concept": "s22.circuit-breaker",
+        "status": "structurally_supported",
+        "scope": "implementation"
+      },
+      "expected": false,
+      "actual": false,
+      "pass": true,
+      "coldMs": 13.89,
+      "warmMs": 12.6,
+      "reusedFiles": 1,
+      "contextBytes": 671,
+      "modelTokens": null
+    },
+    {
+      "name": "go-name-only",
+      "label": {
+        "concept": "s39.authentication",
+        "status": "structurally_supported",
+        "scope": "implementation"
+      },
+      "expected": false,
+      "actual": false,
+      "pass": true,
+      "coldMs": 13.85,
+      "warmMs": 11.86,
+      "reusedFiles": 1,
+      "contextBytes": 671,
+      "modelTokens": null
+    },
+    {
+      "name": "dynamic-dispatch-unknown",
+      "label": {
+        "concept": "s39.authorization",
+        "status": "structurally_supported",
+        "scope": "implementation"
+      },
+      "expected": false,
+      "actual": false,
+      "pass": true,
+      "coldMs": 13.39,
+      "warmMs": 11.55,
+      "reusedFiles": 1,
+      "contextBytes": 256,
+      "modelTokens": null
+    },
+    {
+      "name": "unreachable-syntax-not-runtime",
+      "label": {
+        "concept": "p-flow.asynchronous-execution",
+        "status": "structurally_supported",
+        "scope": "operation"
+      },
+      "expected": false,
+      "actual": false,
+      "pass": true,
+      "coldMs": 13.93,
+      "warmMs": 11.38,
+      "reusedFiles": 1,
+      "contextBytes": 729,
+      "modelTokens": null
+    }
+  ]
+}

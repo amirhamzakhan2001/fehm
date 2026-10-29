@@ -1,10 +1,10 @@
 [build-system]
-requires = ["hatchling>=1.27,<2"]
+requires = ["hatchling==1.33.0"]
 build-backend = "hatchling.build"
 
 [project]
 name = "fehm"
-version = "1.4.0"
+version = "1.0.0"
 description = "Local-first codebase intelligence and architecture drift checks for AI coding agents"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -13,7 +13,7 @@ dependencies = ["nodejs-wheel-binaries==24.19.0"]
 
 [project.urls]
 Repository = "https://github.com/amirhamzakhan2001/fehm"
-Documentation = "https://github.com/amirhamzakhan2001/fehm/blob/main/docs/DEPLOYMENT.md"
+Documentation = "https://github.com/amirhamzakhan2001/fehm/blob/amir/docs/guides/installation.md"
 
 [project.scripts]
 fehm = "fehm.cli:main"

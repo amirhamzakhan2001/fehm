@@ -23,6 +23,7 @@ export async function build(env=process.env) {
   await rm(output,{recursive:true,force:true});
   await mkdir(output,{recursive:true});
   await cp(path.join(root,'public'),output,{recursive:true});
+  await cp(path.join(root,'../THIRD_PARTY_NOTICES.md'),path.join(output,'third-party-notices.txt'));
   const content = pages(config.version);
   content.push({path:'/404.html',title:'Page not found',description:'This Fehm page could not be found. Return to the documentation or installation guide.',body:'<header class="page-intro"><p class="eyebrow">404 / PAGE NOT FOUND</p><h1>Page not found.</h1><p class="lead">The page may have moved. Start again with the <a href="/docs/">documentation</a> or <a href="/">home page</a>.</p></header>'});
   for (const page of content) {
@@ -32,7 +33,7 @@ export async function build(env=process.env) {
   }
   const routes = content.filter(p=>p.path!=='/404.html');
   await writeFile(path.join(output,'sitemap.xml'),`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${routes.map(p=>`<url><loc>${escape(new URL(p.path,config.siteUrl).href)}</loc></url>`).join('')}</urlset>\n`);
-  const llms = `# Fehm\n\n> Local codebase intelligence: source graphs, repository context, architecture drift and optional model-based code review.\n\nOrdinary scans and queries run locally. Provider review requires configuration and explicit invocation. Install a supplied platform wheel with uv; public package publication is pending.\n\n## Documentation\n\n${routes.filter(p => p.path.startsWith('/docs/')).map(p => `- [${p.title}](${new URL(p.path,config.siteUrl).href}): ${p.description}`).join('\n')}\n`;
+  const llms = `# Fehm\n\n> Local codebase intelligence: source graphs, bounded context, optional workflow skills and evidence-backed verification.\n\nOrdinary indexing and retrieval run locally without an LLM. FEHM ${config.version} is the first release, prepared for publication. Install a reviewed wheel with uv; public registry publication is pending. Optional external commands and assistant providers have separate data and execution boundaries.\n\n## Documentation\n\n${routes.filter(p => p.path.startsWith('/docs/')).map(p => `- [${p.title}](${new URL(p.path,config.siteUrl).href}): ${p.description}`).join('\n')}\n`;
   await writeFile(path.join(output,'llms.txt'),llms);
   await writeFile(path.join(output,'llm.txt'),llms); // Compatibility with the singular spelling.
   await writeFile(path.join(output,'robots.txt'),config.indexable?`User-agent: *\nAllow: /\nSitemap: ${new URL('/sitemap.xml',config.siteUrl).href}\n`:'User-agent: *\nDisallow: /\n');

@@ -1,0 +1,357 @@
+[
+  {
+    "classification": "layered",
+    "sources": [
+      "ecc/commands/ecc-guide.md",
+      "ecc/skills/ecc-guide/SKILL.md"
+    ],
+    "target": "developer-experience/ecc-guide",
+    "reason": "Same named command entry point; retain its complete procedure separately when different, and route discovery to the canonical skill."
+  },
+  {
+    "classification": "layered",
+    "sources": [
+      "ecc/commands/marketing-campaign.md",
+      "ecc/skills/marketing-campaign/SKILL.md"
+    ],
+    "target": "marketing/marketing-campaign",
+    "reason": "Same named command entry point; retain its complete procedure separately when different, and route discovery to the canonical skill."
+  },
+  {
+    "classification": "layered",
+    "sources": [
+      "ecc/commands/orch-add-feature.md",
+      "ecc/skills/orch-add-feature/SKILL.md"
+    ],
+    "target": "orchestration/orch-add-feature",
+    "reason": "Same named command entry point; retain its complete procedure separately when different, and route discovery to the canonical skill."
+  },
+  {
+    "classification": "layered",
+    "sources": [
+      "ecc/commands/orch-build-mvp.md",
+      "ecc/skills/orch-build-mvp/SKILL.md"
+    ],
+    "target": "orchestration/orch-build-mvp",
+    "reason": "Same named command entry point; retain its complete procedure separately when different, and route discovery to the canonical skill."
+  },
+  {
+    "classification": "layered",
+    "sources": [
+      "ecc/commands/orch-change-feature.md",
+      "ecc/skills/orch-change-feature/SKILL.md"
+    ],
+    "target": "orchestration/orch-change-feature",
+    "reason": "Same named command entry point; retain its complete procedure separately when different, and route discovery to the canonical skill."
+  },
+  {
+    "classification": "layered",
+    "sources": [
+      "ecc/commands/orch-fix-defect.md",
+      "ecc/skills/orch-fix-defect/SKILL.md"
+    ],
+    "target": "orchestration/orch-fix-defect",
+    "reason": "Same named command entry point; retain its complete procedure separately when different, and route discovery to the canonical skill."
+  },
+  {
+    "classification": "layered",
+    "sources": [
+      "ecc/commands/orch-refine-code.md",
+      "ecc/skills/orch-refine-code/SKILL.md"
+    ],
+    "target": "orchestration/orch-refine-code",
+    "reason": "Same named command entry point; retain its complete procedure separately when different, and route discovery to the canonical skill."
+  },
+  {
+    "classification": "layered",
+    "sources": [
+      "ecc/commands/plan-canvas.md",
+      "ecc/skills/plan-canvas/SKILL.md"
+    ],
+    "target": "workflows/plan-canvas",
+    "reason": "Same named command entry point; retain its complete procedure separately when different, and route discovery to the canonical skill."
+  },
+  {
+    "classification": "layered",
+    "sources": [
+      "ecc/commands/security-scan.md",
+      "ecc/skills/security-scan/SKILL.md"
+    ],
+    "target": "security/security-scan",
+    "reason": "Same named command entry point; retain its complete procedure separately when different, and route discovery to the canonical skill."
+  },
+  {
+    "classification": "specialized",
+    "sources": [
+      "engineering/code-reviewer",
+      "engineering/code-reviewer-ecc",
+      "core/common-code-review-standard",
+      "workflows/code-review"
+    ],
+    "reason": "Same or similar name; distinct scope, source procedure, role, or technology. Kept separately and cross-linked."
+  },
+  {
+    "classification": "complementary",
+    "sources": [
+      "marketing/seo-specialist",
+      "marketing/seo"
+    ],
+    "reason": "Same or similar name; distinct scope, source procedure, role, or technology. Kept separately and cross-linked."
+  },
+  {
+    "classification": "complementary",
+    "sources": [
+      "project-management/chief-of-staff",
+      "project-management/chief-of-staff-ecc"
+    ],
+    "reason": "Same or similar name; distinct scope, source procedure, role, or technology. Kept separately and cross-linked."
+  },
+  {
+    "classification": "complementary",
+    "sources": [
+      "languages/cpp/cpp-reviewer",
+      "languages/cpp/cpp-review"
+    ],
+    "reason": "Same or similar name; distinct scope, source procedure, role, or technology. Kept separately and cross-linked."
+  },
+  {
+    "classification": "complementary",
+    "sources": [
+      "frameworks/fastapi/fastapi-reviewer",
+      "frameworks/fastapi/fastapi-review"
+    ],
+    "reason": "Same or similar name; distinct scope, source procedure, role, or technology. Kept separately and cross-linked."
+  },
+  {
+    "classification": "complementary",
+    "sources": [
+      "frameworks/flutter/flutter-reviewer",
+      "frameworks/flutter/flutter-review"
+    ],
+    "reason": "Same or similar name; distinct scope, source procedure, role, or technology. Kept separately and cross-linked."
+  },
+  {
+    "classification": "complementary",
+    "sources": [
+      "languages/go/go-reviewer",
+      "languages/go/go-review"
+    ],
+    "reason": "Same or similar name; distinct scope, source procedure, role, or technology. Kept separately and cross-linked."
+  },
+  {
+    "classification": "complementary",
+    "sources": [
+      "languages/kotlin/kotlin-reviewer",
+      "languages/kotlin/kotlin-review"
+    ],
+    "reason": "Same or similar name; distinct scope, source procedure, role, or technology. Kept separately and cross-linked."
+  },
+  {
+    "classification": "complementary",
+    "sources": [
+      "languages/python/python-reviewer",
+      "languages/python/python-review"
+    ],
+    "reason": "Same or similar name; distinct scope, source procedure, role, or technology. Kept separately and cross-linked."
+  },
+  {
+    "classification": "complementary",
+    "sources": [
+      "frameworks/react/react-reviewer",
+      "frameworks/react/react-review"
+    ],
+    "reason": "Same or similar name; distinct scope, source procedure, role, or technology. Kept separately and cross-linked."
+  },
+  {
+    "classification": "complementary",
+    "sources": [
+      "languages/rust/rust-reviewer",
+      "languages/rust/rust-review"
+    ],
+    "reason": "Same or similar name; distinct scope, source procedure, role, or technology. Kept separately and cross-linked."
+  },
+  {
+    "classification": "specialized",
+    "sources": [
+      "security/security-reviewer",
+      "workflows/security-review"
+    ],
+    "reason": "Same or similar name; distinct scope, source procedure, role, or technology. Kept separately and cross-linked."
+  },
+  {
+    "classification": "complementary",
+    "sources": [
+      "frameworks/vue/vue-reviewer",
+      "frameworks/vue/vue-review"
+    ],
+    "reason": "Same or similar name; distinct scope, source procedure, role, or technology. Kept separately and cross-linked."
+  },
+  {
+    "classification": "specialized",
+    "sources": [
+      "core/common-git-workflow-standard",
+      "git/git-workflow"
+    ],
+    "reason": "Same or similar name; distinct scope, source procedure, role, or technology. Kept separately and cross-linked."
+  },
+  {
+    "classification": "complementary",
+    "sources": [
+      "languages/cpp/cpp-testing-standard",
+      "languages/cpp/cpp-testing"
+    ],
+    "reason": "Same or similar name; distinct scope, source procedure, role, or technology. Kept separately and cross-linked."
+  },
+  {
+    "classification": "complementary",
+    "sources": [
+      "languages/csharp/csharp-testing-standard",
+      "languages/csharp/csharp-testing"
+    ],
+    "reason": "Same or similar name; distinct scope, source procedure, role, or technology. Kept separately and cross-linked."
+  },
+  {
+    "classification": "complementary",
+    "sources": [
+      "languages/fsharp/fsharp-testing-standard",
+      "languages/fsharp/fsharp-testing"
+    ],
+    "reason": "Same or similar name; distinct scope, source procedure, role, or technology. Kept separately and cross-linked."
+  },
+  {
+    "classification": "complementary",
+    "sources": [
+      "languages/go/golang-patterns-standard",
+      "languages/go/golang-patterns"
+    ],
+    "reason": "Same or similar name; distinct scope, source procedure, role, or technology. Kept separately and cross-linked."
+  },
+  {
+    "classification": "complementary",
+    "sources": [
+      "languages/go/golang-testing-standard",
+      "languages/go/golang-testing"
+    ],
+    "reason": "Same or similar name; distinct scope, source procedure, role, or technology. Kept separately and cross-linked."
+  },
+  {
+    "classification": "complementary",
+    "sources": [
+      "languages/kotlin/kotlin-patterns-standard",
+      "languages/kotlin/kotlin-patterns"
+    ],
+    "reason": "Same or similar name; distinct scope, source procedure, role, or technology. Kept separately and cross-linked."
+  },
+  {
+    "classification": "complementary",
+    "sources": [
+      "languages/kotlin/kotlin-testing-standard",
+      "languages/kotlin/kotlin-testing"
+    ],
+    "reason": "Same or similar name; distinct scope, source procedure, role, or technology. Kept separately and cross-linked."
+  },
+  {
+    "classification": "complementary",
+    "sources": [
+      "languages/perl/perl-patterns-standard",
+      "languages/perl/perl-patterns"
+    ],
+    "reason": "Same or similar name; distinct scope, source procedure, role, or technology. Kept separately and cross-linked."
+  },
+  {
+    "classification": "complementary",
+    "sources": [
+      "languages/perl/perl-security-standard",
+      "languages/perl/perl-security"
+    ],
+    "reason": "Same or similar name; distinct scope, source procedure, role, or technology. Kept separately and cross-linked."
+  },
+  {
+    "classification": "complementary",
+    "sources": [
+      "languages/perl/perl-testing-standard",
+      "languages/perl/perl-testing"
+    ],
+    "reason": "Same or similar name; distinct scope, source procedure, role, or technology. Kept separately and cross-linked."
+  },
+  {
+    "classification": "complementary",
+    "sources": [
+      "languages/python/python-patterns-standard",
+      "languages/python/python-patterns"
+    ],
+    "reason": "Same or similar name; distinct scope, source procedure, role, or technology. Kept separately and cross-linked."
+  },
+  {
+    "classification": "complementary",
+    "sources": [
+      "languages/python/python-testing-standard",
+      "languages/python/python-testing"
+    ],
+    "reason": "Same or similar name; distinct scope, source procedure, role, or technology. Kept separately and cross-linked."
+  },
+  {
+    "classification": "complementary",
+    "sources": [
+      "frameworks/react-native/react-native-patterns-standard",
+      "frameworks/react-native/react-native-patterns"
+    ],
+    "reason": "Same or similar name; distinct scope, source procedure, role, or technology. Kept separately and cross-linked."
+  },
+  {
+    "classification": "complementary",
+    "sources": [
+      "frameworks/react/react-patterns-standard",
+      "frameworks/react/react-patterns"
+    ],
+    "reason": "Same or similar name; distinct scope, source procedure, role, or technology. Kept separately and cross-linked."
+  },
+  {
+    "classification": "complementary",
+    "sources": [
+      "frameworks/react/react-testing-standard",
+      "frameworks/react/react-testing"
+    ],
+    "reason": "Same or similar name; distinct scope, source procedure, role, or technology. Kept separately and cross-linked."
+  },
+  {
+    "classification": "complementary",
+    "sources": [
+      "languages/rust/rust-patterns-standard",
+      "languages/rust/rust-patterns"
+    ],
+    "reason": "Same or similar name; distinct scope, source procedure, role, or technology. Kept separately and cross-linked."
+  },
+  {
+    "classification": "complementary",
+    "sources": [
+      "languages/rust/rust-testing-standard",
+      "languages/rust/rust-testing"
+    ],
+    "reason": "Same or similar name; distinct scope, source procedure, role, or technology. Kept separately and cross-linked."
+  },
+  {
+    "classification": "complementary",
+    "sources": [
+      "frameworks/vue/vue-patterns-standard",
+      "frameworks/vue/vue-patterns"
+    ],
+    "reason": "Same or similar name; distinct scope, source procedure, role, or technology. Kept separately and cross-linked."
+  },
+  {
+    "classification": "complementary",
+    "sources": [
+      "performance/benchmark",
+      "performance/benchmark-gstack"
+    ],
+    "reason": "Same or similar name; distinct scope, source procedure, role, or technology. Kept separately and cross-linked."
+  },
+  {
+    "classification": "complementary",
+    "sources": [
+      "memory/learn",
+      "memory/learn-ecc"
+    ],
+    "reason": "Same or similar name; distinct scope, source procedure, role, or technology. Kept separately and cross-linked."
+  }
+]

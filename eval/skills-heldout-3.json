@@ -1,0 +1,81 @@
+{
+  "$comment": "FEHM-Skill-Bench held-out set 3. Written on 2026-09-26 after the held-out-2 run and BEFORE the fixes it motivated (weak-intent promotion in engineering context, project-scoped explain, CI vocabulary, artifact phrases). Never edited to match output.",
+  "cases": [
+    {
+      "query": "Add rate limiting to the public API",
+      "repository": { "languages": ["typescript"], "packages": ["express"] },
+      "required": [
+        ["workflows/feature-development", "testing/test-driven-development", "engineering/lean-build", "backend/api-design", "backend/backend-patterns"]
+      ],
+      "optional": ["security/security-reviewer", "security/application-security-review"],
+      "forbidden": ["marketing/seo", "design/design-system"]
+    },
+    {
+      "query": "Add a created_at column to the orders table",
+      "repository": { "languages": ["python"], "packages": ["sqlalchemy", "alembic", "psycopg2"] },
+      "required": [
+        ["databases/database-migrations", "engineering/compatibility-migration", "databases/postgres-patterns"]
+      ],
+      "optional": ["workflows/feature-development"],
+      "forbidden": ["frontend/frontend-developer", "databases/mysql-patterns"]
+    },
+    {
+      "query": "What is the difference between a process and a thread",
+      "required": [],
+      "optional": [],
+      "forbidden": ["code-intelligence/code-explorer", "code-intelligence/codebase-onboarding"]
+    },
+    {
+      "query": "Walk me through how the checkout flow works in this app",
+      "required": [
+        ["code-intelligence/code-explorer", "code-intelligence/codebase-onboarding", "code-intelligence/code-tour"]
+      ],
+      "optional": [],
+      "forbidden": ["release/ship", "testing/test-driven-development"]
+    },
+    {
+      "query": "Set up Jenkins to build and test the project on every merge",
+      "required": [
+        ["devops/devops-automator", "devops/platform-engineer"]
+      ],
+      "optional": ["release/deployment-patterns"],
+      "forbidden": ["testing/test-driven-development", "marketing/seo"]
+    },
+    {
+      "query": "The nightly job fails with an out of memory error",
+      "required": [
+        ["debugging/systematic-debugging", "debugging/investigate", "debugging/diagnosing-bugs", "workflows/bug-fixing", "debugging/investigate-first"]
+      ],
+      "optional": ["performance/performance-optimizer", "devops/sre"],
+      "forbidden": ["marketing/seo", "design/design-system"]
+    },
+    {
+      "query": "Draft a bug report for the checkout crash",
+      "required": [],
+      "optional": ["debugging/systematic-debugging", "debugging/investigate", "documentation/technical-writer", "project-management/to-tickets"],
+      "forbidden": ["release/ship", "testing/test-driven-development"]
+    },
+    {
+      "query": "Tidy up.",
+      "ambiguous": true,
+      "required": [],
+      "optional": [],
+      "forbidden": []
+    },
+    {
+      "query": "Plan a weekend trip to Lisbon",
+      "required": [],
+      "optional": [],
+      "forbidden": ["workflows/writing-plans", "workflows/plan", "workflows/brainstorming"]
+    },
+    {
+      "query": "Add dark mode support to the settings page",
+      "repository": { "languages": ["typescript"], "packages": ["react", "tailwindcss"] },
+      "required": [
+        ["frontend/frontend-developer", "frontend/frontend-patterns", "workflows/feature-development", "design/design-system", "frameworks/react/react-patterns"]
+      ],
+      "optional": ["accessibility/frontend-a11y"],
+      "forbidden": ["databases/postgres-patterns", "devops/kubernetes-patterns"]
+    }
+  ]
+}

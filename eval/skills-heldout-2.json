@@ -1,0 +1,116 @@
+{
+  "$comment": "FEHM-Skill-Bench held-out set 2. Written on 2026-09-26 after the first held-out run and BEFORE the post-hoc fixes that run motivated, so it measures those fixes. Never edited to match output. Same label semantics as skills-heldout.json.",
+  "cases": [
+    {
+      "query": "Fix the login bug and add a regression test",
+      "repository": { "languages": ["python"], "packages": ["django", "pytest"] },
+      "required": [
+        ["debugging/systematic-debugging", "debugging/investigate", "debugging/diagnosing-bugs", "workflows/bug-fixing", "debugging/investigate-first"],
+        ["testing/test-driven-development", "testing/tdd-red-green", "workflows/tdd", "testing/tdd-workflow", "frameworks/django/django-tdd", "languages/python/python-testing"]
+      ],
+      "optional": ["security/security-reviewer", "frameworks/django/django-patterns", "verification/verification-before-completion"],
+      "forbidden": ["frameworks/react/react-testing", "marketing/seo"]
+    },
+    {
+      "query": "Our Kotlin Android app crashes on startup after the last update",
+      "repository": { "languages": ["kotlin"], "packages": [] },
+      "required": [
+        ["debugging/systematic-debugging", "debugging/investigate", "debugging/diagnosing-bugs", "workflows/bug-fixing", "debugging/investigate-first"]
+      ],
+      "optional": ["languages/kotlin/kotlin-patterns", "languages/kotlin/kotlin-reviewer", "mobile/android-clean-architecture"],
+      "forbidden": ["release/ship", "marketing/seo", "languages/go/golang-patterns"]
+    },
+    {
+      "query": "Write the release notes for version 3.1",
+      "required": [
+        ["documentation/changelog-style", "release/document-release", "workflows/documentation", "documentation/doc-updater"]
+      ],
+      "optional": ["workflows/release"],
+      "forbidden": ["debugging/systematic-debugging", "testing/test-driven-development"]
+    },
+    {
+      "query": "Create a Jira ticket template for bug reports",
+      "required": [
+        ["project-management/jira-integration", "project-management/to-tickets"]
+      ],
+      "optional": ["workflows/writing-plans"],
+      "forbidden": ["debugging/systematic-debugging"]
+    },
+    {
+      "query": "Use an LLM to extract invoice fields from support tickets",
+      "required": [
+        ["ai/prompt-engineer", "ai/prompt-optimizer", "ai/ai-engineer", "ai/regex-vs-llm-structured-text"]
+      ],
+      "optional": ["ai/cost-aware-llm-pipeline"],
+      "forbidden": ["project-management/to-tickets", "project-management/jira-integration"]
+    },
+    {
+      "query": "Configure a CircleCI pipeline to run lint and unit tests on every push",
+      "required": [
+        ["devops/devops-automator", "devops/platform-engineer"]
+      ],
+      "optional": ["devops/setup-pre-commit", "release/deployment-patterns"],
+      "forbidden": ["marketing/seo", "design/design-system"]
+    },
+    {
+      "query": "Review this React component for performance problems",
+      "repository": { "languages": ["typescript"], "packages": ["react"] },
+      "required": [
+        ["frameworks/react/react-reviewer", "frameworks/react/react-review", "frameworks/react/react-performance", "performance/performance-optimizer", "engineering/standards-code-review", "workflows/code-review"]
+      ],
+      "optional": ["frontend/web-performance-standard", "engineering/review"],
+      "forbidden": ["frameworks/vue/vue-reviewer", "languages/python/python-reviewer"]
+    },
+    {
+      "query": "Add structured logging to the payment service",
+      "required": [
+        ["workflows/feature-development", "testing/test-driven-development", "engineering/lean-build", "engineering/error-handling"]
+      ],
+      "optional": ["backend/backend-patterns", "devops/sre"],
+      "forbidden": ["marketing/seo", "design/design-system"]
+    },
+    {
+      "query": "Clean up the codebase.",
+      "ambiguous": true,
+      "required": [],
+      "optional": ["workflows/refactoring", "engineering/refactor-clean", "engineering/safe-refactor", "engineering/code-simplifier"],
+      "forbidden": []
+    },
+    {
+      "query": "Fix it.",
+      "ambiguous": true,
+      "required": [],
+      "optional": [],
+      "forbidden": []
+    },
+    {
+      "query": "Explain the difference between TCP and UDP",
+      "required": [],
+      "optional": ["infrastructure/network-engineer"],
+      "forbidden": ["release/ship", "testing/test-driven-development"]
+    },
+    {
+      "query": "Write a haiku about autumn",
+      "required": [],
+      "optional": [],
+      "forbidden": []
+    },
+    {
+      "query": "Migrate the users table to add a non-null email column without downtime",
+      "repository": { "languages": ["typescript"], "packages": ["pg", "prisma"] },
+      "required": [
+        ["databases/database-migrations", "engineering/compatibility-migration", "databases/prisma-patterns", "databases/postgres-patterns"]
+      ],
+      "optional": ["databases/database-reliability-engineer"],
+      "forbidden": ["databases/mysql-patterns", "frontend/frontend-developer"]
+    },
+    {
+      "query": "Scan the repo for leaked API keys and secrets",
+      "required": [
+        ["security/security-scan", "security/secrets-credential-engineer", "security/security-reviewer", "workflows/security-review", "security/cso-scanners"]
+      ],
+      "optional": ["security/application-security-review"],
+      "forbidden": ["marketing/seo", "design/design-system"]
+    }
+  ]
+}

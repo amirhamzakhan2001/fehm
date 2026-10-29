@@ -1,15 +1,33 @@
-import { mkdir, rename, writeFile } from "node:fs/promises";
-import path from "node:path";
-import { randomUUID } from "node:crypto";
+import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
 
-/** Write a file atomically without sharing a temporary name across concurrent calls. */
-export async function atomicWriteFile(destination: string, contents: string): Promise<void> {
-  await mkdir(path.dirname(destination), { recursive: true });
-  const temporary = `${destination}.${process.pid}-${Date.now()}-${randomUUID()}.tmp`;
-  await writeFile(temporary, contents, "utf8");
-  await rename(temporary, destination);
+export const STATE_DIRECTORY = ".fehm";
+
+export function stateDir(root: string, override?: string): string {
+  return override ? resolve(override) : join(resolve(root), STATE_DIRECTORY);
 }
 
-export async function atomicWriteJson(destination: string, value: unknown): Promise<void> {
-  await atomicWriteFile(destination, `${JSON.stringify(value, null, 2)}\n`);
+export type ReadResult<T> = { ok: true; value: T } | { ok: false; reason: "missing" | "malformed"; detail: string };
+
+/** Read JSON without throwing. A malformed file is reported, never trusted. */
+export function readJson<T>(path: string): ReadResult<T> {
+  let text: string;
+  try {
+    text = readFileSync(path, "utf8");
+  } catch (error) {
+    return { ok: false, reason: "missing", detail: (error as Error).message };
+  }
+  try {
+    return { ok: true, value: JSON.parse(text) as T };
+  } catch (error) {
+    return { ok: false, reason: "malformed", detail: (error as Error).message };
+  }
+}
+
+/** Write via temp file + rename so readers never see a half-written file. */
+export function writeJsonAtomic(path: string, value: unknown): void {
+  mkdirSync(dirname(path), { recursive: true });
+  const tmp = `${path}.${process.pid}.tmp`;
+  writeFileSync(tmp, `${JSON.stringify(value)}\n`);
+  renameSync(tmp, path);
 }

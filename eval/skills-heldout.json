@@ -1,0 +1,198 @@
+{
+  "$comment": "FEHM-Skill-Bench held-out set. Written on 2026-09-26 BEFORE the Feature 2 router existed and never edited afterwards to match output; tuning uses eval/skills-bench.json only. required = groups where any member satisfies the need; forbidden = selecting any of these is a precision failure; ambiguous = the router should report low confidence and select at most 2 skills; repository = the stack Feature 1 would report.",
+  "cases": [
+    {
+      "query": "Fix the API authentication bug and add tests",
+      "repository": { "languages": ["typescript"], "packages": ["express", "jsonwebtoken", "jest"] },
+      "required": [
+        ["debugging/systematic-debugging", "debugging/investigate", "debugging/diagnosing-bugs", "workflows/bug-fixing", "debugging/investigate-first"],
+        ["testing/test-driven-development", "testing/tdd-red-green", "workflows/tdd", "testing/tdd-workflow", "languages/typescript/typescript-testing-standard"]
+      ],
+      "optional": ["security/security-reviewer", "workflows/security-review", "backend/backend-patterns", "verification/verification-before-completion"],
+      "forbidden": ["design/design-system", "marketing/seo", "mobile/mobile-app-builder"]
+    },
+    {
+      "query": "Fix PostgreSQL timeout",
+      "repository": { "languages": ["python"], "packages": ["psycopg2", "sqlalchemy"] },
+      "required": [
+        ["debugging/systematic-debugging", "debugging/investigate", "debugging/diagnosing-bugs", "workflows/bug-fixing", "debugging/investigate-first", "databases/postgres-patterns", "databases/database-optimizer"]
+      ],
+      "optional": ["databases/database-reliability-engineer", "performance/performance-optimizer"],
+      "forbidden": ["frontend/frontend-design-direction", "design/design-system", "design/ui-designer", "marketing/seo", "marketing/marketing-agent", "mobile/mobile-app-builder"]
+    },
+    {
+      "query": "Add OAuth login to the application and write tests",
+      "repository": { "languages": ["typescript"], "packages": ["express", "passport"] },
+      "required": [
+        ["workflows/feature-development", "testing/test-driven-development", "testing/tdd-red-green", "workflows/tdd"]
+      ],
+      "optional": ["security/security-reviewer", "engineering/identity-access-engineer", "backend/backend-patterns", "workflows/security-review"],
+      "forbidden": ["marketing/seo", "design/design-system"]
+    },
+    {
+      "query": "Refactor the authentication service and add tests",
+      "required": [
+        ["workflows/refactoring", "engineering/safe-refactor", "engineering/refactor-clean", "architecture/deep-modules"]
+      ],
+      "optional": ["testing/test-driven-development", "testing/tdd-red-green", "workflows/tdd", "security/security-reviewer"],
+      "forbidden": ["marketing/seo"]
+    },
+    {
+      "query": "The Go worker crashes with a nil pointer dereference in production",
+      "repository": { "languages": ["go"], "packages": [] },
+      "required": [
+        ["debugging/systematic-debugging", "debugging/investigate", "debugging/diagnosing-bugs", "workflows/bug-fixing", "debugging/investigate-first"]
+      ],
+      "optional": ["languages/go/golang-patterns", "languages/go/go-reviewer", "devops/sre"],
+      "forbidden": ["languages/perl/perl-testing", "frameworks/react/react-patterns"]
+    },
+    {
+      "query": "Write pytest tests for the CSV importer",
+      "repository": { "languages": ["python"], "packages": ["pytest", "pandas"] },
+      "required": [
+        ["testing/test-driven-development", "testing/tdd-red-green", "workflows/tdd", "languages/python/python-testing", "languages/python/python-testing-standard"]
+      ],
+      "optional": ["testing/test-coverage"],
+      "forbidden": ["languages/perl/perl-testing", "languages/kotlin/kotlin-testing", "frameworks/react/react-testing"]
+    },
+    {
+      "query": "Review my Rust pull request for ownership mistakes",
+      "repository": { "languages": ["rust"], "packages": ["tokio"] },
+      "required": [
+        ["languages/rust/rust-reviewer", "languages/rust/rust-review", "engineering/standards-code-review", "workflows/code-review", "engineering/review"]
+      ],
+      "optional": ["languages/rust/rust-patterns"],
+      "forbidden": ["languages/python/python-reviewer", "marketing/seo"]
+    },
+    {
+      "query": "Threat model the new payment webhook endpoint",
+      "required": [
+        ["workflows/security-review", "security/security-reviewer", "security/application-security-review", "security/security-architect", "security/appsec-engineer"]
+      ],
+      "optional": ["backend/api-design"],
+      "forbidden": ["design/design-system", "marketing/seo"]
+    },
+    {
+      "query": "Speed up the slow CI build",
+      "required": [
+        ["performance/performance-optimizer", "devops/devops-automator", "debugging/build-error-resolver", "debugging/diagnosing-bugs", "devops/platform-engineer"]
+      ],
+      "optional": ["performance/benchmark"],
+      "forbidden": ["marketing/seo", "design/design-system"]
+    },
+    {
+      "query": "Add an index to speed up the MySQL orders lookup",
+      "repository": { "languages": ["php"], "packages": [] },
+      "required": [
+        ["databases/mysql-patterns", "databases/database-optimizer", "databases/database-migrations"]
+      ],
+      "optional": ["performance/performance-optimizer"],
+      "forbidden": ["databases/postgres-patterns", "frontend/frontend-developer"]
+    },
+    {
+      "query": "Explain how the request routing layer works",
+      "required": [
+        ["code-intelligence/code-explorer", "code-intelligence/codebase-onboarding", "code-intelligence/code-tour"]
+      ],
+      "optional": [],
+      "forbidden": ["release/ship", "workflows/security-review", "testing/test-driven-development"]
+    },
+    {
+      "query": "Write a changelog entry for the 2.0 release",
+      "required": [
+        ["documentation/changelog-style", "release/document-release", "workflows/documentation", "documentation/doc-updater"]
+      ],
+      "optional": ["workflows/release"],
+      "forbidden": ["debugging/systematic-debugging"]
+    },
+    {
+      "query": "Set up a GitHub Actions workflow that runs the test suite",
+      "required": [
+        ["devops/devops-automator", "devops/platform-engineer", "git/github-ops"]
+      ],
+      "optional": ["release/deployment-patterns", "devops/setup-pre-commit"],
+      "forbidden": ["marketing/seo", "design/design-system"]
+    },
+    {
+      "query": "Make the checkout page keyboard navigable and screen reader friendly",
+      "repository": { "languages": ["typescript"], "packages": ["react"] },
+      "required": [
+        ["accessibility/frontend-a11y", "accessibility/accessibility", "accessibility/a11y-architect"]
+      ],
+      "optional": ["frameworks/react/react-patterns", "frontend/frontend-developer"],
+      "forbidden": ["databases/postgres-patterns", "devops/kubernetes-patterns"]
+    },
+    {
+      "query": "Build a prompt that classifies support tickets with an LLM",
+      "required": [
+        ["ai/prompt-engineer", "ai/prompt-optimizer", "ai/ai-engineer", "ai/regex-vs-llm-structured-text"]
+      ],
+      "optional": ["ai/cost-aware-llm-pipeline"],
+      "forbidden": ["databases/postgres-patterns", "devops/kubernetes-patterns"]
+    },
+    {
+      "query": "Keep your answers short, I want fewer tokens in replies",
+      "required": [
+        ["developer-experience/caveman-terse-output", "performance/token-optimization"]
+      ],
+      "optional": ["ai/token-budget-advisor"],
+      "forbidden": ["debugging/systematic-debugging", "release/ship"]
+    },
+    {
+      "query": "Rename the getUser function across the codebase without breaking callers",
+      "required": [
+        ["workflows/refactoring", "engineering/safe-refactor", "engineering/refactor-clean", "engineering/surgical-patch"]
+      ],
+      "optional": ["core/surgical-changes"],
+      "forbidden": ["marketing/seo", "release/ship"]
+    },
+    {
+      "query": "Research which queue library we should use before implementing background jobs",
+      "required": [
+        ["research/search-first", "workflows/research", "core/research-before-coding", "research/deep-research", "research/primary-source-research"]
+      ],
+      "optional": ["workflows/brainstorming", "architecture/architecture-decision-records"],
+      "forbidden": ["release/ship", "marketing/seo"]
+    },
+    {
+      "query": "Improve this.",
+      "ambiguous": true,
+      "required": [],
+      "optional": [],
+      "forbidden": []
+    },
+    {
+      "query": "Fix the architecture.",
+      "ambiguous": true,
+      "required": [],
+      "optional": ["architecture/improve-codebase-architecture", "architecture/deep-modules", "workflows/refactoring"],
+      "forbidden": []
+    },
+    {
+      "query": "Make this better.",
+      "ambiguous": true,
+      "required": [],
+      "optional": [],
+      "forbidden": []
+    },
+    {
+      "query": "Optimize the API.",
+      "ambiguous": true,
+      "required": [],
+      "optional": ["performance/performance-optimizer", "backend/api-design", "backend/backend-patterns"],
+      "forbidden": []
+    },
+    {
+      "query": "Book a table for two at an Italian restaurant",
+      "required": [],
+      "optional": [],
+      "forbidden": []
+    },
+    {
+      "query": "Summarize the plot of Hamlet",
+      "required": [],
+      "optional": [],
+      "forbidden": []
+    }
+  ]
+}

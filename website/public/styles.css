@@ -19,11 +19,25 @@
 /* Shared visual language across product, documentation and integration routes. */
 body.home-page,body.inner-page{background:#f5f8fc;isolation:isolate}
 .site-art{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;contain:strict;background:linear-gradient(130deg,#eff6fb 0%,#f7f9fc 46%,#edf5f3 100%)}
-.art-grid{position:absolute;inset:0;background-image:linear-gradient(#64899f12 1px,transparent 1px),linear-gradient(90deg,#64899f12 1px,transparent 1px);background-size:64px 64px;mask-image:linear-gradient(#0009,transparent 85%)}
+/* Increase --grid-line-opacity for stronger square grid lines. */
+:root{--grid-line-opacity:.24}
+.art-grid{position:absolute;inset:0;background-image:linear-gradient(rgb(100 137 159 / var(--grid-line-opacity)) 1px,transparent 1px),linear-gradient(90deg,rgb(100 137 159 / var(--grid-line-opacity)) 1px,transparent 1px);background-size:64px 64px;mask-image:linear-gradient(#0009,transparent 85%)}
 .art-orb{position:absolute;width:65vw;height:65vw;max-width:950px;max-height:950px;border-radius:50%;opacity:.65;transition:transform 1.2s ease,opacity 1.2s ease}
 .art-orb-mint{top:-35vw;right:-16vw;background:radial-gradient(circle,#a6ded24d,transparent 68%)}
 .art-orb-blue{top:12vh;left:-37vw;background:radial-gradient(circle,#aacded66,transparent 68%)}
-.art-orbit{position:absolute;right:-250px;top:80px;width:720px;height:720px;border:1px solid #8bb3c325;border-radius:50%;box-shadow:0 0 0 65px #fff2,0 0 0 66px #8bb3c315,0 0 0 140px #fff1,0 0 0 141px #8bb3c315;transform:rotate(-25deg) scaleX(.7)}
+/* Scroll assembles the two original Fehm glyph paths; accents trace their edges. */
+.art-mark{position:absolute;left:50%;top:50%;width:min(780px,85vw,85vh);height:auto;overflow:visible;transform:translate(-50%,-50%);opacity:.65}
+.mark-outline{stroke:#64899f;stroke-width:.13;fill:#91bdcb08}
+.mark-lower .mark-outline{stroke:#4baf98;fill:#7ee0c30b}
+.mark-upper{transform:translate(var(--piece-x,0px),var(--piece-y,0px))}
+.mark-lower{transform:translate(calc(-1 * var(--piece-x,0px)),calc(-1 * var(--piece-y,0px)))}
+.mark-trace{stroke:#528ca3;stroke-width:.25;stroke-linecap:round;stroke-dasharray:10 150;stroke-dashoffset:var(--trace-offset,0);opacity:.75}
+.mark-lower .mark-trace{stroke:#38a88c;stroke-dashoffset:calc(-1 * var(--trace-offset,0))}
+.mark-satellites{fill:#4caa98;opacity:.65}
+.mark-track{fill:none;stroke:#64899f;stroke-width:.1;opacity:.3}
+.mark-particle-1{transform:translate(var(--particle-1-x,40px),var(--particle-1-y,0px))}
+.mark-particle-2{fill:#528ca3;transform:translate(var(--particle-2-x,-18px),var(--particle-2-y,25px))}
+.mark-particle-3{transform:translate(var(--particle-3-x,-21px),var(--particle-3-y,-29px))}
 body:has(a:hover) .art-orb-mint,body:has(a:focus-visible) .art-orb-mint{transform:translate(-30px,25px);opacity:1}
 body:has(button:hover) .art-orb-blue,body:has(input:focus-visible) .art-orb-blue{transform:translate(30px,-15px);opacity:1}
 .site-header{background:#f5f8fce8}.inner-page .page-intro:before{content:none}
@@ -39,7 +53,7 @@ body:has(button:hover) .art-orb-blue,body:has(input:focus-visible) .art-orb-blue
 .docs-search{background:#ffffffe6;border:1px solid #cddfe9;padding:12px 18px;border-radius:10px;max-width:760px}.doc-card{background:#ffffffec;border-radius:12px;transition:transform .2s,border-color .2s,box-shadow .2s}.doc-card:hover{transform:translateY(-3px);border-color:#8eb0c4;box-shadow:0 10px 22px -17px #28577966}.doc-card:nth-child(3n){background:#eef4f9ed}
 .docs-layout{gap:30px;grid-template-columns:190px minmax(0,780px) 150px}.doc-article{background:#fffffff0;border:1px solid #d9e5ee;border-radius:16px;padding:27px;box-shadow:0 16px 32px -26px #294d6b55}.doc-article header{padding:29px;margin-bottom:28px}.doc-article header h1{font-size:35px;position:relative;z-index:1}.doc-article header .lead{font-size:13px}.doc-article h2{color:#245770}.docs-sidebar{background:#f8fbfde8;border:1px solid #d9e5ee;border-radius:12px;padding:18px 12px}.docs-sidebar nav a{border-radius:6px}.sidebar-title{padding-left:9px}.on-this-page{background:#f5f9fccf;border-radius:0 10px 10px 0;padding-top:12px;padding-bottom:12px}.breadcrumb{margin-bottom:20px}.boundary-figure{border-radius:13px;background:#edf3fae8}.boundary-figure>span{border-color:#c3d6e4;background:#fff;color:#245770}.closing{margin-top:35px;border:1px solid #cddfe5;border-bottom:0;background:radial-gradient(ellipse at 50% 100%,#c7e7ecbb,transparent 75%),#edf4f8c9}footer.shell{background:#f5f8fcd9}
 @media(max-width:1120px){.docs-layout{grid-template-columns:180px minmax(0,1fr);gap:24px}.on-this-page{display:none}.page-intro{padding:38px}}
-@media(max-width:760px){.art-grid{background-size:42px 42px}.art-orbit{right:-480px;opacity:.6}.art-orb{width:110vw;height:110vw}.page-intro{margin:28px 0;padding:28px 24px;min-height:0;border-radius:13px}.page-intro h1{font-size:clamp(32px,8vw,44px)}.page-intro .lead{font-size:14px}.feature-detail,.setup-flow section,.prose,.two-column.section{padding:24px;margin:18px 0;border-radius:12px}.feature-detail{grid-template-columns:1fr;gap:10px}.feature-detail h2{font-size:26px}.docs-layout{grid-template-columns:1fr;gap:20px}.docs-sidebar{padding:16px}.docs-sidebar nav{padding:5px 0 10px}.doc-article{padding:19px}.doc-article header{padding:23px 19px}.doc-article header h1{font-size:29px;overflow-wrap:anywhere}.docs-search{gap:12px;padding:10px 12px}.docs-search input{min-width:0}.two-column.section{gap:25px}.integration-card{padding:24px}.closing{margin-top:24px}.prose{overflow-wrap:anywhere}}
+@media(max-width:760px){.art-grid{background-size:42px 42px}.art-mark{width:min(88vw,75vh);opacity:.45}.art-orb{width:110vw;height:110vw}.page-intro{margin:28px 0;padding:28px 24px;min-height:0;border-radius:13px}.page-intro h1{font-size:clamp(32px,8vw,44px)}.page-intro .lead{font-size:14px}.feature-detail,.setup-flow section,.prose,.two-column.section{padding:24px;margin:18px 0;border-radius:12px}.feature-detail{grid-template-columns:1fr;gap:10px}.feature-detail h2{font-size:26px}.docs-layout{grid-template-columns:1fr;gap:20px}.docs-sidebar{padding:16px}.docs-sidebar nav{padding:5px 0 10px}.doc-article{padding:19px}.doc-article header{padding:23px 19px}.doc-article header h1{font-size:29px;overflow-wrap:anywhere}.docs-search{gap:12px;padding:10px 12px}.docs-search input{min-width:0}.two-column.section{gap:25px}.integration-card{padding:24px}.closing{margin-top:24px}.prose{overflow-wrap:anywhere}}
 @media(prefers-reduced-motion:reduce){.site-art *{transition:none!important;transform:none!important}}
 
 /* Grid children must shrink independently of unbroken navigation and code. */
@@ -71,3 +85,5 @@ body:has(button:hover) .art-orb-blue,body:has(input:focus-visible) .art-orb-blue
   .doc-article header { padding: 20px 16px; }
   .integration-card { gap: 12px; padding: 20px; }
 }
+
+@media(prefers-reduced-motion:reduce){.site-art .art-mark{transform:translate(-50%,-50%)!important}}
