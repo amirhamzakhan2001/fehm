@@ -79,7 +79,7 @@ test("scanner: invalid source is still scanned (analysis decides what to trust)"
   assert.deepEqual(scanRepository(dir).files.map((f) => f.path), ["broken.py", "broken.ts"]);
 });
 
-test("scanner: unreadable files are reported, not dropped silently", { skip: process.getuid?.() === 0 }, () => {
+test("scanner: unreadable files are reported, not dropped silently", { skip: process.platform === "win32" || process.getuid?.() === 0 }, () => {
   const dir = makeRepo({ "ok.ts": "export const a = 1;", "locked.ts": "export const b = 2;" });
   chmodSync(join(dir, "locked.ts"), 0o000);
   try {

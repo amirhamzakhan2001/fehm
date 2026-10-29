@@ -127,8 +127,13 @@ export class Guardrails {
     const start = Date.now();
     const result = await new Promise<{exit: number|null; output: string; timeout: boolean; truncated: boolean}>((done) => {
       const env: NodeJS.ProcessEnv = { PATH: process.env.PATH ?? '', CI: '1', NO_COLOR: '1' };
-      for (const key of ['SystemRoot','TEMP','TMP','TMPDIR']) if (process.env[key]) env[key] = process.env[key];
-      const child = spawn(check.argv[0]!, check.argv.slice(1), {cwd, env, shell:false, detached: process.platform !== 'win32', stdio:['ignore','pipe','pipe']});
+      for (const key of ['SystemRoot','TEMP','TMP','TMPDIR','PATHEXT']) if (process.env[key]) env[key] = process.env[key];
+      // npm is a .cmd wrapper on Windows, and .cmd cannot run with shell:false.
+      // npm_execpath is provided by npm itself; invoke that JS CLI with Node.
+      const useNpmCli = process.platform === 'win32' && check.argv[0] === 'npm' && !!process.env.npm_execpath;
+      const command = useNpmCli ? process.execPath : check.argv[0]!;
+      const argv = useNpmCli ? [process.env.npm_execpath!, ...check.argv.slice(1)] : check.argv.slice(1);
+      const child = spawn(command, argv, {cwd, env, shell:false, detached: process.platform !== 'win32', stdio:['ignore','pipe','pipe']});
       let output = '', timeout = false, truncated = false;
       const capture = (data: Buffer): void => { output += data.toString(); if (output.length > 64_000) { truncated = true; output = output.slice(-64_000); } };
       child.stdout.on('data', capture); child.stderr.on('data', capture);

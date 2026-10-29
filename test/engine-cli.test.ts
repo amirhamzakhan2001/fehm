@@ -139,7 +139,7 @@ test("server: localhost debug endpoints use the same engine", async () => {
   }
 });
 
-test("failure handling: unreadable file mid-repo does not break indexing", { skip: process.getuid?.() === 0 }, () => {
+test("failure handling: unreadable file mid-repo does not break indexing", { skip: process.platform === "win32" || process.getuid?.() === 0 }, () => {
   const repo = makeRepo({ "a.ts": "export function a() { return b(); }\nimport { b } from './b';\n", "b.ts": "export function b() {}\n" });
   chmodSync(join(repo, "b.ts"), 0o000);
   try {

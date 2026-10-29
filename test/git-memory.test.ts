@@ -58,10 +58,12 @@ test('incremental semantic history, rename lineage, dependencies, filters and bo
 test('branch reachability, merge DAG, unusual filenames, detached HEAD and rewritten refs', () => {
   const root = repository();
   git(root, 'checkout', '-b', 'feature');
-  writeFile(root, 'odd\tname\n.ts', 'export const odd = 1;\n'); const feature = commit(root, 'feat: side branch');
+  // Windows forbids newlines in file names; retain an unusual valid path there.
+  const oddPath = process.platform === 'win32' ? 'odd name.ts' : 'odd\tname\n.ts';
+  writeFile(root, oddPath, 'export const odd = 1;\n'); const feature = commit(root, 'feat: side branch');
   git(root, 'checkout', 'main');
   assert.equal(indexGitMemory(root).commits.some(c => c.id === feature), false);
-  assert.equal(indexGitMemory(root, { ref: 'feature' }).commits[0]!.files[0]!.path, 'odd\tname\n.ts');
+  assert.equal(indexGitMemory(root, { ref: 'feature' }).commits[0]!.files[0]!.path, oddPath);
   writeFile(root, 'main.ts', 'export const main = 1;\n'); commit(root, 'feat: main change');
   git(root, 'merge', '--no-ff', 'feature', '-m', 'merge feature');
   const merged = indexGitMemory(root); assert.equal(merged.commits[0]!.parents.length, 2); assert.ok(merged.commits.some(c => c.id === feature));
