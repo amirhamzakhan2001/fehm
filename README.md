@@ -10,7 +10,7 @@ FEHM turns a repository into a searchable graph of files, symbols, imports and c
 
 [Documentation](docs/README.md) · [Quickstart](docs/guides/quickstart.md) · [Assistant integrations](docs/INTEGRATIONS.md) · [MCP](docs/guides/mcp.md) · [Contributing](#development) · [License](LICENSE)
 
-> **First release: 1.0.0.** Prepared for publication; PyPI and npm publication are pending. Use a reviewed wheel supplied by the maintainer. See [release status](docs/RELEASE_STATUS.md) for validation and remaining gates.
+> **First release: 1.0.0.** Available on PyPI. npm publication is pending. See [release status](docs/RELEASE_STATUS.md) for validation and remaining gates.
 
 ## Why FEHM?
 
@@ -23,10 +23,10 @@ FEHM reports what static analysis can establish. Dynamic behavior and incomplete
 
 ## Installation
 
-Install [uv](https://docs.astral.sh/uv/getting-started/installation/), then install the supplied wheel:
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/), then install FEHM from PyPI:
 
 ```sh
-uv tool install /absolute/path/to/fehm-1.0.0-py3-none-any.whl
+uv tool install fehm
 uv tool update-shell
 fehm --version
 fehm doctor

@@ -1,15 +1,15 @@
 # Installation
 
-FEHM 1.0.0 is the first release, prepared for publication.
+FEHM 1.0.0 is the first release and is available on PyPI. npm publication is pending.
 
-FEHM is not yet published on PyPI or npm. Use the verified wheel supplied by the maintainer; do not run a registry installation command until the release is announced. A wheel contains the compiled engine and production JavaScript dependencies. Its pinned nodejs-wheel-binaries dependency supplies private Node 24.19.0. No separate Node/npm installation or FEHM source checkout is needed by users.
+FEHM is available from PyPI. The package contains the compiled engine and production JavaScript dependencies. Its pinned nodejs-wheel-binaries dependency supplies private Node 24.19.0. No separate Node/npm installation or FEHM source checkout is needed by users.
 
-## Install a supplied wheel
+## Install from PyPI
 
 Install uv using the [official uv installation guide](https://docs.astral.sh/uv/getting-started/installation/). Python 3.10+ is required; uv can provision Python if needed. This release's installed-artifact tests were run on macOS ARM64 with Python 3.11. Linux, Windows, Intel macOS and other Python versions remain unverified; a portable wheel tag is not a tested-platform claim.
 
 ```sh
-uv tool install /absolute/path/to/fehm-1.0.0-py3-none-any.whl
+uv tool install fehm
 uv tool update-shell
 fehm --version
 fehm doctor
@@ -33,7 +33,7 @@ The scan saves .fehm/graph.json and .fehm/index.json. The dashboard is at http:/
 Stop running FEHM servers, install the reviewed replacement wheel, and refresh only the assistant scopes you selected:
 
 ```sh
-uv tool install --reinstall /absolute/path/to/fehm-1.0.0-py3-none-any.whl
+uv tool upgrade fehm
 fehm --version
 fehm install --platform claude
 fehm integrations --platform claude

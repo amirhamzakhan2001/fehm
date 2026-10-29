@@ -42,7 +42,7 @@ uv publish python-dist/fehm-1.0.0-py3-none-any.whl python-dist/fehm-1.0.0.tar.gz
 npm publish /absolute/path/to/fehm-1.0.0.tgz
 ```
 
-Verify registry metadata and installation in a fresh environment. Only then change primary user instructions to uv tool install fehm and document verified registry upgrades. Attach the reviewed artifacts, checksums and support matrix to the corresponding GitHub release.
+Verify registry metadata and installation in a fresh environment. The primary user instructions now use `uv tool install fehm`; keep them aligned with future verified upgrades. Attach the reviewed artifacts, checksums and support matrix to the corresponding GitHub release.
 
 ## Website deployment
 
