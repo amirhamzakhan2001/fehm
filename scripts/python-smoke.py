@@ -10,6 +10,7 @@ import tempfile
 import threading
 import time
 import zipfile
+from smoke_process import run_cli, stop_process
 
 ROOT = Path(__file__).resolve().parents[1]
 release_version = json.loads((ROOT/'package.json').read_text())['version']
@@ -35,7 +36,7 @@ with tempfile.TemporaryDirectory(prefix='fehm installed ü ') as tmp:
     runtime_env={**env,'PATH':str(base/'bin')}
     def run(*args,ok=True):
         # Node writes UTF-8; Windows' locale default can corrupt Unicode paths.
-        r=subprocess.run([str(cli),*args],env=runtime_env,cwd=base,capture_output=True,text=True,encoding='utf-8',timeout=60)
+        r=run_cli([str(cli),*args],env=runtime_env,cwd=base,text=True,encoding='utf-8')
         if ok: assert r.returncode==0,(args,r.stderr)
         return r
     started=time.monotonic();assert run('--version').stdout.strip()==version
@@ -55,7 +56,8 @@ with tempfile.TemporaryDirectory(prefix='fehm installed ü ') as tmp:
         messages=queue.Queue()
         def reader():
             for line in p.stdout: messages.put(json.loads(line))
-        threading.Thread(target=reader,daemon=True).start()
+        reader_thread=threading.Thread(target=reader,daemon=True)
+        reader_thread.start()
         def send(method,params=None,id=1):
             req={'jsonrpc':'2.0','method':method}
             if params is not None:req['params']=params
@@ -75,7 +77,10 @@ with tempfile.TemporaryDirectory(prefix='fehm installed ü ') as tmp:
             p.stdin.close();assert p.wait(timeout=10)==0
             assert not p.stderr.read().strip()
         finally:
-            if p.poll() is None:p.kill();p.wait()
+            stop_process(p)
+            reader_thread.join(timeout=10)
+            assert not reader_thread.is_alive(), 'MCP child kept stdout open after shutdown'
+            p.stdin.close();p.stdout.close();p.stderr.close()
     session();session()
     # A separately installed cockpit must serve its UI and graph without checkout assets.
     import urllib.request
@@ -86,7 +91,10 @@ with tempfile.TemporaryDirectory(prefix='fehm installed ü ') as tmp:
         with urllib.request.urlopen(url,timeout=10) as response: assert response.status==200 and b'Codebase graph' in response.read()
         with urllib.request.urlopen(url+'/graph',timeout=10) as response: assert response.status==200
     finally:
-        web.terminate();web.wait(timeout=10)
+        stop_process(web)
+        # EOF also verifies that descendants released their inherited pipes.
+        web.communicate(timeout=10)
+        web.stdout.close();web.stderr.close()
     # Missing assets produce a useful failure and do not depend on the checkout.
     runtime=Path(json.loads(run('doctor','--root',str(project),'--json').stdout)['runtime'])
     entry=runtime/'dist/cli.js';backup=entry.with_suffix('.smoke-backup')

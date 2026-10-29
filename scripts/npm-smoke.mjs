@@ -5,8 +5,12 @@ import path from 'node:path';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 const root=process.cwd(),base=await mkdtemp(path.join(tmpdir(),'fehm npm ü '));
-const npm=process.platform==='win32'?'npm.cmd':'npm';
-const run=(args,cwd)=>execFileSync(npm,args,{cwd,encoding:'utf8',shell:process.platform==='win32'});
+// npm run supplies the JS entry point. Avoid cmd.exe splitting Unicode/space paths.
+const npmCli=process.env.npm_execpath;
+if(process.platform==='win32'&&!npmCli)throw new Error('Run this check with npm run smoke:npm so npm_execpath is available.');
+const run=(args,cwd)=>npmCli
+ ? execFileSync(process.execPath,[npmCli,...args],{cwd,encoding:'utf8'})
+ : execFileSync('npm',args,{cwd,encoding:'utf8'});
 try{
  const packed=JSON.parse(run(['pack','--ignore-scripts','--json','--pack-destination',base],root))[0];
  if(packed.files.some(f=>f.path.startsWith('website/')||f.path.startsWith('.fehm/')))throw new Error('Unexpected package data');
