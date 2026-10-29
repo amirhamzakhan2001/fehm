@@ -47,6 +47,8 @@ with tempfile.TemporaryDirectory(prefix='fehm installed ü ') as tmp:
     skill=project/'.agents/skills/fehm/SKILL.md';assert skill.is_file()
     config=json.loads(run('mcp-config','--platform','claude','--root',str(project)).stdout)
     server=config['mcpServers']['fehm'];assert Path(server['command']).is_absolute()
+    assert Path(server['command']).is_file(), server['command']
+    assert Path(server['command']).samefile(cli), server['command']
     def session():
         p=subprocess.Popen([server['command'],*server['args']],cwd=base,env=runtime_env,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
         messages=queue.Queue()
