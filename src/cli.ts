@@ -22,7 +22,8 @@ import { indexRepository, type IndexOptions } from "./indexer.js";
 import { addMemory, loadMemory, removeMemory } from "./memory.js";
 import type { RetrievalIntent } from "./model.js";
 import { buildAgentContext } from "./agent-context.js";
-import { manageSkill, type InstallResult } from "./integrations.js";
+import { doctor, mcpConfig } from "./installation.js";
+import { manageIntegration, manageSkill, type InstallResult } from "./integrations.js";
 import { runSkillBench, type SkillBenchCase } from "./skill-eval.js";
 import { loadSkillFeedback, recordSkillFeedback } from "./skill-feedback.js";
 import { SKILL_LEVELS, type SkillFeedbackValue, type SkillLevel, type SkillRoutingResult } from "./skill-model.js";
@@ -51,6 +52,13 @@ import { buildSecurityReport, renderSecurityText, SECURITY_BASELINE_FILE, toSari
 const HELP = `fehm — local codebase understanding & context engine
 
 Usage: fehm <command> [args] [--root DIR] [--json]
+  --version                          installed runtime version
+  doctor                             runtime assets and saved graph status (read-only)
+  install|uninstall|integrations --platform P [--project] [--dry-run] [--force]
+                                     manage the first-party Fehm skill; default personal scope
+  mcp --root DIR                     optional read-only local stdio MCP server
+  mcp-config --platform P [--executable ABS_PATH] --root DIR
+                                     print client configuration; never edit settings
 
   debug --input FILE | --location PATH --line N | --run-id ID --evidence-id ID [--save]
   debug report|context|delete --id ID
@@ -132,7 +140,7 @@ interface Args {
 }
 
 const VALUE_FLAGS = new Set([
-  "input", "location", "evidence-id", "failure-revision", "id", "action-id", "tokens",
+  "executable", "input", "location", "evidence-id", "failure-revision", "id", "action-id", "tokens",
   "run-id", "check-id", "phase", "expected-test", "reason",
   "concept-id", "bytes", "ref", "from", "to", "path", "entity", "author", "since", "until", "line",
   "prompt-id", "prompt-mode", "prompt-eval", "prompt-comparison", "prompt-check",
@@ -205,6 +213,7 @@ async function main(argv: string[]): Promise<number> {
   const stateDirectory = flag(args, "state-dir");
   const indexOptions = { ...(args.bools.has("force") ? { force: true } : {}), ...(stateDirectory ? { stateDirectory } : {}) };
   const root = resolve(flag(args, "root") ?? (command === "scan" && rest[0] ? rest[0] : "."));
+  if (args.bools.has("version") || command === "version") { process.stdout.write(`${FEHM_VERSION}\n`); return 0; }
   if (!command || command === "help" || args.bools.has("help")) {
     process.stdout.write(HELP);
     return 0;
@@ -217,6 +226,25 @@ async function main(argv: string[]): Promise<number> {
   };
 
   switch (command) {
+    case "doctor": {
+      const result=doctor(root,stateDirectory);out(result,json,()=>JSON.stringify(result,null,2));return result.ok?0:1;
+    }
+    case "install":
+    case "uninstall":
+    case "integrations": {
+      const platform=flag(args,"platform");if(!platform)throw new Error(`${command} needs --platform`);
+      const result=await manageIntegration(command === "integrations" ? "status" : command,{platform,project:args.bools.has("project"),dryRun:args.bools.has("dry-run"),force:args.bools.has("force"),cwd:root});
+      out(result,json,()=>`${result.action}${result.dryRun?" (dry run)":""} → ${result.path} [${result.state}]`);return 0;
+    }
+    case "mcp-config": {
+      const platform=flag(args,"platform");if(!platform)throw new Error('mcp-config needs --platform');
+      process.stdout.write(mcpConfig(platform,root,flag(args,"executable"),stateDirectory));return 0;
+    }
+    case "mcp": {
+      if(!flag(args,"root"))throw new Error('mcp requires --root /absolute/project to avoid selecting the wrong project');
+      const { startMcp } = await import("./mcp.js");
+      await startMcp(root,stateDirectory);return 0;
+    }
     case "debug": {
       const store = new InvestigationStore(root, stateDirectory), action = rest[0] ?? "analyze";
       if (action === "delete") {

@@ -50,3 +50,19 @@ fehm agent-context "Explain authentication" --no-skills
 Guardrails verification and diagnostic execution require explicit approval. Health --run executes discovered project commands. Prompt --apply --approve can modify files and run a supplied check. Read the relevant guide and inspect commands before enabling execution; the host is not a sandbox.
 
 Unsupported older command examples include fehm query, fehm impact, fehm practices, fehm mcp and fehm install. Use search, guardrails analyze, drift/health and skills install for the implemented workflows.
+
+
+## Installation and assistant connections
+
+```sh
+fehm --version
+fehm doctor --json
+fehm install --platform claude --project --dry-run
+fehm install --platform claude --project
+fehm integrations --platform claude --project
+fehm uninstall --platform claude --project
+fehm mcp-config --platform claude --root /absolute/project
+fehm mcp --root /absolute/project
+```
+
+Omit --project for personal skills. mcp-config prints settings without writing them; --executable accepts an existing absolute launcher path. The mcp command uses stdout exclusively for stdio protocol messages and requires an explicit root. A missing or stale graph needs a scan in a separate terminal. The former fehm query command is now fehm context (or fehm search for ranked hits); graph-file positional MCP arguments are no longer accepted.

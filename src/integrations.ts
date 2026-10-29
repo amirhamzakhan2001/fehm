@@ -2,7 +2,13 @@ import { createHash } from "node:crypto";
 import { lstat, mkdir, readFile, rename, unlink, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import path from "node:path";
-import type { SkillRegistry } from "./skill-registry.js";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+interface InstallSource {
+  get(id:string): {license:string;sourceRepository?:string} | undefined;
+  source(id:string): string;
+  resourceFiles(id:string): {path:string;content:Buffer}[];
+}
 
 /**
  * Installation mode: copy selected skills into an agent platform's skills
@@ -75,10 +81,11 @@ async function checkDestination(root: string, target: string): Promise<void> {
 
 /** Directory name for an installed skill: `fehm-` + id with separators flattened. */
 export function installedSkillName(skillId: string): string {
+  if (skillId === "fehm") return "fehm";
   return `fehm-${skillId.replace(/[/:]+/g, "-").replace(/[^A-Za-z0-9._-]/g, "")}`;
 }
 
-export async function manageSkill(registry: SkillRegistry, skillId: string, action: "install" | "uninstall" | "status", options: InstallOptions): Promise<InstallResult> {
+export async function manageSkill(registry: InstallSource, skillId: string, action: "install" | "uninstall" | "status", options: InstallOptions): Promise<InstallResult> {
   if (!Object.hasOwn(integrationPlatforms, options.platform)) {
     throw new Error(`Unknown platform ${options.platform}. Choose: ${Object.keys(integrationPlatforms).join(", ")}`);
   }
@@ -115,6 +122,7 @@ export async function manageSkill(registry: SkillRegistry, skillId: string, acti
   const nextInventory = Object.fromEntries(resources.map(r => [r.path, digest(r.content)]));
   const existing = await optionalRead(target);
   const match = existing?.match(marker);
+  if (action === "uninstall" && existing !== undefined && !match) throw new Error(`Preserving unmanaged skill at ${target}; removal only owns a valid managed marker.`);
   const unmodified = !!match && digest(existing!.slice(0, match.index)) === match[1];
   type Pending = { file: string; desired?: Buffer | string; existing?: Buffer | string; customized: boolean };
   const pending: Pending[] = [{ file: target, ...(action === "uninstall" ? {} : { desired: content }), ...(existing === undefined ? {} : { existing }), customized: existing !== undefined && !unmodified }];
@@ -164,4 +172,14 @@ async function atomicWrite(target: string, content: string | Buffer): Promise<vo
   } finally {
     await unlink(temporary).catch((error: NodeJS.ErrnoException) => { if (error.code !== "ENOENT") throw error; });
   }
+}
+
+/** The first-party entry skill shares the catalog installer and managed-file lifecycle. */
+export async function manageIntegration(action: "install" | "uninstall" | "status", options: InstallOptions): Promise<InstallResult> {
+  const template = readFileSync(fileURLToPath(new URL("../integrations/fehm/SKILL.md", import.meta.url)), "utf8");
+  return manageSkill({
+    get: () => ({ license: "MIT" }),
+    source: () => template,
+    resourceFiles: () => [],
+  }, "fehm", action, options);
 }

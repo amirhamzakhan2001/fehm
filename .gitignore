@@ -24,3 +24,6 @@ __pycache__/
 
 third_party/open-code-review/bin/
 
+
+# Local implementation history, excluded from public source
+.local/

@@ -7,7 +7,7 @@ export const guideNavigation = guideCatalog.map(({id,title}) => [id,title]);
 // Deliberately small renderer for the maintained guides: escaped prose, headings,
 // fenced examples, inline code, local links and unordered lists. No raw HTML.
 export function renderGuide(markdown) {
-  const inline = text => escape(text).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\[([^\]]+)\]\(([a-z0-9-]+)\.md\)/g, (_,label,id) => {
+  const inline = text => escape(text).replace(/\[([^\]]+)\]\(\.\.\/\.\.\/THIRD_PARTY_NOTICES\.md\)/g, '<a href="/third-party-notices.txt">$1</a>').replace(/\[([^\]]+)\]\((https:\/\/[^\s)]+)\)/g, '<a href="$2">$1</a>').replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\[([^\]]+)\]\(([a-z0-9-]+)\.md\)/g, (_,label,id) => {
     if (!guideCatalog.some(g => g.id === id)) throw new Error(`Unknown guide link ${id}`);
     return `<a href="/docs/${id}/">${label}</a>`;
   });

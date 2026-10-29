@@ -1,40 +1,52 @@
 # Quickstart
 
-Build FEHM using the [installation guide](installation.md), then run these commands from a repository you know.
+Install the maintainer-supplied wheel using [installation](installation.md). These steps need no AI assistant, provider key or FEHM source checkout.
 
-## Find the relevant source
+## Scan your project
 
 ```sh
+cd /path/to/your/project
+fehm --version
+fehm doctor
 fehm scan .
-fehm stats
-fehm search "authentication"
-fehm context "change authentication" --budget 4000
+fehm doctor --json
 ```
 
-Inspect returned file locations. Replace the example query with a task that exists in your codebase.
+Confirm the doctor reports a fresh graph at your project's .fehm/graph.json. Scan also saves .fehm/index.json. It does not install the project's dependencies or execute its code.
 
-## Follow a symbol
+## Retrieve evidence
 
 ```sh
-fehm focus authenticate
-fehm relationships authenticate
-fehm flow authenticate --depth 2
+fehm search "authentication"
+fehm context "authentication flow" --budget 4000
+fehm relationships "authenticateUser"
+fehm flow "authenticateUser" --depth 2
 ```
 
-Replace authenticate with a symbol returned by search. Ambiguous symbols and unresolved calls need inspection; a static path is not a recorded execution trace.
+Replace authenticateUser with a symbol returned by search. Follow source paths and line references. Inferred edges and unresolved calls are not runtime proof. Refresh with fehm scan . after edits before using MCP.
 
-## Open the workspace
+## Open the local cockpit
 
 ```sh
 fehm serve --port 4317
 ```
 
-Visit http://127.0.0.1:4317. The Context Engine workspace provides a reading guide with source references and expandable raw diagnostics. Other pages expose the graph, briefing, architecture and evidence reports.
+Open http://127.0.0.1:4317 and stop with Ctrl+C. Use a different free port for a second project.
 
-## Review before running checks
+## Optional assistant skill
 
 ```sh
-fehm guardrails analyze --json
+fehm install --platform codex --project --dry-run
+fehm install --platform codex --project
+fehm integrations --platform codex --project
 ```
 
-This recommends checks without executing them. Read [verification](verification.md) before approving repository commands.
+Select your platform: claude, cursor, codex, gemini, copilot, vscode or generic. Reload the assistant and inspect its skill list. Ask: “Use FEHM to explain the authentication flow. Identify the relevant entry points, trace the supported caller/callee relationships, cite source files and line locations, and distinguish directly observed evidence from inferred relationships.”
+
+## Optional MCP
+
+```sh
+fehm mcp-config --platform codex --root /absolute/path/to/project
+```
+
+This prints configuration only. Review and merge the FEHM entry into your client's settings. See [MCP connection](mcp.md). CLI installation, skill installation and MCP registration are independent steps.

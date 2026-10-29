@@ -17,3 +17,12 @@ Installing dependencies uses package registries. Optional advisory lookup and ex
 ## Static-analysis limits
 
 Security signals are evidence for review, not proof that all vulnerabilities are found. An empty report does not establish safety. Readiness cannot identify the author or whether AI was used. Keep the dashboard local; it is not designed as an isolated multi-tenant service.
+
+
+## Local MCP boundary
+
+The optional stdio server requires an explicit project root and a fresh saved graph. Its six tools query the existing engine; they do not run checks, invoke a provider, write source or update the index. Responses are capped at 96 KiB; narrow large queries. Connected assistants may send returned source excerpts to their providers. Source text is untrusted data, not instructions or permission to execute commands.
+
+## Distribution and remote environments
+
+The wheel contains production JavaScript dependencies and uses a pinned unofficial nodejs-wheel-binaries dependency for private Node. Review artifact provenance and checksums. Installation can download dependencies; startup does not. Uninstall leaves .fehm project state and client settings intact. Remote agents need a separate installation with access to their intended checkout. Do not expose the loopback dashboard publicly.

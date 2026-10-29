@@ -1,0 +1,9 @@
+{
+  "claude": "{\n  \"mcpServers\": {\n    \"fehm\": {\n      \"command\": \"/absolute/path/to/bin/fehm\",\n      \"args\": [\n        \"mcp\",\n        \"--root\",\n        \"/absolute/path/to/project\"\n      ]\n    }\n  }\n}\n",
+  "cursor": "{\n  \"mcpServers\": {\n    \"fehm\": {\n      \"command\": \"/absolute/path/to/bin/fehm\",\n      \"args\": [\n        \"mcp\",\n        \"--root\",\n        \"/absolute/path/to/project\"\n      ]\n    }\n  }\n}\n",
+  "gemini": "{\n  \"mcpServers\": {\n    \"fehm\": {\n      \"command\": \"/absolute/path/to/bin/fehm\",\n      \"args\": [\n        \"mcp\",\n        \"--root\",\n        \"/absolute/path/to/project\"\n      ]\n    }\n  }\n}\n",
+  "generic": "{\n  \"mcpServers\": {\n    \"fehm\": {\n      \"command\": \"/absolute/path/to/bin/fehm\",\n      \"args\": [\n        \"mcp\",\n        \"--root\",\n        \"/absolute/path/to/project\"\n      ]\n    }\n  }\n}\n",
+  "vscode": "{\n  \"servers\": {\n    \"fehm\": {\n      \"type\": \"stdio\",\n      \"command\": \"/absolute/path/to/bin/fehm\",\n      \"args\": [\n        \"mcp\",\n        \"--root\",\n        \"/absolute/path/to/project\"\n      ]\n    }\n  }\n}\n",
+  "copilot": "{\n  \"mcpServers\": {\n    \"fehm\": {\n      \"type\": \"local\",\n      \"command\": \"/absolute/path/to/bin/fehm\",\n      \"args\": [\n        \"mcp\",\n        \"--root\",\n        \"/absolute/path/to/project\"\n      ],\n      \"tools\": [\n        \"*\"\n      ]\n    }\n  }\n}\n",
+  "codex": "[mcp_servers.fehm]\ncommand = \"/absolute/path/to/bin/fehm\"\nargs = [\"mcp\",\"--root\",\"/absolute/path/to/project\"]\n"
+}

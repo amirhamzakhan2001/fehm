@@ -56,7 +56,7 @@ Hierarchy: system → component → module → file. The 3.1 graph takes over at
 
 ## Views
 
-One page with evidence-backed navigation grouped by engineering question. The default is system context; Subsystems opens the detailed system projection. Only available diagram families appear in the navbar. Unavailable views and extraction limits are explained under Coverage. Views about one thing at a time have a scope picker. Detailed dependencies offer an explicit All modules choice. See [library research and comparison](research/architecture-libraries.md) for the audit and dependency decision.
+One page with evidence-backed navigation grouped by engineering question. The default is system context; Subsystems opens the detailed system projection. Only available diagram families appear in the navbar. Unavailable views and extraction limits are explained under Coverage. Views about one thing at a time have a scope picker. Detailed dependencies offer an explicit All modules choice.
 
 | # | View | Evidence it is built from | Layout | Module |
 |---|---|---|---|---|

@@ -1,27 +1,29 @@
 # Troubleshooting
 
-Start with fehm help and confirm that you are running the built CLI from this checkout.
+## Command or package not found
 
-## Command not found
+FEHM is not publicly released on PyPI/npm yet. Obtain the reviewed wheel and follow [installation](installation.md). Run uv tool update-shell and open a new terminal. Use uv tool dir --bin to locate the launcher. A registry 404 is not a reason to install an unrelated similarly named package.
 
-Run npm run build in FEHM, then npm link if you want a shell command. Alternatively run node /absolute/path/to/fehm/dist/cli.js help. Old query, install, practices and mcp commands are not supported; use the current CLI guide.
+## Runtime assets or wrong version
 
-## Concepts require a newer Node runtime
+Run fehm --version and fehm doctor. The doctor reports the runtime directory, private Node version and required assets. Reinstall the reviewed wheel with dependencies if assets are missing. Stop older server processes before upgrading. Do not copy the generated executable without its uv environment.
 
-Use Node 22.13 or newer for built-in SQLite. Core commands declare Node 20+ support. A Python or SQLite daemon installation is not a substitute.
+## Skill not discovered
 
-## Missing or stale source
+Run fehm integrations --platform codex --project, replacing the platform and matching your original scope. A current file proves installation, not activation. Reload the host and inspect its skill list. Check organization settings and client version. Personal Codex and generic skills share .agents/skills; Copilot CLI and VS Code share .github/skills in project scope. Do not install duplicate scopes unnecessarily.
 
-Check --root, the current working directory, ignored paths and language support. Run fehm scan --force after correcting configuration. Dynamic relationships and unsupported syntax can remain unresolved even in a fresh index.
+## MCP fails to initialize
 
-## Skill does not appear
+Use fehm mcp-config for the specific client. Codex uses TOML, VS Code uses a servers map, and other documented JSON clients use mcpServers. Merge the FEHM entry instead of replacing existing settings. Check the absolute executable and project paths. A GUI may not inherit your terminal PATH. Test the launcher with --version. MCP stdout is protocol traffic; diagnostics belong on stderr.
 
-Inspect fehm skills status ID --platform PLATFORM in the same scope used for installation. Check the reported destination and your assistant's skill-discovery settings. Reload the host when necessary. Customized files are protected; do not force overwrites without reviewing them.
+## Missing, corrupt, stale or wrong graph
 
-## Verification did not pass
+Run fehm doctor --root /absolute/project. Then run fehm scan --root /absolute/project. Keep both graph.json and index.json together in .fehm. Do not copy another project's state into this directory. MCP refuses missing, incompatible or stale saved state and does not repair it implicitly. If source changes during a query, rescan and retry. CLI scans can rebuild malformed cache state without deleting user policies/history.
 
-Read the recorded status and output. A setup error can be blocked; missing results are not passes. Stale evidence requires rerunning applicable checks against the current content. Strict TDD support depends on recognizable Node TAP output.
+## Port or permission errors
 
-## Port or test environment problems
+Choose an unused port with fehm serve --port 7444, or stop your existing process with Ctrl+C. Check read access to source and write access to .fehm for scanning. MCP queries do not require writes. Avoid sudo installations. Symlinked assistant destinations are refused; choose a normal directory or manage that destination manually.
 
-Choose an unused --port for serve. Website preview defaults to 4321, while the dashboard examples use 4317. Some tests bind localhost and need an environment that permits it. A permission error is not a test assertion failure.
+## Remote agents and upgrades
+
+Install FEHM in the execution environment where the assistant runs. Your laptop paths cannot be used by a remote container or cloud agent. Refresh selected skills after upgrading; customized files are preserved and force replacement makes a backup. Regenerate MCP configuration if the executable location changed. Removing the CLI does not delete project graphs or client settings.

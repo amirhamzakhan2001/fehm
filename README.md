@@ -4,64 +4,94 @@
 
 # FEHM
 
-**Understand a codebase, give your coding assistant focused context, and verify changes with evidence.**
+**Local codebase intelligence for developers and coding agents.**
 
-FEHM is a local-first TypeScript tool with a CLI, a library API, and a localhost dashboard. It indexes files, symbols, imports and call relationships, then retrieves relevant source under an estimated token budget. Ordinary indexing, retrieval and skill routing do not call an LLM.
+FEHM turns a repository into a searchable graph of files, symbols, imports and calls. Explore the code in a local dashboard, give your assistant focused source context, and investigate changes with evidence linked to the code.
 
-[Documentation](docs/README.md) · [Installation](docs/guides/installation.md) · [CLI guide](docs/guides/cli.md) · [Assistant skills](docs/guides/skills.md) · [Website development](docs/website.md)
+[Documentation](docs/README.md) · [Quickstart](docs/guides/quickstart.md) · [Assistant integrations](docs/INTEGRATIONS.md) · [MCP](docs/guides/mcp.md) · [Contributing](#development) · [License](LICENSE)
 
-## Get started
+> **First release: 1.0.0.** Prepared for publication; PyPI and npm publication are pending. Use a reviewed wheel supplied by the maintainer. See [release status](docs/RELEASE_STATUS.md) for validation and remaining gates.
 
-Use **Node.js 22.13 or newer** for the complete feature set, including the SQLite-backed concept catalog. The package declares Node 20+ for other commands. Git is needed for Git-history workflows.
+## Why FEHM?
 
-Build from this repository:
+- **Understand unfamiliar code.** Follow symbols and relationships, inspect architecture, and read explanations tied to source locations.
+- **Give agents relevant context.** Retrieve focused code under an estimated token budget and select useful workflows from the bundled skill catalog.
+- **Review changes with evidence.** Inspect architectural drift, static security findings, project health, Git history and verification records.
+- **Work locally.** Core indexing and retrieval run without a model provider. Use the CLI, localhost dashboard or optional MCP server.
+
+FEHM reports what static analysis can establish. Dynamic behavior and incomplete language coverage remain explicit limitations.
+
+## Installation
+
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/), then install the supplied wheel:
 
 ```sh
-git clone https://github.com/amirhamzakhan2001/fehm.git
-cd fehm
-npm ci
-npm run build
-node dist/cli.js help
-
-# Optional: make the fehm command available locally
-npm link
+uv tool install /absolute/path/to/fehm-1.0.0-py3-none-any.whl
+uv tool update-shell
+fehm --version
+fehm doctor
 ```
 
-Then run from the repository you want to understand:
+The wheel includes the compiled engine and its JavaScript dependencies. A pinned dependency supplies private Node.js, so end users need neither a FEHM checkout nor a separate Node/npm installation.
+
+Installed-artifact testing currently covers **macOS ARM64 with Python 3.11**. Other platforms remain unverified. Your project's dependencies, Git and test tools are separate. See [installation](docs/guides/installation.md) for prerequisites, updates and removal.
+
+## Quickstart
+
+Run FEHM in your own repository:
 
 ```sh
 cd /path/to/your/project
 fehm scan .
 fehm search "authentication"
-fehm context "change authentication" --budget 4000
-fehm serve --port 4317
+fehm context "authentication flow" --budget 4000
+fehm serve --port 7332
 ```
 
-Open **http://127.0.0.1:4317**. Stop the server with Ctrl+C. Alternatively, run `/path/to/fehm/dist/cli.js` with Node and `--root /path/to/project`. Local state is stored under `.fehm/` by default.
-
-This checkout uses Node/npm. The former Python-wheel setup and MCP server instructions do not apply to this implementation. These instructions do not assume that an npm or Python package has been published.
+Open **http://127.0.0.1:7332** to explore the graph and analysis views. Stop the server with Ctrl+C. Project state is stored in `.fehm/`.
 
 ## What you can do
 
-| Workflow | Current capability |
+| Workflow | Capability |
 | --- | --- |
-| Understand source | Search files and symbols, inspect relationships, trace outgoing calls, and explore the codebase graph. |
-| Explain and map architecture | Read source-linked briefings and architecture views, with inferred relationships distinguished from observed evidence. |
-| Build context for an assistant | Select relevant source and optional workflow skills within shared estimated token budgets. |
-| Route and install skills | Discover the bundled catalog, choose relevant skills, and install selected skills with customization protection. |
-| Inspect drift | Compare repository structure with explicit project constraints and detected conventions. |
-| Review health and security | Inspect tests, supplied coverage, dependencies, static security signals, implementation integrity, engineering readiness and HTML delivery checks. |
-| Analyze prompts | Inventory prompts and tool contracts; evaluate supplied cases and outputs through the supported prompt workflow. |
-| Explore Git history | Search changes, compare revisions and inspect historical analyzer snapshots. |
-| Understand engineering concepts | Look up concepts and inspect the evidence supporting their use in the codebase. |
-| Verify changes | Analyze working-tree impact, discover checks, and record explicitly approved execution through the existing guardrail ledger. |
-| Investigate failures | Turn error output and source locations into traceable evidence, tentative hypotheses and diagnostic actions. |
+| Understand source | Search files and symbols, inspect relationships, trace outgoing calls and explore the codebase graph. |
+| Explain architecture | Read source-linked briefings and architecture views that distinguish observed evidence from inference. |
+| Prepare assistant context | Select relevant source and optional workflow skills within estimated token budgets. |
+| Route and install skills | Discover the bundled catalog and install selected workflows with customization protection. |
+| Inspect architectural drift | Compare structure with explicit constraints and detected conventions. |
+| Review health and security | Inspect tests, supplied coverage, dependencies, static security signals and engineering readiness. |
+| Analyze prompts | Inventory prompts and tool contracts; evaluate supplied cases and outputs. |
+| Explore Git history | Search changes, compare revisions and inspect historical analysis snapshots. |
+| Explore engineering concepts | Look up concepts and their supporting evidence in the codebase. |
+| Verify changes | Analyze working-tree impact and record explicitly approved checks in the verification ledger. |
+| Investigate failures | Connect errors and source locations to evidence, tentative hypotheses and diagnostic actions. |
 
-See the [documentation index](docs/README.md) for implementation references and limits. The broader revision-aware Change Impact Engine remains a **plan**, not a shipped standalone feature.
+See the [guides](docs/README.md) for each workflow and its limitations. A standalone revision-aware Change Impact Engine is not part of 1.0.0.
 
-## Use FEHM with your coding assistant
+## Connect your coding assistant
 
-Select a skill; installation is never implicit:
+Install FEHM first, scan your project, then add the entry skill:
+
+```sh
+fehm install --platform claude --project
+fehm integrations --platform claude --project
+```
+
+Choose `claude`, `cursor`, `codex`, `gemini`, `copilot`, `vscode` or `generic`. Omit `--project` for personal scope. Preview with `--dry-run`; remove with `fehm uninstall --platform claude --project`. Customized files are protected.
+
+For optional direct tool access, generate the configuration for your client:
+
+```sh
+fehm mcp-config --platform claude --root /absolute/path/to/your/project
+```
+
+This prints configuration for review; it does not change assistant settings. The read-only MCP server exposes context, search, focus, relationships, a system map and static project-health findings. It requires a fresh saved graph.
+
+CLI installation, skill installation and MCP setup are separate steps. Follow the [client guides](docs/INTEGRATIONS.md) and [compatibility matrix](docs/REAL_TESTING.md). Claude Code connection is verified; Codex configuration is accepted. Full assistant sessions and other clients remain unverified.
+
+### Select workflow skills
+
+The entry skill teaches an assistant how to use FEHM. Catalog skills provide additional workflows and are installed separately:
 
 ```sh
 fehm skills list --source superpowers
@@ -71,33 +101,55 @@ fehm skills install debugging/systematic-debugging --platform codex --project --
 fehm skills install debugging/systematic-debugging --platform codex --project
 ```
 
-Installer platform keys: `claude`, `cursor`, `codex`, `gemini`, `copilot`, `vscode`, and `generic`. These write skill files using the supported directory conventions; the host controls discovery and invocation. They do not install an MCP server or guarantee that an agent follows the instructions.
+[Superpowers workflows](docs/integrations/superpowers.md) include planning, TDD, debugging and verification resources. Use `--exclude-source superpowers` on routing/context requests to exclude that source, or `--no-skills` with `agent-context` for code-only context. Hosts control discovery and invocation; installing files does not guarantee an assistant follows them. See [skill routing](docs/guides/skills.md).
 
-The optional [Superpowers integration](docs/integrations/superpowers.md) preserves detailed planning, TDD, debugging and verification workflows, packages their supporting resources, and connects them to FEHM's existing evidence tools. Use `--exclude-source superpowers` to exclude that source from a routing/context request, or `--no-skills` with `agent-context` for code-only context.
+## Evidence and privacy
 
-## Evidence, privacy and limits
+TypeScript and JavaScript analysis uses the TypeScript compiler. Python, Go, Rust and Java have shallower heuristic coverage. Graph edges do not prove runtime behavior, and context budgets estimate tokens rather than billing usage.
 
-- Graph coverage varies by language. TypeScript/JavaScript use the TypeScript compiler; Python, Go, Rust and Java use shallower heuristics. Unresolved and dynamic relationships remain incomplete.
-- Context tokens are estimates. FEHM does not incur model tokens for ordinary retrieval; an assistant/model consumes tokens when it reads the output.
-- Optional command-based summaries and reranking can use external models. Advisory lookup and other explicitly invoked external tools can contact services. Inspect the configured commands and data boundaries.
-- Static security/readiness findings support investigation. They do not certify production readiness or identify whether code was written by AI, a beginner or an engineer.
-- Tests exist independently of test results. Guardrails record execution, freshness and policy evidence; they require approval to run project commands. Host execution is not sandbox isolation. Strict TDD evidence currently supports Node TAP assertions.
+Ordinary scanning, retrieval and skill routing do not call an LLM. Explicitly configured summaries, reranking and external lookups can use network services. Project-command execution requires approval through the supported verification workflow; host execution is not sandbox isolation. Static findings do not certify security or production readiness. A discovered test is not a passing test result; strict TDD evidence currently supports Node TAP assertions.
 
-Read [security and privacy](docs/guides/security.md) and [verification](docs/guides/verification.md) before running repository checks.
+Read [security and privacy](docs/guides/security.md), [verification](docs/guides/verification.md) and the [security policy](SECURITY.md).
 
-## Develop and validate
+## Build from source
+
+For contributors or users who prefer a source checkout, use Node.js 22.13 or newer. The release workflow targets Node 24. Git is needed to clone the repository and use history workflows.
 
 ```sh
+git clone https://github.com/amirhamzakhan2001/fehm.git
+cd fehm
+npm ci
+npm run build
+node dist/cli.js help
+
+# Optional: make the fehm command available on PATH
+npm link
+```
+
+Then use the quickstart from your target repository. Without `npm link`, run `node /absolute/path/to/fehm/dist/cli.js scan --root /absolute/path/to/project`.
+
+## Development
+
+```sh
+npm ci
 npm run check
 npm run build
 npm test
 npm --prefix website run check
 ```
 
-Some tests bind localhost. No root lint script is configured. The public website is a separate static build in `website/`; the application dashboard is implemented in `src/visualization/`.
+For wheel construction and installed-artifact validation, install Python and uv, then run `npm run release:check`. Some checks need network access and localhost listeners.
 
-[Architecture and feature references](docs/README.md#implementation-references) · [Documentation maintenance](docs/maintenance.md) · [Brand assets](docs/brand.md)
+The CLI and engine live in `src/`; the dashboard is in `src/visualization/`. The public website lives in `website/` and shares guides with `docs/`. It is excluded from distributable packages.
+
+Contributions should include a concrete problem, a focused change and relevant validation. Start with an issue for substantial changes. See [architecture references](docs/README.md#implementation-references), [documentation maintenance](docs/maintenance.md) and [release instructions](docs/DEPLOYMENT.md).
+
+## Open-source acknowledgments
+
+FEHM builds on selected algorithms, rules and workflows from AgentMemory, Codebase Memory MCP, Graft, Skylos, Superpowers, Caveman, Ponytail, Matt Pocock's skills and other attributed sources. Archify and Open Code Review also informed research and earlier development.
+
+The [third-party notices](THIRD_PARTY_NOTICES.md) distinguish adapted code, bundled instructions and references, with source revisions and retained licenses. Upstream projects are not implied to endorse FEHM.
 
 ## License
 
-FEHM is MIT licensed. See [LICENSE](LICENSE), [third-party notices](THIRD_PARTY_NOTICES.md), and the licenses/provenance shipped with the skill catalog. Vendored projects retain their own notices; adaptations are not full installations of those projects.
+FEHM is available under the [MIT License](LICENSE). Third-party material retains its own licenses and notices.

@@ -93,7 +93,7 @@ CLI: `fehm brief [--depth minimal|standard|deep] [--sections overview,api] [--bu
 - **Not indexed by Feature 1:** `.sql`, `.prisma` and `.tf`. The Database and Infrastructure sections say so as unknowns.
 - **Deferred:**
   - Optional LLM synthesis (Mode B) and deep subsystem explanation (Mode C), beyond flow, explain and ask.
-  - An MCP `get_codebase_brief` tool: the rebuilt tree has no MCP server yet; `fehm brief --json` and `/api/briefing` expose the same data.
+  - An MCP `get_codebase_brief` tool: the current MCP server does not expose that tool; `fehm brief --json` and `/api/briefing` expose the same data.
   - Complete endpoint contracts and relational schema extraction are not supplied by the current briefing index.
 
 Graph, Architecture, Architecture Drift, Project Health, Security Review, Prompt Intelligence and Git Memory links are available for deeper investigation.

@@ -52,10 +52,10 @@ test('all static pages have meaningful SEO, resolvable local links and current r
   assert.equal((homepage.match(/class="capability-card"/g)||[]).length,10);
   assert.doesNotMatch(homepage,/Trace a request|request map|Pause motion|Analytics settings|data-scene/);
   const install=await readFile(path.join(output,'getting-started/index.html'),'utf8');
-  assert.match(install,/npm ci/);
-  assert.match(install,/npm run build/);
-  assert.match(install,/Node 22\.13/);
-  assert.doesNotMatch(install,/uv tool install|py3-none-PLATFORM/);
+  assert.match(install,/uv tool install/);
+  assert.match(install,/fehm doctor/);
+  assert.match(install,/publication is pending/);
+  assert.doesNotMatch(install,/uv tool install fehm(?:\s|$)|py3-none-PLATFORM/);
   assert.match(await readFile(path.join(output,'robots.txt'),'utf8'),/Disallow: \//);
   const server=createServer();
   try {
@@ -182,15 +182,15 @@ test('public examples use current command families and supported assistant desti
   const {pages} = await import('../src/content.mjs');
   const cli = await readFile(new URL('../../src/cli.ts',import.meta.url),'utf8');
   const commands = new Set([...cli.matchAll(/case "([a-z][a-z-]*)":/g)].map(m=>m[1]));
-  const content = pages('0.1.0');
+  const content = pages('1.0.0');
   for(const page of content) for(const [,example] of page.body.matchAll(/<pre><code>([\s\S]*?)<\/code><\/pre>/g)) {
     for(const [,command] of example.matchAll(/\bfehm ([a-z][a-z-]*)/g)) assert.ok(commands.has(command),`${page.path}: unsupported ${command}`);
-    assert.doesNotMatch(example,/uv tool install|py3-none-PLATFORM|--watch|fehm serve \.fehm/);
+    assert.doesNotMatch(example,/uv tool install fehm(?:\s|$)|py3-none-PLATFORM|--watch|fehm serve \.fehm/);
   }
   const codex = content.find(p=>p.path==='/integrations/codex/').body;
-  assert.match(codex,/\.agents\/skills\/fehm-debugging-systematic-debugging\/SKILL\.md/);
+  assert.match(codex,/\.agents\/skills\/fehm\/SKILL\.md/);
   assert.match(content.find(p=>p.path==='/integrations/vscode/').body,/\.github\/skills\//);
-  assert.match(content.find(p=>p.path==='/docs/mcp/').body,/no fehm mcp command/);
+  assert.match(content.find(p=>p.path==='/docs/mcp/').body,/fehm mcp-config/);
 });
 
 test('maintained repository documentation has no broken local file links', async () => {

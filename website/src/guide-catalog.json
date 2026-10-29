@@ -7,7 +7,7 @@
   {
     "id": "installation",
     "title": "Installation",
-    "description": "Build the current Node and TypeScript implementation from source and run it against a local repository."
+    "description": "Install a supplied wheel with uv, verify its private runtime, and preserve project state across upgrades."
   },
   {
     "id": "quickstart",
@@ -66,8 +66,8 @@
   },
   {
     "id": "mcp",
-    "title": "Integration boundaries",
-    "description": "Use the supported CLI, library and skill interfaces; this checkout does not implement a native MCP server."
+    "title": "MCP connection",
+    "description": "Connect the installed local Fehm engine using client-specific stdio configuration and fresh graph evidence."
   },
   {
     "id": "open-code-review",

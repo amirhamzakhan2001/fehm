@@ -32,7 +32,6 @@ Internal feature numbers remain in specification filenames for stable engineerin
 | [Concept intelligence](FEATURE_3_9.md) | Implemented; Node 22.13+ required for SQLite. |
 | [Change verification](FEATURE_3_10.md) | Implemented working-tree analysis and approved execution ledger. |
 | [Failure investigation](FEATURE_3_11.md) | Implemented bounded investigation; distinguish the implementation record from earlier proposals. |
-| [Revision-aware change impact](FEATURE_3_12.md) | **Plan only.** No standalone Change Impact Engine or fehm impact CLI. |
 | [Dashboard architecture](DASHBOARD.md) | Engineering reference for the localhost application. |
 
 ## Integration, development and assets
@@ -43,16 +42,13 @@ Internal feature numbers remain in specification filenames for stable engineerin
 - [Brand assets](brand.md).
 - [Third-party notices](../THIRD_PARTY_NOTICES.md), [FEHM license](../LICENSE), [skill licenses](../skills/licenses/).
 
-## Research and audit records
+## Release and maintainer documentation
 
-These records preserve the evidence and decisions from their implementation sessions. Dated validation counts are historical observations, not a continuously updated status badge.
+- [Release status](RELEASE_STATUS.md): FEHM 1.0.0 validation, publication status and known gaps.
+- [Assistant compatibility](REAL_TESTING.md): recorded client and platform evidence.
+- [Build and publication](DEPLOYMENT.md): maintainer release procedure.
 
-- [Documentation consolidation audit](audits/documentation-refresh.md).
-- [Architecture library research](research/architecture-libraries.md).
-- [Architecture/drift redesign](audits/architecture-drift-redesign.md).
-- [Concept workspace](audits/concepts-workspace.md).
-- [Engineering audit](audits/engineering-audit.md).
-- [Human-centered workspace](audits/human-centered-workspace.md).
+These maintainer pages are not rendered as website user guides. The website renders only the guides registered in its guide catalog. Session logs and unpublished planning notes are not part of the public documentation.
 
 ## Why some Markdown stays outside docs
 

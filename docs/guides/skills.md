@@ -2,6 +2,18 @@
 
 Skill discovery, context selection and installation are separate operations. FEHM does not automatically install the catalog or load every workflow.
 
+## Install the FEHM entry skill
+
+Install the CLI first, then register its entry skill for your assistant:
+
+```sh
+fehm install --platform codex --project --dry-run
+fehm install --platform codex --project
+fehm integrations --platform codex --project
+```
+
+This teaches the assistant how to use FEHM. It is separate from the catalog workflows below and from optional [MCP setup](mcp.md).
+
 ## Select relevant guidance
 
 ```sh

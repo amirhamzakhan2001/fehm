@@ -18,6 +18,6 @@ Graph exploration, codebase briefing, architecture views, drift, project health,
 
 ## What remains incomplete
 
-Static relationships can miss runtime behavior. The broader revision-aware Change Impact Engine is a design plan; current working-tree analysis lives in guardrails. This checkout has no native MCP server, Python-wheel installer or bundled Open Code Review runtime.
+Static relationships can miss runtime behavior. Current change analysis covers the working tree through guardrails; a standalone revision-aware Change Impact Engine is not included. A supplied Python wheel and optional read-only MCP server are available; public registry publication is pending. A separate Open Code Review runtime is not bundled. See [installation](installation.md) and [MCP connection](mcp.md).
 
 Continue with the [quickstart](quickstart.md) or [installation guide](installation.md).
