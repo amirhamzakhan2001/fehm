@@ -34,7 +34,8 @@ with tempfile.TemporaryDirectory(prefix='fehm installed ü ') as tmp:
     # No system Node/npm on the runtime PATH. Python and private Node use absolute paths.
     runtime_env={**env,'PATH':str(base/'bin')}
     def run(*args,ok=True):
-        r=subprocess.run([str(cli),*args],env=runtime_env,cwd=base,capture_output=True,text=True,timeout=60)
+        # Node writes UTF-8; Windows' locale default can corrupt Unicode paths.
+        r=subprocess.run([str(cli),*args],env=runtime_env,cwd=base,capture_output=True,text=True,encoding='utf-8',timeout=60)
         if ok: assert r.returncode==0,(args,r.stderr)
         return r
     started=time.monotonic();assert run('--version').stdout.strip()==version
@@ -47,10 +48,10 @@ with tempfile.TemporaryDirectory(prefix='fehm installed ü ') as tmp:
     skill=project/'.agents/skills/fehm/SKILL.md';assert skill.is_file()
     config=json.loads(run('mcp-config','--platform','claude','--root',str(project)).stdout)
     server=config['mcpServers']['fehm'];assert Path(server['command']).is_absolute()
-    assert Path(server['command']).is_file(), server['command']
+    assert Path(server['command']).is_file(), {'command':ascii(server['command']),'installed':ascii(str(cli)),'installedExists':cli.is_file()}
     assert Path(server['command']).samefile(cli), server['command']
     def session():
-        p=subprocess.Popen([server['command'],*server['args']],cwd=base,env=runtime_env,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
+        p=subprocess.Popen([server['command'],*server['args']],cwd=base,env=runtime_env,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True,encoding='utf-8')
         messages=queue.Queue()
         def reader():
             for line in p.stdout: messages.put(json.loads(line))
@@ -78,7 +79,7 @@ with tempfile.TemporaryDirectory(prefix='fehm installed ü ') as tmp:
     session();session()
     # A separately installed cockpit must serve its UI and graph without checkout assets.
     import urllib.request
-    web=subprocess.Popen([str(cli),'serve','--root',str(project),'--port','0'],cwd=base,env=runtime_env,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
+    web=subprocess.Popen([str(cli),'serve','--root',str(project),'--port','0'],cwd=base,env=runtime_env,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True,encoding='utf-8')
     try:
         line=web.stdout.readline().strip();assert line.startswith('fehm dashboard on '),line
         url=line.split(' on ',1)[1]
