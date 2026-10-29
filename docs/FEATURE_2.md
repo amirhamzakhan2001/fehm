@@ -185,3 +185,11 @@ F shows **no measurable effect**: feedback from seed tasks rarely clears the sim
 - Embedding-based semantic matching; a trained or model reranker beyond the command hook.
 - MCP exposure of routing; persisted lexical index for the registry.
 - Feature 3.x work (visual graph, drift, security review, prompt intelligence incl. Caveman-style output compression, git memory) is out of scope.
+
+### Native Superpowers workflow maintenance
+
+The existing five core Superpowers workflows now include declared, safely installable
+resources and FEHM evidence guidance. Source exclusion is available through
+`--exclude-source superpowers`; existing IDs and automatic routing defaults remain.
+See [the integration audit and usage guide](integrations/superpowers.md) for provenance,
+installation lifecycle, dependency decisions, limitations and validation.

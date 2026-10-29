@@ -7,7 +7,7 @@ intents:
 sources:
   - repository: superpowers
     original_path: skills/systematic-debugging/SKILL.md
-    sha256: 808fc5717aa88ad65efff312b11c186294d3e6ee301afb584e2f86599b137787
+    sha256: 51c6435d98c83c42c96ba7c35725a0b2c376cd487fb1a4e6bd0ddbe7e33ef202
 principles:
   - core/think-before-coding
   - core/simplicity-first
@@ -15,7 +15,9 @@ principles:
   - core/goal-driven-execution
 ---
 
-> **Library use:** Apply the [compatibility and execution contract](../../COMPATIBILITY.md). Source roles, memory claims, command names, hooks, and integrations are instructions or prerequisites—not installed capabilities.
+## FEHM integration constraints
+
+Adapted from Superpowers 7.0.1 (MIT; see LICENSE.txt). Read [fehm-evidence.md](fehm-evidence.md) for repository context, test discovery, debugging and approved verification. User/project instructions override workflow defaults; examples grant no execution, deletion, commit or delegation permission. Cross-workflow commands load instructions on demand; they do not install skills or execute checks.
 
 # Systematic Debugging
 
@@ -102,11 +104,11 @@ You MUST complete each phase before proceeding to the next.
    ```bash
    # Layer 1: Workflow
    echo "=== Secrets available in workflow: ==="
-   echo "IDENTITY: ${IDENTITY:+SET}${IDENTITY:-UNSET}"
+   echo "IDENTITY: $([ -n "${IDENTITY:-}" ] && echo SET || echo UNSET)"
 
    # Layer 2: Build script
    echo "=== Env vars in build script: ==="
-   env | grep IDENTITY || echo "IDENTITY not in environment"
+   printenv IDENTITY >/dev/null 2>&1 && echo "IDENTITY in environment" || echo "IDENTITY not in environment"
 
    # Layer 3: Signing script
    echo "=== Keychain state: ==="
@@ -188,7 +190,7 @@ You MUST complete each phase before proceeding to the next.
    - Automated test if possible
    - One-off test script if no framework
    - MUST have before fixing
-   - Use the `superpowers:test-driven-development` skill for writing proper failing tests
+   - Use the ``fehm skills show testing/test-driven-development --level full`` skill for writing proper failing tests
 
 2. **Implement Single Fix**
    - Address the root cause identified
@@ -200,7 +202,7 @@ You MUST complete each phase before proceeding to the next.
    - Test passes now?
    - No other tests broken?
    - Issue actually resolved?
-   - Use the `superpowers:verification-before-completion` skill before claiming success
+   - Use the ``fehm skills show verification/verification-before-completion --level full`` skill before claiming success
 
 4. **If Fix Doesn't Work**
    - STOP

@@ -1,5 +1,5 @@
-import { existsSync, readFileSync, statSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { existsSync, lstatSync, readFileSync, realpathSync, statSync } from "node:fs";
+import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { estimateTokens } from "./compression.js";
 import { LexicalIndex } from "./lexical-index.js";
@@ -255,6 +255,38 @@ export class SkillRegistry {
     const actual = sha256(content);
     if (actual !== record.contentHash) throw new StaleSkillError(id, record.contentHash, actual);
     return content;
+  }
+
+  /** Declared resources only; never crawl arbitrary neighboring files or follow symlinks. */
+  resourceFiles(id: string): { path: string; content: Buffer }[] {
+    const record = this.records.get(id);
+    const file = this.files.get(id);
+    if (!record || !file) throw new Error(`unknown skill ${id}`);
+    const skillDir = dirname(file);
+    if (lstatSync(skillDir).isSymbolicLink()) throw new Error(`${id}: symlink skill directory`);
+    const catalogPrefix = record.path.slice(0, record.path.lastIndexOf("/") + 1);
+    if (record.resources.length > 64) throw new Error(`${id}: too many resource files (maximum 64)`);
+    let total = 0;
+    const seen = new Set<string>();
+    return record.resources.map((resource) => {
+      if (!resource.startsWith(catalogPrefix)) throw new Error(`${id}: resource outside skill directory: ${resource}`);
+      const name = resource.slice(catalogPrefix.length);
+      if (!name || isAbsolute(name) || name.includes("\\") || name.split("/").some(p => !p || p === "." || p === "..") || name === "SKILL.md" || name.startsWith(".fehm-") || seen.has(name)) {
+        throw new Error(`${id}: unsafe or duplicate resource path: ${resource}`);
+      }
+      seen.add(name);
+      let target = skillDir;
+      for (const part of name.split("/")) {
+        target = join(target, part);
+        if (lstatSync(target).isSymbolicLink()) throw new Error(`${id}: symlink resource: ${resource}`);
+      }
+      const rel = relative(realpathSync(skillDir), realpathSync(target));
+      if (rel.startsWith(`..${sep}`) || isAbsolute(rel)) throw new Error(`${id}: resource escapes skill directory`);
+      const st = statSync(target);
+      total += st.size;
+      if (!st.isFile() || st.size > 1024 * 1024 || total > 4 * 1024 * 1024) throw new Error(`${id}: resource size/type limit: ${resource}`);
+      return { path: name, content: readFileSync(target) };
+    });
   }
 
   /**

@@ -376,7 +376,7 @@ export function catalogAdapter(dir: string): SkillAdapter {
               return src;
             });
             const dependencies: string[] = [];
-            const resources: string[] = [];
+            const resources: string[] = (entry.resources ?? []).filter((r): r is string => typeof r === "string");
             for (const d of entry.dependencies ?? []) {
               const target = byPath.get(d);
               if (target === entry.id) continue;

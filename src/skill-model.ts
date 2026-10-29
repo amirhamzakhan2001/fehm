@@ -6,7 +6,7 @@
 
 export const SKILL_SCHEMA_VERSION = "1.0";
 /** Bump when derived metadata changes so cached registries are rebuilt. */
-export const SKILL_INDEX_VERSION = "4";
+export const SKILL_INDEX_VERSION = "5";
 
 /** Progressive disclosure levels 0–4. */
 export type SkillLevel = "metadata" | "routing" | "summary" | "sections" | "full";

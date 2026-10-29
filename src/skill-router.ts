@@ -90,6 +90,8 @@ export interface RouteOptions {
   /** Force-select these ids (manual selection). They still respect the budget. */
   include?: string[];
   exclude?: string[];
+  /** Disable a bundled source without uninstalling or changing its catalog. */
+  excludeSources?: string[];
   now?: Date;
 }
 
@@ -493,7 +495,8 @@ function routeCore(registry: SkillRegistry, task: string, options: RouteOptions,
   const profile = profileTask(task, options.repository);
   const t1 = performance.now();
   const history = historicalSignals(options.feedback ?? [], profile, options.now);
-  const scored = scoreCandidates(registry, profile, { weights, budget, history, exclude: new Set(options.exclude ?? []) });
+  const excluded = new Set([...(options.exclude ?? []), ...registry.all().filter(r => options.excludeSources?.includes(r.source)).map(r => r.id)]);
+  const scored = scoreCandidates(registry, profile, { weights, budget, history, exclude: excluded });
   if (rerankOrder) {
     const pos = new Map(rerankOrder.map((id, i) => [id, i]));
     scored.sort((a, b) => {
@@ -519,6 +522,7 @@ function routeCore(registry: SkillRegistry, task: string, options: RouteOptions,
 
   // Manual selections first (ablation "manual" and --skill); they skip gates but not the budget.
   for (const id of options.include ?? []) {
+    if (excluded.has(id)) continue;
     const c = scored.find((s) => s.skillId === id) ?? manualCandidate(registry, id);
     if (c && !picks.some((p) => p.c.skillId === id)) picks.push({ c: { ...c, reasons: ["requested explicitly", ...c.reasons] }, role: "supporting", forced: true });
   }
@@ -641,6 +645,7 @@ function routeCore(registry: SkillRegistry, task: string, options: RouteOptions,
   // Dependencies (bounded), loaded at the cheapest useful level.
   const deps = resolveDependencies(registry, picks.map((p) => p.c.skillId));
   for (const id of deps.order) {
+    if (excluded.has(id)) continue;
     const r = registry.get(id)!;
     picks.push({ c: { skillId: id, record: r, score: 0, signals: emptySignals(), reasons: [`required by ${deps.requiredBy.get(id)?.join(", ")}`], matchedIntents: [], mismatches: [] }, role: "dependency" });
   }
@@ -680,7 +685,7 @@ function routeCore(registry: SkillRegistry, task: string, options: RouteOptions,
     requiredBy: deps.requiredBy.get(id) ?? [],
     order,
     loadedLevel: loadedById.get(id)?.level ?? "not-loaded",
-    reason: loadedById.has(id) ? "dependency loaded at the cheapest level that fits" : "dependency not loaded: skill budget",
+    reason: loadedById.has(id) ? "dependency loaded at the cheapest level that fits" : excluded.has(id) ? "dependency disabled by user" : "dependency not loaded: skill budget",
   }));
 
   // Confidence describes the selection: nothing selected means no confidence in any skill.

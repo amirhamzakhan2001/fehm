@@ -98,13 +98,11 @@ npm test 2>&1 | grep 'DEBUG git init'
 
 If something appears during tests but you don't know which test:
 
-Use the bisection script `find-polluter.sh` in this directory:
-
-```bash
-bash ./find-polluter.sh '.git' 'src/**/*.test.ts'
-```
-
-Runs tests one-by-one, stops at first polluter. See script for usage.
+FEHM adaptation: inspect the project's runner and bisect the test list manually
+with approved commands. Run candidate tests in an isolated test workspace,
+observe which run creates the unwanted state, and retain that output as evidence.
+The upstream runner-specific polluter script is not installed by this workflow.
+Do not assume a generic command can safely run every project's tests.
 
 ## Real Example: Empty projectDir
 

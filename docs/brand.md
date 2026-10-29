@@ -4,14 +4,14 @@ The aperture mark: two asymmetric, folded ribbons surround a diagonal opening. T
 
 | Asset | Use |
 | --- | --- |
-| `fehm-icon.svg` | App icon and favicon, navy rounded tile |
-| `fehm-icon-512.png` | 512 × 512 raster icon for uploads |
-| `fehm-mark.svg` | Transparent mark on light backgrounds |
-| `fehm-mark-light.svg` | Transparent mark on dark backgrounds |
-| `fehm-mark-mono.svg` | Single-color mark; inline SVG inherits currentColor |
-| `fehm-logo.svg` | Path-based wordmark for light backgrounds |
-| `fehm-logo-light.svg` | Path-based wordmark for dark backgrounds |
-| `readme-banner.svg` | Repository header illustration |
+| `assets/brand/fehm-icon.svg` | App icon and favicon, navy rounded tile |
+| `assets/brand/fehm-icon-512.png` | 512 × 512 raster icon for uploads |
+| `assets/brand/fehm-mark.svg` | Transparent mark on light backgrounds |
+| `assets/brand/fehm-mark-light.svg` | Transparent mark on dark backgrounds |
+| `assets/brand/fehm-mark-mono.svg` | Single-color mark; inline SVG inherits currentColor |
+| `assets/brand/fehm-logo.svg` | Path-based wordmark for light backgrounds |
+| `assets/brand/fehm-logo-light.svg` | Path-based wordmark for dark backgrounds |
+| `assets/brand/readme-banner.svg` | Repository header illustration |
 
 Colors: navy `#12283F`, mint `#7EE0C3`, darker mint for light surfaces `#22977A`, off-white `#F5F8FC`. Leave at least one ribbon width of clear space around the mark. Keep its proportions. Use the icon at small sizes, and the wordmark when there is enough room to read the name.
 
@@ -40,3 +40,5 @@ The wordmarks use paths, so they do not require installed fonts. The README bann
 ```bash
 rsvg-convert -w 512 -h 512 assets/brand/fehm-icon.svg -o assets/brand/fehm-icon-512.png
 ```
+
+This guide moved from assets/brand/README.md. Asset files remain in [assets/brand](../assets/brand/).

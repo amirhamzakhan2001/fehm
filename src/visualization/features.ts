@@ -64,21 +64,21 @@ export const FEATURES: readonly FeatureEntry[] = [
     group: "feature",
   },
   {
-    id: "health",
-    code: "3.5",
-    title: "Project health",
-    summary: "Build, tests, coverage, quality, dead code, dependencies, reliability and debt as explainable dimensions, each finding backed by evidence.",
-    path: "/health",
-    icon: "health",
-    group: "feature",
-  },
-  {
     id: "security",
     code: "3.6",
     title: "Security review",
     summary: "Data flows from untrusted input to dangerous sinks, secrets, the attack surface and its controls, pipelines, infrastructure and AI integrations, each finding with evidence.",
     path: "/security",
     icon: "security",
+    group: "feature",
+  },
+  {
+    id: "health",
+    code: "3.5",
+    title: "Project health",
+    summary: "Build, tests, coverage, quality, dead code, dependencies, reliability and debt as explainable dimensions, each finding backed by evidence.",
+    path: "/health",
+    icon: "health",
     group: "feature",
   },
   {
@@ -91,6 +91,11 @@ export const FEATURES: readonly FeatureEntry[] = [
     group: "feature",
   },
   {
+    id: "concepts", code: "3.9", title: "Engineering concepts",
+    summary: "Engineering concepts mapped to repository evidence, with explicit scope, qualitative status and links into the code graph.",
+    path: "/concepts", icon: "graph", group: "feature",
+  },
+  {
     id: "git-memory",
     code: "3.8",
     title: "Git memory",
@@ -98,11 +103,6 @@ export const FEATURES: readonly FeatureEntry[] = [
     path: "/git-memory",
     icon: "drift",
     group: "feature",
-  },
-  {
-    id: "concepts", code: "3.9", title: "Engineering concepts",
-    summary: "Engineering concepts mapped to repository evidence, with explicit scope, qualitative status and links into the code graph.",
-    path: "/concepts", icon: "graph", group: "feature",
   },
   {
     id: "guardrails", code: "3.10", title: "Change Verification & Review",

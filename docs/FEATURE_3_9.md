@@ -37,15 +37,14 @@ The supplied files now live at:
 
 ```text
 assets/ontology/fehm_engineering_ontology.json
-assets/ontology/fehm_ontology_runtime_spec.md
-assets/ontology/fehm_ontology_audit.md
 ```
 
 The original catalog is preserved byte-for-byte, including all 2,627 concepts,
 74 sections, immutable IDs, reviewed aliases, profiles, facets and provenance.
 SHA-256: `c845161771f6656ec99b1faf5bbe3a96f4da4c8e057e4becb343dcaa9211de71`.
-The supplied audit documents catalog work done before this repository detector;
-it is not claimed as FEHM integration validation.
+Earlier supplied audit/specification documents described catalog work before this
+repository detector. They are not shipped in assets/ontology in this checkout;
+this feature document is the maintained implementation reference.
 
 `exta_file` is no longer needed. Upstream licenses, manifests and pinned source
 attribution is recorded in `THIRD_PARTY_NOTICES.md`; attribution references,

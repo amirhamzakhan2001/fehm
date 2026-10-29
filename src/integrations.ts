@@ -26,7 +26,7 @@ export const integrationPlatforms = {
 
 export type Platform = keyof typeof integrationPlatforms;
 const marker = /\n<!-- fehm-managed sha256:([a-f0-9]{64}) -->\n$/;
-const digest = (body: string): string => createHash("sha256").update(body).digest("hex");
+const digest = (body: string | Buffer): string => createHash("sha256").update(body).digest("hex");
 
 export interface InstallOptions {
   platform: string;
@@ -93,32 +93,75 @@ export async function manageSkill(registry: SkillRegistry, skillId: string, acti
   const target = path.join(root, integrationPlatforms[platform][scope], installedSkillName(skillId), "SKILL.md");
   await checkDestination(root, target);
   const template = registry.source(skillId);
+  const resources = registry.resourceFiles(skillId);
   const content = `${template}\n<!-- fehm-managed sha256:${digest(template)} -->\n`;
+  const directory = path.dirname(target);
+  const inventoryPath = path.join(directory, ".fehm-resources.json");
+  await checkDestination(root, inventoryPath);
+  const oldInventory = await optionalRead(inventoryPath);
+  let previous: Record<string, string> = {};
+  if (oldInventory !== undefined) {
+    try {
+      const parsed: unknown = JSON.parse(oldInventory);
+      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error("expected object");
+      previous = parsed as Record<string, string>;
+      if (Object.keys(previous).length > 64 || Object.entries(previous).some(([name, hash]) =>
+        !safeResourceName(name) || typeof hash !== "string" || !/^[a-f0-9]{64}$/.test(hash))) throw new Error("invalid paths/hashes");
+    } catch {
+      throw new Error(`Preserving invalid resource inventory at ${inventoryPath}; inspect it before retrying.`);
+    }
+  }
+  const desired = new Map(resources.map(r => [r.path, r.content]));
+  const nextInventory = Object.fromEntries(resources.map(r => [r.path, digest(r.content)]));
   const existing = await optionalRead(target);
   const match = existing?.match(marker);
   const unmodified = !!match && digest(existing!.slice(0, match.index)) === match[1];
-  const state = existing === undefined ? "missing" : existing === content ? "current" : unmodified ? "outdated" : "customized";
+  type Pending = { file: string; desired?: Buffer | string; existing?: Buffer | string; customized: boolean };
+  const pending: Pending[] = [{ file: target, ...(action === "uninstall" ? {} : { desired: content }), ...(existing === undefined ? {} : { existing }), customized: existing !== undefined && !unmodified }];
+  for (const name of new Set([...Object.keys(previous), ...desired.keys()])) {
+    if (!safeResourceName(name)) throw new Error(`Unsafe resource path ${name}`);
+    const file = path.join(directory, name);
+    await checkDestination(root, file);
+    let current: Buffer | undefined;
+    try { current = await readFile(file); } catch (error) { if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error; }
+    // Uninstall never owns a resource merely because the current package declares it.
+    if (action === "uninstall" && previous[name] === undefined) continue;
+    const customized = current !== undefined && (previous[name] === undefined || digest(current) !== previous[name]);
+    const wanted = action === "uninstall" ? undefined : desired.get(name);
+    pending.push({ file, customized, ...(current === undefined ? {} : { existing: current }), ...(wanted === undefined ? {} : { desired: wanted }) });
+  }
+  const customized = pending.some(p => p.customized);
+  const same = (p: Pending): boolean => p.existing !== undefined && p.desired !== undefined && Buffer.from(p.existing).equals(Buffer.from(p.desired));
+  const state = customized ? "customized" : pending.every(p => p.existing === undefined) ? "missing" : pending.every(p => same(p) || (p.existing === undefined && p.desired === undefined)) ? "current" : "outdated";
   const result: InstallResult = { skillId, platform, label: integrationPlatforms[platform].label, scope, path: target, state, action, dryRun: !!options.dryRun };
   if (action === "status") return result;
-  if (existing !== undefined && !unmodified && !options.force) {
-    throw new Error(`Preserving customized skill at ${target}. Move it aside, or use --force to back it up and ${action}.`);
+  if (customized && !options.force) throw new Error(`Preserving customized skill or resource at ${pending.find(p => p.customized)!.file}. Move it aside, or use --force to back it up and ${action}.`);
+  if (options.dryRun) return result;
+  // All paths and customizations are preflighted before changing any files.
+  for (const p of pending) {
+    if (same(p)) continue;
+    if (p.customized) await writeFile(`${p.file}.${Date.now()}.${process.pid}.bak`, p.existing!, { flag: "wx" });
+    if (p.desired === undefined) {
+      if (p.existing !== undefined) await unlink(p.file);
+    } else await atomicWrite(p.file, p.desired);
   }
-  if (options.dryRun || (action === "install" && state === "current") || (action === "uninstall" && state === "missing")) return result;
-  await mkdir(path.dirname(target), { recursive: true });
-  if (existing !== undefined && !unmodified) {
-    await writeFile(`${target}.${Date.now()}.${process.pid}.bak`, existing, { flag: "wx" });
-  }
-  if (action === "uninstall") await unlink(target);
-  else {
-    const temporary = `${target}.${process.pid}.${Date.now()}.tmp`;
-    try {
-      await writeFile(temporary, content, { flag: "wx" });
-      await rename(temporary, target);
-    } finally {
-      await unlink(temporary).catch((error: NodeJS.ErrnoException) => {
-        if (error.code !== "ENOENT") throw error;
-      });
-    }
-  }
+  if (action === "uninstall" || resources.length === 0) {
+    if (oldInventory !== undefined) await unlink(inventoryPath);
+  } else await atomicWrite(inventoryPath, JSON.stringify(nextInventory, null, 2) + "\n");
   return { ...result, state: action === "install" ? "current" : "missing" };
+}
+
+function safeResourceName(name: string): boolean {
+  return !!name && !path.isAbsolute(name) && !name.includes("\\") && !name.split("/").some(p => !p || p === "." || p === "..") && name !== "SKILL.md" && !name.startsWith(".fehm-");
+}
+
+async function atomicWrite(target: string, content: string | Buffer): Promise<void> {
+  await mkdir(path.dirname(target), { recursive: true });
+  const temporary = `${target}.${process.pid}.${Date.now()}.tmp`;
+  try {
+    await writeFile(temporary, content, { flag: "wx" });
+    await rename(temporary, target);
+  } finally {
+    await unlink(temporary).catch((error: NodeJS.ErrnoException) => { if (error.code !== "ENOENT") throw error; });
+  }
 }

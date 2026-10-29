@@ -8390,7 +8390,7 @@
         {
           "repository": "superpowers",
           "original_path": "skills/systematic-debugging/SKILL.md",
-          "sha256": "808fc5717aa88ad65efff312b11c186294d3e6ee301afb584e2f86599b137787"
+          "sha256": "51c6435d98c83c42c96ba7c35725a0b2c376cd487fb1a4e6bd0ddbe7e33ef202"
         }
       ],
       "kind": "skill",
@@ -8401,9 +8401,7 @@
         "core/surgical-changes",
         "core/goal-driven-execution"
       ],
-      "dependencies": [
-        "debugging/systematic-debugging/SKILL.md"
-      ],
+      "dependencies": [],
       "source_metadata": [
         {
           "repository": "superpowers",
@@ -8411,8 +8409,17 @@
           "frontmatter": {
             "name": "systematic-debugging",
             "description": "Use when encountering any bug, test failure, or unexpected behavior, before proposing fixes"
-          }
+          },
+          "original_frontmatter": "name: systematic-debugging\ndescription: Use when encountering any bug, test failure, or unexpected behavior, before proposing fixes"
         }
+      ],
+      "resources": [
+        "debugging/systematic-debugging/root-cause-tracing.md",
+        "debugging/systematic-debugging/defense-in-depth.md",
+        "debugging/systematic-debugging/condition-based-waiting.md",
+        "debugging/systematic-debugging/condition-based-waiting-example.ts",
+        "debugging/systematic-debugging/fehm-evidence.md",
+        "debugging/systematic-debugging/LICENSE.txt"
       ]
     },
     {
@@ -43097,9 +43104,7 @@
         "core/surgical-changes",
         "core/goal-driven-execution"
       ],
-      "dependencies": [
-        "testing/test-driven-development/SKILL.md"
-      ],
+      "dependencies": [],
       "source_metadata": [
         {
           "repository": "superpowers",
@@ -43107,8 +43112,14 @@
           "frontmatter": {
             "name": "test-driven-development",
             "description": "Use when implementing any feature or bugfix, before writing implementation code"
-          }
+          },
+          "original_frontmatter": "name: test-driven-development\ndescription: Use when implementing any feature or bugfix, before writing implementation code"
         }
+      ],
+      "resources": [
+        "testing/test-driven-development/writing-good-tests.md",
+        "testing/test-driven-development/fehm-evidence.md",
+        "testing/test-driven-development/LICENSE.txt"
       ]
     },
     {
@@ -43465,9 +43476,7 @@
         "core/surgical-changes",
         "core/goal-driven-execution"
       ],
-      "dependencies": [
-        "verification/verification-before-completion/SKILL.md"
-      ],
+      "dependencies": [],
       "source_metadata": [
         {
           "repository": "superpowers",
@@ -43475,8 +43484,13 @@
           "frontmatter": {
             "name": "verification-before-completion",
             "description": "Use when about to claim work is complete, fixed, or passing, before committing or creating PRs - requires running verification commands and confirming output before making any success claims; evidence before assertions always"
-          }
+          },
+          "original_frontmatter": "name: verification-before-completion\ndescription: Use when about to claim work is complete, fixed, or passing, before committing or creating PRs - requires running verification commands and confirming output before making any success claims; evidence before assertions always"
         }
+      ],
+      "resources": [
+        "verification/verification-before-completion/fehm-evidence.md",
+        "verification/verification-before-completion/LICENSE.txt"
       ]
     },
     {
@@ -43669,7 +43683,7 @@
         {
           "repository": "superpowers",
           "original_path": "skills/brainstorming/SKILL.md",
-          "sha256": "a32d2255354775aa124855aa7100cf276bea096fff4ebb3a0edf57be216e6c72"
+          "sha256": "61a7ef918652108c76a3fd01e02dd92d39996c6b46d4cb2819cbd03f6c45e46a"
         }
       ],
       "kind": "skill",
@@ -43680,18 +43694,22 @@
         "core/surgical-changes",
         "core/goal-driven-execution"
       ],
-      "dependencies": [
-        "workflows/brainstorming/SKILL.md"
-      ],
+      "dependencies": [],
       "source_metadata": [
         {
           "repository": "superpowers",
           "original_path": "skills/brainstorming/SKILL.md",
           "frontmatter": {
             "name": "brainstorming",
-            "description": "You MUST use this before any creative work - creating features, building components, adding functionality, or modifying behavior. Explores user intent, requirements and design before implementation."
-          }
+            "description": "You MUST use this before any creative work - creating features, building components, adding functionality, modifying behavior, or planning anything new, in software or out of it (a talk, a business, a renovation)."
+          },
+          "original_frontmatter": "name: brainstorming\ndescription: \"You MUST use this before any creative work - creating features, building components, adding functionality, modifying behavior, or planning anything new, in software or out of it (a talk, a business, a renovation).\""
         }
+      ],
+      "resources": [
+        "workflows/brainstorming/builder-check-prompt.md",
+        "workflows/brainstorming/fehm-evidence.md",
+        "workflows/brainstorming/LICENSE.txt"
       ]
     },
     {
@@ -46353,9 +46371,7 @@
         "core/surgical-changes",
         "core/goal-driven-execution"
       ],
-      "dependencies": [
-        "workflows/writing-plans/SKILL.md"
-      ],
+      "dependencies": [],
       "source_metadata": [
         {
           "repository": "superpowers",
@@ -46363,8 +46379,13 @@
           "frontmatter": {
             "name": "writing-plans",
             "description": "Use when you have a spec or requirements for a multi-step task, before touching code"
-          }
+          },
+          "original_frontmatter": "name: writing-plans\ndescription: Use when you have a spec or requirements for a multi-step task, before touching code"
         }
+      ],
+      "resources": [
+        "workflows/writing-plans/fehm-evidence.md",
+        "workflows/writing-plans/LICENSE.txt"
       ]
     }
   ]

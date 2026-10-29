@@ -46,3 +46,18 @@ FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
 COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+## Superpowers workflow instructions
+
+Selected instructions and references from https://github.com/obra/superpowers are
+bundled in the existing skills catalog. Five workflows were refreshed from a
+downloaded snapshot reporting version 7.0.1, with no Git commit metadata available.
+See `skills/superpowers-provenance.json` for original paths, SHA-256 hashes and local
+adaptations, and `docs/integrations/superpowers.md` for dependency decisions.
+Other catalog entries retain their earlier source provenance. These are adapted
+workflow instructions, not an installation of the upstream plugin or its hooks.
+
+The complete MIT license, Copyright (c) 2025 Jesse Vincent, is preserved in
+`skills/licenses/superpowers-LICENSE.txt` and `LICENSE.txt` within each refreshed
+skill, including installed copies. FEHM's own license remains separate.

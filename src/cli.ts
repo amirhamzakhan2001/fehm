@@ -109,6 +109,7 @@ Skills (Skill Routing — skill routing; nothing is installed unless you ask):
   skills index [--force]             build/refresh the skill registry (incremental)
   skills list [--category C] [--source S] [--kind K]
   skills search "<query>" [--limit N]
+  skills resource <skill-id> <relative-path>  read a declared supporting resource
   skills show <skill-id> [--level metadata|routing|summary|sections|full]
   skills route "<task>" [--budget N] [--max N] [--skill ID]... [--no-repo] [--rerank-command CMD]
   skills feedback <skill-id> useful|neutral|irrelevant|conflicting|too-verbose|missing --task "<task>" [--outcome success|failure]
@@ -120,6 +121,7 @@ Skills (Skill Routing — skill routing; nothing is installed unless you ask):
                                      skill context + Context Engine code context in one budget
 
 Common: --intent locate|explain|change|debug|test|architecture  --depth 0-3
+Skills: --exclude-source NAME (disable a source) --exclude-skill ID (disable one skill)
 Skills: --skills DIR (catalog, default: bundled skills/)  --skill-source NAME=DIR (extra SKILL.md tree)
 `;
 
@@ -135,7 +137,7 @@ const VALUE_FLAGS = new Set([
   "concept-id", "bytes", "ref", "from", "to", "path", "entity", "author", "since", "until", "line",
   "prompt-id", "prompt-mode", "prompt-eval", "prompt-comparison", "prompt-check",
   "root", "limit", "intent", "depth", "budget", "command", "model", "port", "link", "tag", "state-dir",
-  "skills", "skill-source", "max", "level", "category", "source", "kind", "skill", "task", "outcome", "platform",
+  "exclude-source", "exclude-skill", "skills", "skill-source", "max", "level", "category", "source", "kind", "skill", "task", "outcome", "platform",
   "rerank-command", "total-budget", "skill-budget", "code-budget", "task-budget", "file", "upstream", "sections", "fail-on", "run", "sbom",
 ]);
 const INTENTS = new Set(["locate", "explain", "change", "debug", "test", "architecture"]);
@@ -712,6 +714,8 @@ function routeFlags(args: Args, root: string, stateDirectory: string | undefined
   return {
     ...(max !== undefined ? { maxSkills: max } : {}),
     ...(args.flags.get("skill")?.length ? { include: args.flags.get("skill")! } : {}),
+    exclude: args.flags.get("exclude-skill") ?? [],
+    excludeSources: args.flags.get("exclude-source") ?? [],
     feedback: loadSkillFeedback(root, stateDirectory),
   };
 }
@@ -775,6 +779,13 @@ async function skillsCommand(
       out(hits.map((h) => ({ id: h.record.id, score: h.score, matchedTerms: h.matchedTerms, description: h.record.description })), json, () =>
         hits.map((h, i) => `${String(i + 1).padStart(2)}. ${h.score.toFixed(2)} ${h.record.id} — ${h.record.description.slice(0, 110)}`).join("\n") || "No matches.",
       );
+      return 0;
+    }
+    case "resource": {
+      const id = params[0] ?? "", name = params[1] ?? "";
+      const resource = registry.resourceFiles(id).find(r => r.path === name);
+      if (!resource) throw new Error(`No declared resource ${name} for ${id}`);
+      out({ skillId: id, path: name, text: resource.content.toString("utf8") }, json, () => resource.content.toString("utf8"));
       return 0;
     }
     case "show": {

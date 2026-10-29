@@ -16,7 +16,9 @@ principles:
   - core/goal-driven-execution
 ---
 
-> **Library use:** Apply the [compatibility and execution contract](../../COMPATIBILITY.md). Source roles, memory claims, command names, hooks, and integrations are instructions or prerequisites—not installed capabilities.
+## FEHM integration constraints
+
+Adapted from Superpowers 7.0.1 (MIT; see LICENSE.txt). Read [fehm-evidence.md](fehm-evidence.md) for repository context, test discovery, debugging and approved verification. User/project instructions override workflow defaults; examples grant no execution, deletion, commit or delegation permission. Cross-workflow commands load instructions on demand; they do not install skills or execute checks.
 
 # Verification Before Completion
 
