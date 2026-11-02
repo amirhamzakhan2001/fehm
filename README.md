@@ -68,6 +68,30 @@ Open **http://127.0.0.1:7332** to explore the graph and analysis views. Stop the
 
 See the [guides](docs/README.md) for each workflow and its limitations. A standalone revision-aware Change Impact Engine is not part of 1.0.0.
 
+## Dashboard tour
+
+The local dashboard brings the repository's graph and review workflows into one place. These screenshots were captured from FEHM running against a real project:
+
+| Codebase graph | Explain codebase |
+| --- | --- |
+| <img src="screenshots/codebase-graph.png" alt="FEHM codebase graph" width="480"> | <img src="screenshots/explain-codebase.png" alt="FEHM explain codebase view" width="480"> |
+
+| Architecture | Architecture drift |
+| --- | --- |
+| <img src="screenshots/architecture.png" alt="FEHM architecture view" width="480"> | <img src="screenshots/architecture-drift.png" alt="FEHM architecture drift view" width="480"> |
+
+| Security review | Project health |
+| --- | --- |
+| <img src="screenshots/security-review.png" alt="FEHM security review" width="480"> | <img src="screenshots/project-health.png" alt="FEHM project health" width="480"> |
+
+| Prompt intelligence | Engineering concepts |
+| --- | --- |
+| <img src="screenshots/prompt-intelligence.png" alt="FEHM prompt intelligence" width="480"> | <img src="screenshots/engineering-concepts.png" alt="FEHM engineering concepts" width="480"> |
+
+| Context engine |
+| --- |
+| <img src="screenshots/context-engine.png" alt="FEHM context engine" width="480"> |
+
 ## Connect your coding assistant
 
 Install FEHM first, scan your project, then add the entry skill:

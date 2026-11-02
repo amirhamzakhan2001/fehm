@@ -13,7 +13,7 @@ dependencies = ["nodejs-wheel-binaries==24.19.0"]
 
 [project.urls]
 Repository = "https://github.com/amirhamzakhan2001/fehm"
-Documentation = "https://github.com/amirhamzakhan2001/fehm/blob/amir/docs/guides/installation.md"
+Documentation = "https://github.com/amirhamzakhan2001/fehm/blob/main/docs/guides/installation.md"
 
 [project.scripts]
 fehm = "fehm.cli:main"

@@ -87,3 +87,6 @@ body:has(button:hover) .art-orb-blue,body:has(input:focus-visible) .art-orb-blue
 }
 
 @media(prefers-reduced-motion:reduce){.site-art .art-mark{transform:translate(-50%,-50%)!important}}
+
+.screenshot-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px 20px}.screenshot-card{margin:0}.screenshot-card a{display:block;border:1px solid var(--line);background:#0b1020;border-radius:6px;overflow:hidden;transition:transform .2s,border-color .2s}.screenshot-card a:hover{transform:translateY(-3px);border-color:#aaa595}.screenshot-card img{display:block;width:100%;height:auto;aspect-ratio:1.84;object-fit:cover}.screenshot-card figcaption{display:flex;flex-direction:column;gap:5px;padding:13px 2px}.screenshot-card figcaption strong{font-size:14px;font-weight:600}.screenshot-card figcaption span{font-size:12px;color:var(--muted)}
+@media(max-width:760px){.screenshot-grid{grid-template-columns:1fr}}
