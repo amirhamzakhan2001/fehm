@@ -3,14 +3,14 @@ const icons = ['M4 5h6v6H4z M14 13h6v6h-6z M10 8h7v5','M4 5h16v14H4z M8 9h8 M8 1
 const icon = n => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${icons[n]}"/></svg>`;
 const screenshots = [
  ['codebase-graph','Codebase graph','Explore files, symbols, folders and relationships in one visual graph.'],
- ['explain-codebase','Explain codebase','Read a source-linked briefing for an unfamiliar repository.'],
+ ['explain_codebase','Explain codebase','Read a source-linked briefing for an unfamiliar repository.'],
  ['architecture','Architecture','Inspect system structure, components and dependency views.'],
+ ['architecture-2','Architecture data flow','Trace how data moves through the architecture.'],
  ['architecture-drift','Architecture drift','Review structural signals against project conventions.'],
  ['security-review','Security review','Trace static security signals and trust boundaries.'],
  ['project-health','Project health','Review tests, dependencies, quality and readiness evidence.'],
  ['prompt-intelligence','Prompt intelligence','Inventory prompts, contracts and evaluation evidence.'],
  ['engineering-concepts','Engineering concepts','Search concepts and the evidence that supports them.'],
- ['context-engine','Context engine','Assemble focused source context for an assistant.'],
 ];
 export function homepage(version, capabilities, assistants) {
 return `<section class="product-hero">

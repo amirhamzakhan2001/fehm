@@ -74,11 +74,15 @@ The local dashboard brings the repository's graph and review workflows into one 
 
 | Codebase graph | Explain codebase |
 | --- | --- |
-| <img src="screenshots/codebase-graph.png" alt="FEHM codebase graph" width="480"> | <img src="screenshots/explain-codebase.png" alt="FEHM explain codebase view" width="480"> |
+| <img src="screenshots/codebase-graph.png" alt="FEHM codebase graph" width="480"> | <img src="screenshots/explain_codebase.png" alt="FEHM explain codebase view" width="480"> |
 
 | Architecture | Architecture drift |
 | --- | --- |
 | <img src="screenshots/architecture.png" alt="FEHM architecture view" width="480"> | <img src="screenshots/architecture-drift.png" alt="FEHM architecture drift view" width="480"> |
+
+| Architecture data flow |
+| --- |
+| <img src="screenshots/architecture-2.png" alt="FEHM architecture data flow view" width="480"> |
 
 | Security review | Project health |
 | --- | --- |
@@ -87,10 +91,6 @@ The local dashboard brings the repository's graph and review workflows into one 
 | Prompt intelligence | Engineering concepts |
 | --- | --- |
 | <img src="screenshots/prompt-intelligence.png" alt="FEHM prompt intelligence" width="480"> | <img src="screenshots/engineering-concepts.png" alt="FEHM engineering concepts" width="480"> |
-
-| Context engine |
-| --- |
-| <img src="screenshots/context-engine.png" alt="FEHM context engine" width="480"> |
 
 ## Connect your coding assistant
 
